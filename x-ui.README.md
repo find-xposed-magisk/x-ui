@@ -40,12 +40,12 @@
 bash <(curl -Ls https://raw.githubusercontent.com/alireza0/x-ui/master/install.sh)
 ```
 
-## Install Custom Version
+## Install Legacy Version
 
-**Step 1:** To install your desired version, add the version to the end of the installation command. e.g., ver `1.8.0`:
+**Step 1:** To install an old version, use following installation command. e.g., version `1.8.0`:
 
 ```sh
-bash <(curl -Ls https://raw.githubusercontent.com/alireza0/x-ui/master/install.sh) 1.8.0
+VERSION=1.8.0 && bash <(curl -Ls "https://raw.githubusercontent.com/alireza0/x-ui/$VERSION/install.sh") $VERSION
 ```
 
 ## Manual Install & Upgrade
@@ -188,10 +188,20 @@ docker build -t x-ui .
 
 ## Recommended OS
 
+- Ubuntu 20.04+
+- Debian 11+
 - CentOS 8+
-- Ubuntu 20+
-- Debian 10+
+- OpenEuler 22.03+
 - Fedora 36+
+- Arch Linux
+- Parch Linux
+- Manjaro
+- Armbian
+- AlmaLinux 8.0+
+- Rocky Linux 8+
+- Oracle Linux 8+
+- OpenSUSE Tubleweed
+- Amazon Linux 2023
 
 ## Preview
 
@@ -224,6 +234,7 @@ docker build -t x-ui .
 | `POST` | `"/:id/delClient/:clientId"`       | Delete client by clientId\*               |
 | `POST` | `"/updateClient/:clientId"`        | Update client by clientId\*               |
 | `GET`  | `"/getClientTraffics/:email"`      | Get client's traffic                      |
+| `GET`  | `"/getClientTrafficsById/:id"`     | Get client's traffic By ID                |
 | `POST` | `"/:id/resetClientTraffic/:email"` | Reset client's traffic                    |
 | `POST` | `"/resetAllTraffics"`              | Reset traffics of all inbounds            |
 | `POST` | `"/resetAllClientTraffics/:id"`    | Reset inbound clients traffics (-1: all)  |
