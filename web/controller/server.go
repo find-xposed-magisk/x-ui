@@ -39,6 +39,9 @@ func (a *ServerController) initRouter(g *gin.RouterGroup) {
 	g = g.Group("/server")
 
 	g.Use(a.checkLogin)
+	g.GET("/getDb", a.getDb)
+	g.GET("/getNewVlessEnc", a.getNewVlessEnc)
+
 	g.POST("/status", a.status)
 	g.POST("/getXrayVersion", a.getXrayVersion)
 	g.POST("/stopXrayService", a.stopXrayService)
@@ -46,7 +49,6 @@ func (a *ServerController) initRouter(g *gin.RouterGroup) {
 	g.POST("/installXray/:version", a.installXray)
 	g.POST("/logs/:count", a.getLogs)
 	g.POST("/getConfigJson", a.getConfigJson)
-	g.GET("/getDb", a.getDb)
 	g.POST("/importDB", a.importDB)
 	g.POST("/getNewX25519Cert", a.getNewX25519Cert)
 	g.POST("/getNewmldsa65", a.getNewmldsa65)
@@ -206,4 +208,13 @@ func (a *ServerController) getNewEchCert(c *gin.Context) {
 		return
 	}
 	jsonObj(c, cert, nil)
+}
+
+func (a *ServerController) getNewVlessEnc(c *gin.Context) {
+	out, err := a.serverService.GetNewVlessEnc()
+	if err != nil {
+		jsonMsg(c, "Failed to generate vless encryption config", err)
+		return
+	}
+	jsonObj(c, out, nil)
 }

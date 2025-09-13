@@ -132,6 +132,10 @@
                 inModal.inbound.stream.reality.privateKey = msg.obj.privateKey;
                 inModal.inbound.stream.reality.settings.publicKey = msg.obj.publicKey;
             },
+            clearX25519Cert() {
+                this.inbound.stream.reality.privateKey = '';
+                this.inbound.stream.reality.settings.publicKey = '';
+            },
             async getNewmldsa65() {
                 inModal.loading(true);
                 const msg = await HttpUtil.post('/server/getNewmldsa65');
@@ -141,6 +145,10 @@
                 }
                 inModal.inbound.stream.reality.mldsa65Seed = msg.obj.seed;
                 inModal.inbound.stream.reality.settings.mldsa65Verify = msg.obj.verify;
+            },
+            clearMldsa65() {
+                this.inbound.stream.reality.mldsa65Seed = '';
+                this.inbound.stream.reality.settings.mldsa65Verify = '';
             },
             async getNewEchCert() {
                 inModal.loading(true);
@@ -152,6 +160,36 @@
                 inModal.inbound.stream.tls.echServerKeys = msg.obj.echServerKeys;
                 inModal.inbound.stream.tls.settings.echConfigList = msg.obj.echConfigList;
             },
+            clearEchCert() {
+                this.inbound.stream.tls.echServerKeys = '';
+                this.inbound.stream.tls.settings.echConfigList = '';
+            },
+            async getNewVlessEnc() {
+                inModal.loading(true);
+                const msg = await HttpUtil.get('/server/getNewVlessEnc');
+                inModal.loading(false);
+
+                if (!msg.success) {
+                    return;
+                }
+
+                const auths = msg.obj.auths || [];
+                const selected = inModal.inbound.settings.selectedAuth;
+                const block = auths.find(a => a.label === selected);
+
+                if (!block) {
+                    console.error("No auth block for", selected);
+                    return;
+                }
+
+                inModal.inbound.settings.decryption = block.decryption;
+                inModal.inbound.settings.encryption = block.encryption;
+            },
+            clearVlessEnc() {
+                this.inbound.settings.decryption = 'none';
+                this.inbound.settings.encryption = 'none';
+                this.inbound.settings.selectedAuth = undefined;
+            }
         },
     });
 

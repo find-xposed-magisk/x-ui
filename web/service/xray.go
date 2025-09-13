@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"runtime"
 	"sync"
 
 	"x-ui/logger"
@@ -32,7 +33,16 @@ func (s *XrayService) GetXrayErr() error {
 	if p == nil {
 		return nil
 	}
-	return p.GetErr()
+
+	err := p.GetErr()
+
+	if runtime.GOOS == "windows" && err.Error() == "exit status 1" {
+		// exit status 1 on Windows means that Xray process was killed
+		// as we kill process to stop in on Windows, this is not an error
+		return nil
+	}
+
+	return err
 }
 
 func (s *XrayService) GetXrayResult() string {
@@ -45,7 +55,15 @@ func (s *XrayService) GetXrayResult() string {
 	if p == nil {
 		return ""
 	}
+
 	result = p.GetResult()
+
+	if runtime.GOOS == "windows" && result == "exit status 1" {
+		// exit status 1 on Windows means that Xray process was killed
+		// as we kill process to stop in on Windows, this is not an error
+		return ""
+	}
+
 	return result
 }
 

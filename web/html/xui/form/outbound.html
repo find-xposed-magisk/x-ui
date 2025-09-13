@@ -211,6 +211,11 @@
             <a-input v-model.trim="outbound.settings.id"></a-input>
         </a-form-item>
     <!-- vless settings -->
+    <template v-if="outbound.protocol === Protocols.VLESS">
+        <a-form-item label='encryption'>
+            <a-input v-model.trim="outbound.settings.encryption"></a-input>
+        </a-form-item>
+    </template>
     <template v-if="outbound.canEnableTlsFlow()">
         <a-form-item label='Flow'>
             <a-select v-model="outbound.settings.flow" :dropdown-class-name="themeSwitcher.currentTheme">
@@ -421,6 +426,9 @@
                     v-model="outbound.stream.tls.alpn">
                     <a-select-option v-for="alpn in ALPN_OPTION" :value="alpn">[[ alpn ]]</a-select-option>
                 </a-select>
+            </a-form-item>
+            <a-form-item label="ECH Config List">
+                <a-input v-model.trim="outbound.stream.tls.echConfigList"></a-input>
             </a-form-item>
             <a-form-item label="Allow Insecure">
                 <a-switch v-model="outbound.stream.tls.allowInsecure"></a-switch>
