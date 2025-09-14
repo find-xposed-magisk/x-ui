@@ -13,10 +13,8 @@ const Protocols = {
 
 const SSMethods = {
     AES_256_GCM: 'aes-256-gcm',
-    AES_128_GCM: 'aes-128-gcm',
     CHACHA20_POLY1305: 'chacha20-poly1305',
     CHACHA20_IETF_POLY1305: 'chacha20-ietf-poly1305',
-    XCHACHA20_POLY1305: 'xchacha20-poly1305',
     XCHACHA20_IETF_POLY1305: 'xchacha20-ietf-poly1305',
     BLAKE3_AES_128_GCM: '2022-blake3-aes-128-gcm',
     BLAKE3_AES_256_GCM: '2022-blake3-aes-256-gcm',
@@ -813,7 +811,7 @@ class Outbound extends CommonClass {
         var settings;
         switch (protocol) {
             case Protocols.VLESS:
-                settings = new Outbound.VLESSSettings(address, port, userData, url.searchParams.get('flow') ?? '');
+                settings = new Outbound.VLESSSettings(address, port, userData, url.searchParams.get('flow') ?? '', url.searchParams.get('encryption') ?? 'none');
                 break;
             case Protocols.Trojan:
                 settings = new Outbound.TrojanSettings(address, port, userData);
@@ -1039,13 +1037,13 @@ Outbound.VmessSettings = class extends CommonClass {
     }
 };
 Outbound.VLESSSettings = class extends CommonClass {
-    constructor(address, port, id, flow, encryption = 'none') {
+    constructor(address, port, id, flow, encryption) {
         super();
         this.address = address;
         this.port = port;
         this.id = id;
         this.flow = flow;
-        this.encryption = encryption
+        this.encryption = encryption;
     }
 
     static fromJson(json = {}) {
@@ -1064,7 +1062,7 @@ Outbound.VLESSSettings = class extends CommonClass {
             vnext: [{
                 address: this.address,
                 port: this.port,
-                users: [{ id: this.id, flow: this.flow, encryption: 'none', }],
+                users: [{ id: this.id, flow: this.flow, encryption: this.encryption }],
             }],
         };
     }

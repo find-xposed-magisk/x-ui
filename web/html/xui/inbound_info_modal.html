@@ -71,9 +71,18 @@
             {{ i18n "security" }}
             <a-tag :color="inbound.stream.security == 'none' ? 'red' : 'green'">[[ inbound.stream.security ]]</a-tag>
             <br />
+            <td>Authentication</td>
+            <a-tag :color="inbound.settings.selectedAuth ? 'green' : 'red'">[[ inbound.settings.selectedAuth ?
+                inbound.settings.selectedAuth : '' ]]</a-tag>
+            <br />
+            {{ i18n "encryption" }}
+            <a-tag :color="inbound.settings.encryption ? 'green' : 'red'">[[ inbound.settings.encryption ?
+                inbound.settings.encryption : '' ]]</a-tag>
+            <br />
             <template v-if="inbound.stream.security != 'none'">
-            {{ i18n "domainName" }}
-            <a-tag :color="inbound.serverName ? 'green' : 'orange'">[[ inbound.serverName ? inbound.serverName : '' ]]</a-tag>
+                {{ i18n "domainName" }}
+                <a-tag :color="inbound.serverName ? 'green' : 'orange'">[[ inbound.serverName ? inbound.serverName : ''
+                    ]]</a-tag>
             </template>
         </template>
     <table v-if="dbInbound.isSS" style="margin-bottom: 10px; width: 100%;">

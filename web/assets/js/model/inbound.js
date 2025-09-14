@@ -11,10 +11,8 @@ const Protocols = {
 
 const SSMethods = {
     AES_256_GCM: 'aes-256-gcm',
-    AES_128_GCM: 'aes-128-gcm',
     CHACHA20_POLY1305: 'chacha20-poly1305',
     CHACHA20_IETF_POLY1305: 'chacha20-ietf-poly1305',
-    XCHACHA20_POLY1305: 'xchacha20-poly1305',
     XCHACHA20_IETF_POLY1305: 'xchacha20-ietf-poly1305',
     BLAKE3_AES_128_GCM: '2022-blake3-aes-128-gcm',
     BLAKE3_AES_256_GCM: '2022-blake3-aes-256-gcm',
@@ -1139,8 +1137,8 @@ class Inbound extends XrayCommonClass {
     get isSSMultiUser() {
         return this.method != SSMethods.BLAKE3_CHACHA20_POLY1305;
     }
-    get isSS2022(){
-        return this.method.substring(0,4) === "2022";
+    get isSS2022() {
+        return this.method.substring(0, 4) === "2022";
     }
 
     get serverName() {
@@ -1307,6 +1305,7 @@ class Inbound extends XrayCommonClass {
         const security = forceTls == 'same' ? this.stream.security : forceTls;
         const params = new Map();
         params.set("type", this.stream.network);
+        params.set("encryption", this.settings.encryption);
         switch (type) {
             case "tcp":
                 const tcp = this.stream.tcp;
@@ -1748,7 +1747,7 @@ Inbound.Settings = class extends XrayCommonClass {
 
 Inbound.VmessSettings = class extends Inbound.Settings {
     constructor(protocol,
-                vmesses=[new Inbound.VmessSettings.Vmess()]) {
+        vmesses = [new Inbound.VmessSettings.Vmess()]) {
         super(protocol);
         this.vmesses = vmesses;
     }
@@ -1771,7 +1770,7 @@ Inbound.VmessSettings = class extends Inbound.Settings {
         }
     }
 
-    static fromJson(json={}) {
+    static fromJson(json = {}) {
         return new Inbound.VmessSettings(
             Protocols.VMESS,
             json.clients.map(client => Inbound.VmessSettings.Vmess.fromJson(client)),
@@ -1853,13 +1852,17 @@ Inbound.VLESSSettings = class extends Inbound.Settings {
     constructor(
         protocol,
         vlesses = [new Inbound.VLESSSettings.VLESS()],
-        decryption = 'none',
-        fallbacks = []
+        decryption = "none",
+        encryption = "none",
+        fallbacks = [],
+        selectedAuth = undefined,
     ) {
         super(protocol);
         this.vlesses = vlesses;
         this.decryption = decryption;
+        this.encryption = encryption;
         this.fallbacks = fallbacks;
+        this.selectedAuth = selectedAuth;
     }
 
     addFallback() {
@@ -1870,21 +1873,40 @@ Inbound.VLESSSettings = class extends Inbound.Settings {
         this.fallbacks.splice(index, 1);
     }
 
-    // decryption should be set to static value
     static fromJson(json = {}) {
-        return new Inbound.VLESSSettings(
+        const obj = new Inbound.VLESSSettings(
             Protocols.VLESS,
-            json.clients.map(client => Inbound.VLESSSettings.VLESS.fromJson(client)),
-            json.decryption || 'none',
-            Inbound.VLESSSettings.Fallback.fromJson(json.fallbacks),);
+            (json.clients || []).map(client => Inbound.VLESSSettings.VLESS.fromJson(client)),
+            json.decryption,
+            json.encryption,
+            Inbound.VLESSSettings.Fallback.fromJson(json.fallbacks || []),
+            json.selectedAuth
+        );
+        return obj;
     }
 
+
     toJson() {
-        return {
+        const json = {
             clients: Inbound.VLESSSettings.toJsonArray(this.vlesses),
-            decryption: this.decryption,
-            fallbacks: Inbound.VLESSSettings.toJsonArray(this.fallbacks),
         };
+
+        if (this.decryption) {
+            json.decryption = this.decryption;
+        }
+
+        if (this.encryption) {
+            json.encryption = this.encryption;
+        }
+
+        if (this.fallbacks && this.fallbacks.length > 0) {
+            json.fallbacks = Inbound.VLESSSettings.toJsonArray(this.fallbacks);
+        }
+        if (this.selectedAuth) {
+            json.selectedAuth = this.selectedAuth;
+        }
+
+        return json;
     }
 };
 
@@ -1952,7 +1974,7 @@ Inbound.VLESSSettings.VLESS = class extends XrayCommonClass {
     }
 };
 Inbound.VLESSSettings.Fallback = class extends XrayCommonClass {
-    constructor(name='', alpn='', path='', dest='', xver=0) {
+    constructor(name = '', alpn = '', path = '', dest = '', xver = 0) {
         super();
         this.name = name;
         this.alpn = alpn;
@@ -2098,7 +2120,7 @@ Inbound.TrojanSettings.Trojan = class extends XrayCommonClass {
 };
 
 Inbound.TrojanSettings.Fallback = class extends XrayCommonClass {
-    constructor(name='', alpn='', path='', dest='', xver=0) {
+    constructor(name = '', alpn = '', path = '', dest = '', xver = 0) {
         super();
         this.name = name;
         this.alpn = alpn;
@@ -2404,20 +2426,20 @@ Inbound.WireguardSettings = class extends XrayCommonClass {
         super(protocol);
         this.mtu = mtu;
         this.secretKey = secretKey;
-        this.pubKey = secretKey.length>0 ? Wireguard.generateKeypair(secretKey).publicKey : '';
+        this.pubKey = secretKey.length > 0 ? Wireguard.generateKeypair(secretKey).publicKey : '';
         this.peers = peers;
         this.kernelMode = kernelMode;
     }
 
     addPeer() {
-        this.peers.push(new Inbound.WireguardSettings.Peer(null,null,'',['10.0.0.' + (this.peers.length+2)]));
+        this.peers.push(new Inbound.WireguardSettings.Peer(null, null, '', ['10.0.0.' + (this.peers.length + 2)]));
     }
 
     delPeer(index) {
         this.peers.splice(index, 1);
     }
 
-    static fromJson(json={}){
+    static fromJson(json = {}) {
         return new Inbound.WireguardSettings(
             Protocols.WIREGUARD,
             json.mtu,
@@ -2429,7 +2451,7 @@ Inbound.WireguardSettings = class extends XrayCommonClass {
 
     toJson() {
         return {
-            mtu: this.mtu?? undefined,
+            mtu: this.mtu ?? undefined,
             secretKey: this.secretKey,
             peers: Inbound.WireguardSettings.Peer.toJsonArray(this.peers),
             kernelMode: this.kernelMode,
@@ -2438,16 +2460,16 @@ Inbound.WireguardSettings = class extends XrayCommonClass {
 };
 
 Inbound.WireguardSettings.Peer = class extends XrayCommonClass {
-    constructor(privateKey, publicKey, psk='', allowedIPs=['10.0.0.2/32'], keepAlive=0) {
+    constructor(privateKey, publicKey, psk = '', allowedIPs = ['10.0.0.2/32'], keepAlive = 0) {
         super();
         this.privateKey = privateKey
         this.publicKey = publicKey;
-        if (!this.publicKey){
+        if (!this.publicKey) {
             [this.publicKey, this.privateKey] = Object.values(Wireguard.generateKeypair())
         }
         this.psk = psk;
-        allowedIPs.forEach((a,index) => {
-            if (a.length>0 && !a.includes('/')) allowedIPs[index] += '/32';
+        allowedIPs.forEach((a, index) => {
+            if (a.length > 0 && !a.includes('/')) allowedIPs[index] += '/32';
         })
         this.allowedIPs = allowedIPs;
         this.keepAlive = keepAlive;

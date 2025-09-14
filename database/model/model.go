@@ -79,3 +79,10 @@ type Client struct {
 	SubID      string `json:"subId" form:"subId"`
 	Reset      int    `json:"reset" form:"reset"`
 }
+
+type VLESSSettings struct {
+	Clients    []Client `json:"clients"`
+	Decryption string   `json:"decryption"`
+	Encryption string   `json:"encryption"`
+	Fallbacks  []any    `json:"fallbacks"`
+}
