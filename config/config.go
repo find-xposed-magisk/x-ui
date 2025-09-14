@@ -4,6 +4,8 @@ import (
 	_ "embed"
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -53,12 +55,32 @@ func GetBinFolderPath() string {
 	return binFolderPath
 }
 
+func getBaseDir() string {
+	exePath, err := os.Executable()
+	if err != nil {
+		return "."
+	}
+	exeDir := filepath.Dir(exePath)
+	exeDirLower := strings.ToLower(filepath.ToSlash(exeDir))
+	if strings.Contains(exeDirLower, "/appdata/local/temp/") || strings.Contains(exeDirLower, "/go-build") {
+		wd, err := os.Getwd()
+		if err != nil {
+			return "."
+		}
+		return wd
+	}
+	return exeDir
+}
+
 func GetDBFolderPath() string {
 	dbFolderPath := os.Getenv("XUI_DB_FOLDER")
-	if dbFolderPath == "" {
-		dbFolderPath = "/etc/x-ui"
+	if dbFolderPath != "" {
+		return dbFolderPath
 	}
-	return dbFolderPath
+	if runtime.GOOS == "windows" {
+		return getBaseDir()
+	}
+	return "/etc/x-ui"
 }
 
 func GetDBPath() string {
