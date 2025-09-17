@@ -124,7 +124,7 @@
             },
             async getNewX25519Cert(){
                 inModal.loading(true);
-                const msg = await HttpUtil.post('/server/getNewX25519Cert');
+                const msg = await HttpUtil.get('/server/getNewX25519Cert');
                 inModal.loading(false);
                 if (!msg.success) {
                     return;
@@ -138,7 +138,7 @@
             },
             async getNewmldsa65() {
                 inModal.loading(true);
-                const msg = await HttpUtil.post('/server/getNewmldsa65');
+                const msg = await HttpUtil.get('/server/getNewmldsa65');
                 inModal.loading(false);
                 if (!msg.success) {
                     return;

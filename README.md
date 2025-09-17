@@ -209,7 +209,6 @@ docker build -t x-ui .
 | :----: | ---------------------------------  | ----------------------------------------- |
 | `GET`  | `"/"`                              | Get all inbounds                          |
 | `GET`  | `"/get/:id"`                       | Get inbound with inbound.id               |
-| `GET`  | `"/createbackup"`                  | Telegram bot sends backup to admins       |
 | `POST` | `"/add"`                           | Add inbound                               |
 | `POST` | `"/del/:id"`                       | Delete inbound                            |
 | `POST` | `"/update/:id"`                    | Update inbound                            |
@@ -224,11 +223,33 @@ docker build -t x-ui .
 | `POST` | `"/delDepletedClients/:id"`        | Delete inbound depleted clients (-1: all) |
 | `POST` | `"/onlines"`                       | Get online users ( list of emails )       |
 
+
 \*- The field `clientId` should be filled by:
 
-- `client.id` for VMess and VLESS
-- `client.password` for Trojan
-- `client.email` for Shadowsocks
+  - `client.id` for VMess and VLESS
+  - `client.password` for Trojan
+  - `client.email` for Shadowsocks
+
+
+- `/xui/API/server` base for following actions:
+
+| Method | Path                               | Action                                    |
+| :----: | ---------------------------------  | ----------------------------------------- |
+| `GET`  | `"/status"`                        | Get server status                         |
+| `GET`  | `"/getDb"`                         | Get database backup                       |
+| `GET`  | `"/createbackup"`                  | Telegram bot sends backup to admins       |
+| `GET`  | `"/getConfigJson"`                 | Get config.json                           |
+| `GET`  | `"/getXrayVersion"`                | Get last xray versions                    |
+| `GET`  | `"/getNewVlessEnc"`                | Get new vless enc                         |
+| `GET`  | `"/getNewX25519Cert"`              | Get new x25519 cert                       |
+| `GET`  | `"/getNewmldsa65"`                 | Get new mldsa65                           |
+| `POST` | `"/getNewEchCert"`                 | Get new ech cert                          |
+| `POST` | `"/importDB"`                      | Import database to x-ui                   |
+| `POST` | `"/stopXrayService"`               | Stop xray service                         |
+| `POST` | `"/restartXrayService"`            | Restart xray service                      |
+| `POST` | `"/installXray/:version"`          | Install specific version of xray          |
+| `POST` | `"/logs/:count"`                   | Get panel/xray logs                       |
+
 
 </details>
 

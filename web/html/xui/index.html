@@ -535,7 +535,7 @@
                 this.loadingTip = tip;
             },
             async getStatus() {
-                const msg = await HttpUtil.post('/server/status');
+                const msg = await HttpUtil.get('/server/status');
                 if (msg.success) {
                     this.setStatus(msg.obj);
                 }
@@ -545,7 +545,7 @@
             },
             async openSelectV2rayVersion() {
                 this.loading(true);
-                const msg = await HttpUtil.post('server/getXrayVersion');
+                const msg = await HttpUtil.get('server/getXrayVersion');
                 this.loading(false);
                 if (!msg.success) {
                     return;
@@ -595,7 +595,7 @@
             },
             async openConfig() {
                 this.loading(true);
-                const msg = await HttpUtil.post('server/getConfigJson');
+                const msg = await HttpUtil.get('server/getConfigJson');
                 this.loading(false);
                 if (!msg.success) {
                     return;

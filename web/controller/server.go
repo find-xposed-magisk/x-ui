@@ -39,20 +39,20 @@ func (a *ServerController) initRouter(g *gin.RouterGroup) {
 	g = g.Group("/server")
 
 	g.Use(a.checkLogin)
+	g.GET("/status", a.status)
 	g.GET("/getDb", a.getDb)
+	g.GET("/getConfigJson", a.getConfigJson)
+	g.GET("/getNewmldsa65", a.getNewmldsa65)
 	g.GET("/getNewVlessEnc", a.getNewVlessEnc)
+	g.GET("/getXrayVersion", a.getXrayVersion)
+	g.GET("/getNewX25519Cert", a.getNewX25519Cert)
 
-	g.POST("/status", a.status)
-	g.POST("/getXrayVersion", a.getXrayVersion)
+	g.POST("/getNewEchCert", a.getNewEchCert)
 	g.POST("/stopXrayService", a.stopXrayService)
 	g.POST("/restartXrayService", a.restartXrayService)
 	g.POST("/installXray/:version", a.installXray)
 	g.POST("/logs/:count", a.getLogs)
-	g.POST("/getConfigJson", a.getConfigJson)
 	g.POST("/importDB", a.importDB)
-	g.POST("/getNewX25519Cert", a.getNewX25519Cert)
-	g.POST("/getNewmldsa65", a.getNewmldsa65)
-	g.POST("/getNewEchCert", a.getNewEchCert)
 }
 
 func (a *ServerController) refreshStatus() {
