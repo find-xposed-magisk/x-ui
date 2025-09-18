@@ -7,9 +7,9 @@ import (
 	"os"
 	"path"
 
-	"x-ui/config"
-	"x-ui/database/model"
-	"x-ui/xray"
+	"github.com/alireza0/x-ui/config"
+	"github.com/alireza0/x-ui/database/model"
+	"github.com/alireza0/x-ui/xray"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

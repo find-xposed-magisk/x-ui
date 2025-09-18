@@ -3,9 +3,9 @@ package service
 import (
 	"errors"
 
-	"x-ui/database"
-	"x-ui/database/model"
-	"x-ui/logger"
+	"github.com/alireza0/x-ui/database"
+	"github.com/alireza0/x-ui/database/model"
+	"github.com/alireza0/x-ui/logger"
 
 	"gorm.io/gorm"
 )

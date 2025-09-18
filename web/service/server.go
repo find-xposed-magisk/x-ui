@@ -17,12 +17,12 @@ import (
 	"strings"
 	"time"
 
-	"x-ui/config"
-	"x-ui/database"
-	"x-ui/logger"
-	"x-ui/util/common"
-	"x-ui/util/sys"
-	"x-ui/xray"
+	"github.com/alireza0/x-ui/config"
+	"github.com/alireza0/x-ui/database"
+	"github.com/alireza0/x-ui/logger"
+	"github.com/alireza0/x-ui/util/common"
+	"github.com/alireza0/x-ui/util/sys"
+	"github.com/alireza0/x-ui/xray"
 
 	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/disk"

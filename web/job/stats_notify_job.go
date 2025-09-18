@@ -1,7 +1,7 @@
 package job
 
 import (
-	"x-ui/web/service"
+	"github.com/alireza0/x-ui/web/service"
 )
 
 type LoginStatus byte

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"x-ui/logger"
+	"github.com/alireza0/x-ui/logger"
 )
 
 func NewErrorf(format string, a ...interface{}) error {

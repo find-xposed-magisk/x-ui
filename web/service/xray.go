@@ -6,8 +6,8 @@ import (
 	"runtime"
 	"sync"
 
-	"x-ui/logger"
-	"x-ui/xray"
+	"github.com/alireza0/x-ui/logger"
+	"github.com/alireza0/x-ui/xray"
 
 	"go.uber.org/atomic"
 )
