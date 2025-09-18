@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"x-ui/database/model"
-	"x-ui/web/service"
-	"x-ui/web/session"
+	"github.com/alireza0/x-ui/database/model"
+	"github.com/alireza0/x-ui/web/service"
+	"github.com/alireza0/x-ui/web/session"
 
 	"github.com/gin-gonic/gin"
 )

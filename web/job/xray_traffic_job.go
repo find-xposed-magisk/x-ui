@@ -1,8 +1,8 @@
 package job
 
 import (
-	"x-ui/logger"
-	"x-ui/web/service"
+	"github.com/alireza0/x-ui/logger"
+	"github.com/alireza0/x-ui/web/service"
 )
 
 type XrayTrafficJob struct {

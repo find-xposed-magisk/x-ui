@@ -3,7 +3,7 @@ package session
 import (
 	"encoding/gob"
 
-	"x-ui/database/model"
+	"github.com/alireza0/x-ui/database/model"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"

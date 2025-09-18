@@ -5,7 +5,7 @@ import (
 	"io/fs"
 	"strings"
 
-	"x-ui/logger"
+	"github.com/alireza0/x-ui/logger"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"

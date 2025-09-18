@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"time"
 
-	"x-ui/logger"
-	"x-ui/util/common"
+	"github.com/alireza0/x-ui/logger"
+	"github.com/alireza0/x-ui/util/common"
 
 	"github.com/xtls/xray-core/app/proxyman/command"
 	statsService "github.com/xtls/xray-core/app/stats/command"
