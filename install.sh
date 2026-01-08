@@ -41,22 +41,22 @@ echo "arch: $(arch)"
 install_dependencies() {
     case "${release}" in
     ubuntu | debian | armbian)
-        apt-get update && apt-get install -y -q wget curl tar tzdata
+        apt-get update && apt-get install -y -q wget curl tar tzdata cron
         ;;
     centos | almalinux | rocky | ol)
-        yum -y update && yum install -y -q wget curl tar tzdata
+        yum -y update && yum install -y -q wget curl tar tzdata cronie
         ;;
     fedora | amzn)
-        dnf -y update && dnf install -y -q wget curl tar tzdata
+        dnf -y update && dnf install -y -q wget curl tar tzdata cronie
         ;;
     arch | manjaro | parch)
-        pacman -Syu && pacman -Syu --noconfirm wget curl tar tzdata
+        pacman -Syu && pacman -Syu --noconfirm wget curl tar tzdata cronie
         ;;
     opensuse-tumbleweed)
-        zypper refresh && zypper -q install -y wget curl tar timezone
+        zypper refresh && zypper -q install -y wget curl tar timezone cron
         ;;
     *)
-        apt-get update && apt install -y -q wget curl tar tzdata
+        apt-get update && apt install -y -q wget curl tar tzdata cron
         ;;
     esac
 }
