@@ -9,6 +9,7 @@ import (
 
 	"github.com/alireza0/x-ui/config"
 	"github.com/alireza0/x-ui/database/model"
+	"github.com/alireza0/x-ui/util/common"
 	"github.com/alireza0/x-ui/xray"
 
 	"gorm.io/driver/sqlite"
@@ -94,6 +95,17 @@ func InitDB(dbPath string) error {
 	return nil
 }
 
+func CloseDB() error {
+	if db != nil {
+		sqlDB, err := db.DB()
+		if err != nil {
+			return err
+		}
+		return sqlDB.Close()
+	}
+	return nil
+}
+
 func GetDB() *gorm.DB {
 	return db
 }
@@ -117,6 +129,29 @@ func Checkpoint() error {
 	err := db.Exec("PRAGMA wal_checkpoint;").Error
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func ValidateSQLiteDB(dbPath string) error {
+	if _, err := os.Stat(dbPath); err != nil { // file must exist
+		return err
+	}
+	gdb, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{Logger: logger.Discard})
+	if err != nil {
+		return err
+	}
+	sqlDB, err := gdb.DB()
+	if err != nil {
+		return err
+	}
+	defer sqlDB.Close()
+	var res string
+	if err := gdb.Raw("PRAGMA integrity_check;").Scan(&res).Error; err != nil {
+		return err
+	}
+	if res != "ok" {
+		return common.NewError("sqlite integrity check failed: " + res)
 	}
 	return nil
 }

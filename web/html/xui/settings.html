@@ -299,7 +299,14 @@
                                                     v-model="fragmentLength" placeholder="100-200"></setting-list-item>
                                                 <setting-list-item style="padding: 10px 20px" type="text"
                                                     title='Interval' v-model="fragmentInterval"
-                                                    placeholder="10-20"></setting-list-item>
+                                                    placeholder="10-20">
+                                                </setting-list-item>
+                                                <a-setting-list-item paddings="small">
+                                                    <template #title>MaxSplit</template>
+                                                    <template #control>
+                                                        <a-input type="text" v-model="fragmentMaxSplit" placeholder="300-400"></a-input>
+                                                    </template>
+                                                </a-setting-list-item>
                                             </a-collapse-panel>
                                         </a-collapse>
                                     </a-list-item>
@@ -477,7 +484,8 @@
                         fragment: {
                             packets: "tlshello",
                             length: "100-200",
-                            interval: "10-20"
+                            interval: "10-20",
+                            maxSplit: "300-400"
                         }
                     },
                     streamSettings: {
@@ -680,6 +688,16 @@
                             newFragment.settings.fragment.interval = v;
                             this.allSetting.subJsonFragment = JSON.stringify(newFragment);
                         }
+                    }
+                },
+                fragmentMaxSplit: {
+                    get: function () { return this.fragment ? JSON.parse(this.allSetting.subJsonFragment).settings.fragment.maxSplit : ""; },
+                    set: function (v) {
+                    if (v != "") {
+                        newFragment = JSON.parse(this.allSetting.subJsonFragment);
+                        newFragment.settings.fragment.maxSplit = v;
+                        this.allSetting.subJsonFragment = JSON.stringify(newFragment);
+                    }
                     }
                 },
                 noises: {

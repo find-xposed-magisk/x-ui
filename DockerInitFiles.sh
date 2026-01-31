@@ -23,7 +23,7 @@ case $1 in
 esac
 mkdir -p build/bin
 cd build/bin
-wget -q "https://github.com/XTLS/Xray-core/releases/download/v25.9.11/Xray-linux-${ARCH}.zip"
+wget -q "https://github.com/XTLS/Xray-core/releases/download/v26.1.31/Xray-linux-${ARCH}.zip"
 unzip "Xray-linux-${ARCH}.zip"
 rm -f "Xray-linux-${ARCH}.zip" geoip.dat geosite.dat LICENSE README.md
 mv xray "xray-linux-${FNAME}"

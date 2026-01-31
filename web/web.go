@@ -230,6 +230,10 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 	s.xui = controller.NewXUIController(g)
 	s.api = controller.NewAPIController(g, s.server)
 
+	engine.NoRoute(func(c *gin.Context) {
+		c.AbortWithStatus(http.StatusNotFound)
+	})
+
 	return engine, nil
 }
 

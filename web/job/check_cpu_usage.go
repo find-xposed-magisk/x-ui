@@ -20,7 +20,11 @@ func NewCheckCpuJob() *CheckCpuJob {
 
 // Here run is a interface method of Job interface
 func (j *CheckCpuJob) Run() {
-	threshold, _ := j.settingService.GetTgCpu()
+	threshold, err := j.settingService.GetTgCpu()
+	if err != nil || threshold <= 0 {
+		// If threshold cannot be retrieved or is not set, skip sending notifications
+		return
+	}
 
 	// get latest status of server
 	percent, err := cpu.Percent(1*time.Second, false)

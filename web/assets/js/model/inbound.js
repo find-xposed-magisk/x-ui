@@ -7,6 +7,7 @@ const Protocols = {
     SOCKS: 'socks',
     HTTP: 'http',
     WIREGUARD: 'wireguard',
+    TUN: 'tun',
 };
 
 const SSMethods = {
@@ -317,7 +318,7 @@ TcpStreamSettings.TcpResponse = class extends XrayCommonClass {
 
 class KcpStreamSettings extends XrayCommonClass {
     constructor(
-        mtu = 1350,
+        mtu = 1250,
         tti = 50,
         uplinkCapacity = 5,
         downlinkCapacity = 20,
@@ -553,7 +554,6 @@ class TlsStreamSettings extends XrayCommonClass {
         maxVersion = TLS_VERSION_OPTION.TLS13,
         cipherSuites = '',
         rejectUnknownSni = false,
-        verifyPeerCertInNames = ['dns.google', 'cloudflare-dns.com'],
         disableSystemRoot = false,
         enableSessionResumption = false,
         certificates = [new TlsStreamSettings.Cert()],
@@ -568,7 +568,6 @@ class TlsStreamSettings extends XrayCommonClass {
         this.maxVersion = maxVersion;
         this.cipherSuites = cipherSuites;
         this.rejectUnknownSni = rejectUnknownSni;
-        this.verifyPeerCertInNames = Array.isArray(verifyPeerCertInNames) ? verifyPeerCertInNames.join(",") : verifyPeerCertInNames;
         this.disableSystemRoot = disableSystemRoot;
         this.enableSessionResumption = enableSessionResumption;
         this.certs = certificates;
@@ -602,7 +601,6 @@ class TlsStreamSettings extends XrayCommonClass {
             json.maxVersion,
             json.cipherSuites,
             json.rejectUnknownSni,
-            json.verifyPeerCertInNames,
             json.disableSystemRoot,
             json.enableSessionResumption,
             certs,
@@ -620,7 +618,6 @@ class TlsStreamSettings extends XrayCommonClass {
             maxVersion: this.maxVersion,
             cipherSuites: this.cipherSuites,
             rejectUnknownSni: this.rejectUnknownSni,
-            verifyPeerCertInNames: this.verifyPeerCertInNames.split(","),
             disableSystemRoot: this.disableSystemRoot,
             enableSessionResumption: this.enableSessionResumption,
             certificates: TlsStreamSettings.toJsonArray(this.certs),
@@ -712,20 +709,20 @@ TlsStreamSettings.Settings = class extends XrayCommonClass {
         super();
         this.allowInsecure = allowInsecure;
         this.fingerprint = fingerprint;
-        this.echConfigList = echConfigList
+        this.echConfigList = echConfigList;
     }
     static fromJson(json = {}) {
         return new TlsStreamSettings.Settings(
             json.allowInsecure,
             json.fingerprint,
-            json.echConfigList
+            json.echConfigList,
         );
     }
     toJson() {
         return {
             allowInsecure: this.allowInsecure,
             fingerprint: this.fingerprint,
-            echConfigList: this.echConfigList
+            echConfigList: this.echConfigList,
         };
     }
 };
@@ -855,6 +852,7 @@ class SockoptStreamSettings extends XrayCommonClass {
         V6Only = false,
         tcpWindowClamp = 600,
         interfaceName = "",
+        trustedXForwardedFor = [],
     ) {
         super();
         this.acceptProxyProtocol = acceptProxyProtocol;
@@ -873,6 +871,7 @@ class SockoptStreamSettings extends XrayCommonClass {
         this.V6Only = V6Only;
         this.tcpWindowClamp = tcpWindowClamp;
         this.interfaceName = interfaceName;
+        this.trustedXForwardedFor = trustedXForwardedFor;
     }
 
     static fromJson(json = {}) {
@@ -894,11 +893,12 @@ class SockoptStreamSettings extends XrayCommonClass {
             json.V6Only,
             json.tcpWindowClamp,
             json.interface,
+            json.trustedXForwardedFor || [],
         );
     }
 
     toJson() {
-        return {
+        const result = {
             acceptProxyProtocol: this.acceptProxyProtocol,
             tcpFastOpen: this.tcpFastOpen,
             mark: this.mark,
@@ -916,6 +916,10 @@ class SockoptStreamSettings extends XrayCommonClass {
             tcpWindowClamp: this.tcpWindowClamp,
             interface: this.interfaceName,
         };
+        if (this.trustedXForwardedFor && this.trustedXForwardedFor.length > 0) {
+            result.trustedXForwardedFor = this.trustedXForwardedFor;
+        }
+        return result;
     }
 }
 
@@ -1210,6 +1214,13 @@ class Inbound extends XrayCommonClass {
             return this.protocol === Protocols.VLESS;
         }
         return false;
+    }
+
+    canEnableVisionSeed() {
+        if (!this.canEnableTlsFlow()) return false;
+        const clients = this.settings?.vlesses;
+        if (!Array.isArray(clients)) return false;
+        return clients.some(c => c?.flow === TLS_FLOW_CONTROL.VISION || c?.flow === TLS_FLOW_CONTROL.VISION_UDP443);
     }
 
     canEnableReality() {
@@ -1722,6 +1733,7 @@ Inbound.Settings = class extends XrayCommonClass {
             case Protocols.SOCKS: return new Inbound.SocksSettings(protocol);
             case Protocols.HTTP: return new Inbound.HttpSettings(protocol);
             case Protocols.WIREGUARD: return new Inbound.WireguardSettings(protocol);
+            case Protocols.TUN: return new Inbound.TunSettings(protocol);
             default: return null;
         }
     }
@@ -1736,6 +1748,7 @@ Inbound.Settings = class extends XrayCommonClass {
             case Protocols.SOCKS: return Inbound.SocksSettings.fromJson(json);
             case Protocols.HTTP: return Inbound.HttpSettings.fromJson(json);
             case Protocols.WIREGUARD: return Inbound.WireguardSettings.fromJson(json);
+            case Protocols.TUN: return Inbound.TunSettings.fromJson(json);
             default: return null;
         }
     }
@@ -1856,6 +1869,7 @@ Inbound.VLESSSettings = class extends Inbound.Settings {
         encryption = "none",
         fallbacks = [],
         selectedAuth = undefined,
+        testseed = [900, 500, 900, 256],
     ) {
         super(protocol);
         this.vlesses = vlesses;
@@ -1863,6 +1877,7 @@ Inbound.VLESSSettings = class extends Inbound.Settings {
         this.encryption = encryption;
         this.fallbacks = fallbacks;
         this.selectedAuth = selectedAuth;
+        this.testseed = testseed;
     }
 
     addFallback() {
@@ -1874,13 +1889,19 @@ Inbound.VLESSSettings = class extends Inbound.Settings {
     }
 
     static fromJson(json = {}) {
+        let testseed = [900, 500, 900, 256];
+        if (json.testseed && Array.isArray(json.testseed) && json.testseed.length >= 4) {
+            testseed = json.testseed;
+        }
+        
         const obj = new Inbound.VLESSSettings(
             Protocols.VLESS,
             (json.clients || []).map(client => Inbound.VLESSSettings.VLESS.fromJson(client)),
             json.decryption,
             json.encryption,
             Inbound.VLESSSettings.Fallback.fromJson(json.fallbacks || []),
-            json.selectedAuth
+            json.selectedAuth,
+            testseed
         );
         return obj;
     }
@@ -1904,6 +1925,10 @@ Inbound.VLESSSettings = class extends Inbound.Settings {
         }
         if (this.selectedAuth) {
             json.selectedAuth = this.selectedAuth;
+        }
+
+        if (this.testseed && this.testseed.length >= 4) {
+            json.testseed = this.testseed;
         }
 
         return json;
@@ -2418,7 +2443,7 @@ Inbound.HttpSettings.HttpAccount = class extends XrayCommonClass {
 Inbound.WireguardSettings = class extends XrayCommonClass {
     constructor(
         protocol,
-        mtu = 1420,
+        mtu = 1250,
         secretKey = Wireguard.generateKeypair().privateKey,
         peers = [new Inbound.WireguardSettings.Peer()],
         kernelMode = false
@@ -2495,6 +2520,37 @@ Inbound.WireguardSettings.Peer = class extends XrayCommonClass {
             preSharedKey: this.psk.length > 0 ? this.psk : undefined,
             allowedIPs: this.allowedIPs,
             keepAlive: this.keepAlive ?? undefined,
+        };
+    }
+};
+
+Inbound.TunSettings = class extends Inbound.Settings {
+    constructor(
+        protocol,
+        name = 'xray0',
+        mtu = 1500,
+        userLevel = 0
+    ) {
+        super(protocol);
+        this.name = name;
+        this.mtu = mtu;
+        this.userLevel = userLevel;
+    }
+
+    static fromJson(json = {}) {
+        return new Inbound.TunSettings(
+            Protocols.TUN,
+            json.name ?? 'xray0',
+            json.mtu ?? json.MTU ?? 1500,
+            json.userLevel ?? 0
+        );
+    }
+
+    toJson() {
+        return {
+            name: this.name || 'xray0',
+            mtu: this.mtu || 1500,
+            userLevel: this.userLevel || 0,
         };
     }
 };

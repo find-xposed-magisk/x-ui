@@ -856,7 +856,7 @@
                 tag: "direct",
                 protocol: "freedom"
             },
-            routingDomainStrategies: ["AsIs", "IPIfNonMatch", "IPOnDemand"],
+            routingDomainStrategies: ["AsIs", "IpIfNonMatch", "IpOnDemand"],
             log: {
                 loglevel: ["none", "debug", "info", "warning", "error"],
                 access: ["none", "./access.log"],
@@ -1087,7 +1087,9 @@
                 switch(o.protocol){
                     case Protocols.VMess:
                     case Protocols.VLESS:
-                        serverObj = o.settings.vnext;
+                        if (o.settings && o.settings.address && o.settings.port) {
+                        return [o.settings.address + ':' + o.settings.port];
+                        }
                         break;
                     case Protocols.HTTP:
                     case Protocols.Socks:

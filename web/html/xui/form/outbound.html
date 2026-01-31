@@ -205,11 +205,21 @@
         </a-form-item>
 </template>
 
-<!-- Vnext (vless/vmess) settings -->
+<!-- vless/vmess user settings -->
 <template v-if="[Protocols.VMess, Protocols.VLESS].includes(outbound.protocol)">
-        <a-form-item label='ID'>
-            <a-input v-model.trim="outbound.settings.id"></a-input>
+    <a-form-item label='ID'>
+        <a-input v-model.trim="outbound.settings.id"></a-input>
+    </a-form-item>
+
+    <!-- vmess settings -->
+    <template v-if="outbound.protocol === Protocols.VMess">
+        <a-form-item label='Security'>
+        <a-select v-model="outbound.settings.security" :dropdown-class-name="themeSwitcher.currentTheme">
+            <a-select-option v-for="key in USERS_SECURITY" :value="key">[[ key ]]</a-select-option>
+        </a-select>
         </a-form-item>
+    </template>
+
     <!-- vless settings -->
     <template v-if="outbound.protocol === Protocols.VLESS">
         <a-form-item label='encryption'>
@@ -222,6 +232,28 @@
                 <a-select-option value="" selected>{{ i18n "none" }}</a-select-option>
                 <a-select-option v-for="key in TLS_FLOW_CONTROL" :value="key">[[ key ]]</a-select-option>
             </a-select>
+        </a-form-item>
+    </template>
+    <!-- XTLS Vision Advanced Settings -->
+    <template v-if="outbound.canEnableVisionSeed()">
+        <a-form-item label="Vision Pre-Connect">
+        <a-input-number v-model.number="outbound.settings.testpre" :min="0" :max="10" :style="{ width: '100%' }" placeholder="0"></a-input-number>
+        </a-form-item>
+        <a-form-item label="Vision Seed">
+        <a-row :gutter="8">
+            <a-col :span="6">
+            <a-input-number v-model.number="outbound.settings.testseed[0]" :min="0" :max="9999" :style="{ width: '100%' }" placeholder="900" addon-before="[0]"></a-input-number>
+            </a-col>
+            <a-col :span="6">
+            <a-input-number v-model.number="outbound.settings.testseed[1]" :min="0" :max="9999" :style="{ width: '100%' }" placeholder="500" addon-before="[1]"></a-input-number>
+            </a-col>
+            <a-col :span="6">
+            <a-input-number v-model.number="outbound.settings.testseed[2]" :min="0" :max="9999" :style="{ width: '100%' }" placeholder="900" addon-before="[2]"></a-input-number>
+            </a-col>
+            <a-col :span="6">
+            <a-input-number v-model.number="outbound.settings.testseed[3]" :min="0" :max="9999" :style="{ width: '100%' }" placeholder="256" addon-before="[3]"></a-input-number>
+            </a-col>
+        </a-row>
         </a-form-item>
     </template>
 </template>
@@ -253,7 +285,14 @@
         <a-form-item label='UDP over TCP'>
             <a-switch v-model="outbound.settings.uot"></a-switch>
         </a-form-item>
-  </template>
+    </template>
+      <!-- hysteria settings -->
+      <template v-if="outbound.protocol === Protocols.Hysteria">
+        <a-form-item label='Version'>
+          <a-input-number v-model.number="outbound.settings.version" :min="2"
+            :max="2" disabled></a-input-number>
+        </a-form-item>
+      </template>
 </template>
 
 <!-- stream settings -->
@@ -261,12 +300,17 @@
     <a-form-item label='{{ i18n "transmission" }}'>
         <a-select v-model="outbound.stream.network" @change="streamNetworkChange"
                 :dropdown-class-name="themeSwitcher.currentTheme">
-            <a-select-option value="tcp">TCP</a-select-option>
-            <a-select-option value="kcp">mKCP</a-select-option>
-            <a-select-option value="ws">WebSocket</a-select-option>
-            <a-select-option value="grpc">gRPC</a-select-option>
-            <a-select-option value="httpupgrade">HTTPUpgrade</a-select-option>
-            <a-select-option value="xhttp">XHTTP</a-select-option>
+            <template v-if="outbound.protocol != Protocols.Hysteria">
+                <a-select-option value="tcp">TCP</a-select-option>
+                <a-select-option value="kcp">mKCP</a-select-option>
+                <a-select-option value="ws">WebSocket</a-select-option>
+                <a-select-option value="grpc">gRPC</a-select-option>
+                <a-select-option value="httpupgrade">HTTPUpgrade</a-select-option>
+                <a-select-option value="xhttp">XHTTP</a-select-option>
+            </template>
+            <template v-else>
+                <a-select-option value="hysteria">Hysteria2</a-select-option>
+            </template>
         </a-select>
     </a-form-item>
     <template v-if="outbound.stream.network === 'tcp'">
@@ -396,6 +440,90 @@
             <a-input-number v-model.number="outbound.stream.xhttp.xmux.hKeepAlivePeriod"></a-input-number>
         </a-form-item>
     </template>
+    <!-- hysteria -->
+    <template v-if="outbound.stream.network === 'hysteria'">
+        <a-form-item label='Auth Password'>
+            <a-input v-model.trim="outbound.stream.hysteria.auth"></a-input>
+        </a-form-item>
+        <a-form-item label='Congestion'>
+            <a-select v-model="outbound.stream.hysteria.congestion" :dropdown-class-name="themeSwitcher.currentTheme">
+                <a-select-option value="">BBR (Auto)</a-select-option>
+                <a-select-option value="brutal">Brutal</a-select-option>
+            </a-select>
+        </a-form-item>
+        <a-form-item label='Upload Speed'>
+            <a-input v-model.trim="outbound.stream.hysteria.up"
+                placeholder="0 (BBR mode), e.g., 100 mbps"></a-input>
+            </a-form-item>
+        <a-form-item label='Download Speed'>
+            <a-input v-model.trim="outbound.stream.hysteria.down"
+                placeholder="0 (BBR mode), e.g., 100 mbps"></a-input>
+            </a-form-item>
+        <a-form-item label='UDP Hop Port'>
+            <a-input v-model.trim="outbound.stream.hysteria.udphopPort"
+                placeholder="e.g., 1145-1919 or 11,13,15-17"></a-input>
+        </a-form-item>
+        <a-form-item label='UDP Hop Interval (s)'
+        v-if="outbound.stream.hysteria.udphopPort">
+            <a-input-number
+                v-model.number="outbound.stream.hysteria.udphopInterval"
+                :min="5"></a-input-number>
+        </a-form-item>
+        <a-form-item label='Init Stream Receive'>
+            <a-input-number
+                v-model.number="outbound.stream.hysteria.initStreamReceiveWindow"></a-input-number>
+            </a-form-item>
+        <a-form-item label='Max Stream Receive'>
+            <a-input-number
+                v-model.number="outbound.stream.hysteria.maxStreamReceiveWindow"></a-input-number>
+        </a-form-item>
+        <a-form-item label='Init Connection Receive'>
+            <a-input-number
+                v-model.number="outbound.stream.hysteria.initConnectionReceiveWindow"></a-input-number>
+        </a-form-item>
+        <a-form-item label='Max Connection Receive'>
+            <a-input-number
+                v-model.number="outbound.stream.hysteria.maxConnectionReceiveWindow"></a-input-number>
+        </a-form-item>
+        <a-form-item label='Max Idle Timeout (s)'>
+            <a-input-number
+                v-model.number="outbound.stream.hysteria.maxIdleTimeout" :min="4"
+                :max="120"></a-input-number>
+        </a-form-item>
+        <a-form-item label='Keep Alive Period (s)'>
+            <a-input-number
+                v-model.number="outbound.stream.hysteria.keepAlivePeriod" :min="0"
+                :max="60"></a-input-number>
+        </a-form-item>
+        <a-form-item label='Disable Path MTU'>
+            <a-switch
+                v-model="outbound.stream.hysteria.disablePathMTUDiscovery"></a-switch>
+        </a-form-item>
+    </template>
+</template>
+
+<!-- udpmasks settings -->
+<template v-if="outbound.canEnableStream()">
+    <a-form-item label="UDP Masks">
+        <a-button icon="plus" type="primary" size="small" @click="outbound.stream.addUdpMask()"></a-button>
+    </a-form-item>
+    <template v-if="outbound.stream.udpmasks.length > 0">
+    <a-form v-for="(mask, index) in outbound.stream.udpmasks" :key="index" :colon="false"
+        :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
+        <a-divider :style="{ margin: '0' }"> UDP Mask [[ index + 1 ]]
+        <a-icon type="delete" @click="() => outbound.stream.delUdpMask(index)"
+            :style="{ color: 'rgb(255, 77, 79)', cursor: 'pointer' }"></a-icon>
+        </a-divider>
+        <a-form-item label='Type'>
+        <a-select v-model="mask.type" :dropdown-class-name="themeSwitcher.currentTheme">
+            <a-select-option value="salamander">Salamander</a-select-option>
+        </a-select>
+        </a-form-item>
+        <a-form-item label='Password'>
+        <a-input v-model.trim="mask.password" placeholder="Obfuscation password"></a-input>
+        </a-form-item>
+    </a-form>
+    </template>
 </template>
 
 <!-- tls settings -->
@@ -432,6 +560,9 @@
             </a-form-item>
             <a-form-item label="Allow Insecure">
                 <a-switch v-model="outbound.stream.tls.allowInsecure"></a-switch>
+            </a-form-item>
+            <a-form-item label="VerifyPeerCertByNames">
+                <a-input v-model.trim="outbound.stream.tls.verifyPeerCertByNames"></a-input>
             </a-form-item>
         </template>
         
@@ -488,6 +619,15 @@
     <a-form-item label="Penetrate">
         <a-switch v-model="outbound.stream.sockopt.penetrate"></a-switch>
     </a-form-item>
+    <a-form-item label="Trusted X-Forwarded-For">
+        <a-select mode="tags" v-model="outbound.stream.sockopt.trustedXForwardedFor" :style="{ width: '100%' }"
+            :dropdown-class-name="themeSwitcher.currentTheme">
+            <a-select-option value="CF-Connecting-IP">CF-Connecting-IP</a-select-option>
+            <a-select-option value="X-Real-IP">X-Real-IP</a-select-option>
+            <a-select-option value="True-Client-IP">True-Client-IP</a-select-option>
+            <a-select-option value="X-Client-IP">X-Client-IP</a-select-option>
+        </a-select>
+    </a-form-item>
 </template>
 
 <!-- mux settings -->
@@ -514,7 +654,7 @@
 </a-tab-pane>
 <a-tab-pane key="2" tab="JSON" force-render="true">
     <a-form-item style="margin: 10px 0">
-        Link: <a-input v-model.trim="outModal.link" style="width: 300px; margin-right: 5px;" placeholder="vmess:// vless:// trojan:// ss://"></a-input>
+        Link: <a-input v-model.trim="outModal.link" style="width: 300px; margin-right: 5px;" placeholder="vmess:// vless:// trojan:// ss:// hysteria2://"></a-input>
         <a-button @click="convertLink" type="primary"><a-icon type="form"></a-icon></a-button>
     </a-form-item>
         <textarea style="position:absolute; left: -800px;" id="outboundJson"></textarea>
