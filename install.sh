@@ -156,10 +156,10 @@ install_x-ui() {
     else
         last_version=$1
         url="https://github.com/alireza0/x-ui/releases/download/${last_version}/x-ui-linux-$(arch).tar.gz"
-        echo -e "Beginning to install x-ui v$1"
+        echo -e "Beginning to install x-ui $1"
         wget -N --no-check-certificate -O /usr/local/x-ui-linux-$(arch).tar.gz ${url}
         if [[ $? -ne 0 ]]; then
-            echo -e "${red}download x-ui v$1 failed,please check the version exists${plain}"
+            echo -e "${red}download x-ui $1 failed,please check the version exists${plain}"
             exit 1
         fi
     fi
@@ -196,7 +196,7 @@ install_x-ui() {
     systemctl daemon-reload
     systemctl enable x-ui
     systemctl start x-ui
-    echo -e "${green}x-ui v${last_version}${plain} installation finished, it is up and running now..."
+    echo -e "${green}x-ui ${last_version}${plain} installation finished, it is up and running now..."
     echo -e ""
     echo -e "You may access the Panel with following URL(s):${yellow}"
     /usr/local/x-ui/x-ui uri
