@@ -551,7 +551,7 @@ class SockoptStreamSettings extends CommonClass {
     }
 }
 
-class FinalMask extends CommonClass {
+class UdpMask extends CommonClass {
     constructor(type = 'salamander', settings = {}) {
         super();
         this.type = type;
@@ -579,20 +579,34 @@ class FinalMask extends CommonClass {
     }
 
     static fromJson(json = {}) {
-        return new FinalMask(
+        return new UdpMask(
             json.type || 'salamander',
             json.settings || {}
         );
     }
 
     toJson() {
-        const result = {
-            type: this.type
+        return {
+            type: this.type,
+            settings: (this.settings && Object.keys(this.settings).length > 0) ? this.settings : undefined
         };
-        if (this.settings && Object.keys(this.settings).length > 0) {
-            result.settings = this.settings;
-        }
-        return result;
+    }
+}
+
+class FinalMaskStreamSettings extends CommonClass {
+    constructor(udp = []) {
+        super();
+        this.udp = Array.isArray(udp) ? udp.map(u => new UdpMask(u.type, u.settings)) : [new UdpMask(udp.type, udp.settings)];
+    }
+
+    static fromJson(json = {}) {
+        return new FinalMaskStreamSettings(json.udp || []);
+    }
+
+    toJson() {
+        return {
+            udp: this.udp.map(udp => udp.toJson())
+        };
     }
 }
 
@@ -609,7 +623,7 @@ class StreamSettings extends CommonClass {
         httpupgradeSettings = new HttpUpgradeStreamSettings(),
         xhttpSettings = new xHTTPStreamSettings(),
         hysteriaSettings = new HysteriaStreamSettings(),
-        finalmask = { udp: [] },
+        finalmask = new FinalMaskStreamSettings(),
         sockopt = undefined,
     ) {
         super();
@@ -629,16 +643,17 @@ class StreamSettings extends CommonClass {
     }
 
     addUdpMask(type = 'salamander') {
-        if (!this.finalmask.udp) {
-            this.finalmask.udp = [];
-        }
-        this.finalmask.udp.push(new FinalMask(type));
+        this.finalmask.udp.push(new UdpMask(type));
     }
 
     delUdpMask(index) {
         if (this.finalmask.udp) {
             this.finalmask.udp.splice(index, 1);
         }
+    }
+
+    get hasFinalMask() {
+        return this.finalmask.udp && this.finalmask.udp.length > 0;
     }
 
     get isTls() {
@@ -658,14 +673,6 @@ class StreamSettings extends CommonClass {
     }
 
     static fromJson(json = {}) {
-        let finalmask = { udp: [] };
-        if (json.finalmask) {
-            if (Array.isArray(json.finalmask)) {
-                finalmask.udp = json.finalmask.map(mask => FinalMask.fromJson(mask));
-            } else if (json.finalmask.udp) {
-                finalmask.udp = json.finalmask.udp.map(mask => FinalMask.fromJson(mask));
-            }
-        }
         return new StreamSettings(
             json.network,
             json.security,
@@ -678,7 +685,7 @@ class StreamSettings extends CommonClass {
             HttpUpgradeStreamSettings.fromJson(json.httpupgradeSettings),
             xHTTPStreamSettings.fromJson(json.xhttpSettings),
             HysteriaStreamSettings.fromJson(json.hysteriaSettings),
-            finalmask,
+            FinalMaskStreamSettings.fromJson(json.finalmask),
             SockoptStreamSettings.fromJson(json.sockopt),
         );
     }
@@ -697,9 +704,7 @@ class StreamSettings extends CommonClass {
             httpupgradeSettings: network === 'httpupgrade' ? this.httpupgrade.toJson() : undefined,
             xhttpSettings: network === 'xhttp' ? this.xhttp.toJson() : undefined,
             hysteriaSettings: network === 'hysteria' ? this.hysteria.toJson() : undefined,
-            finalmask: (this.finalmask.udp && this.finalmask.udp.length > 0) ? {
-                udp: this.finalmask.udp.map(mask => mask.toJson())
-            } : undefined,
+            finalmask: this.hasFinalMask ? this.finalmask.toJson() : undefined,
             sockopt: this.sockopt != undefined ? this.sockopt.toJson() : undefined,
         };
     }
@@ -793,7 +798,7 @@ class Outbound extends CommonClass {
 
     canEnableMux() {
         // Disable Mux if flow is set
-        if (this.settings.flow && this.settings.flow !== '') {
+        if (this.settings?.flow && this.settings.flow !== '') {
             this.mux.enabled = false;
             return false;
         }
@@ -1045,7 +1050,10 @@ class Outbound extends CommonClass {
             stream.hysteria.disablePathMTUDiscovery = urlParams.get('disablePathMTUDiscovery') === 'true';
         }
         if (urlParams.has('obfs')) {
-            stream.udpmasks[0] = new UdpMask(urlParams.get('obfs'), urlParams.get('obfs-password'));
+            stream.finalmask = new FinalMaskStreamSettings([{
+                type: urlParams.get('obfs'), 
+                settings: { password: urlParams.get('obfs-password') ?? '' }
+            }] );
         }
         if (urlParams.has('security')){
             stream.security = urlParams.get('security');

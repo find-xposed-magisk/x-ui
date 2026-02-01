@@ -969,7 +969,7 @@ class SockoptStreamSettings extends XrayCommonClass {
     }
 }
 
-class FinalMask extends XrayCommonClass {
+class UdpMask extends XrayCommonClass {
     constructor(type = 'salamander', settings = {}) {
         super();
         this.type = type;
@@ -997,20 +997,34 @@ class FinalMask extends XrayCommonClass {
     }
 
     static fromJson(json = {}) {
-        return new FinalMask(
+        return new UdpMask(
             json.type || 'salamander',
             json.settings || {}
         );
     }
 
     toJson() {
-        const result = {
-            type: this.type
+        return {
+            type: this.type,
+            settings: (this.settings && Object.keys(this.settings).length > 0) ? this.settings : undefined
         };
-        if (this.settings && Object.keys(this.settings).length > 0) {
-            result.settings = this.settings;
-        }
-        return result;
+    }
+}
+
+class FinalMaskStreamSettings extends XrayCommonClass {
+    constructor(udp = []) {
+        super();
+        this.udp = Array.isArray(udp) ? udp.map(u => new UdpMask(u.type, u.settings)) : [new UdpMask(udp.type, udp.settings)];
+    }
+
+    static fromJson(json = {}) {
+        return new FinalMaskStreamSettings(json.udp || []);
+    }
+
+    toJson() {
+        return {
+            udp: this.udp.map(udp => udp.toJson())
+        };
     }
 }
 
@@ -1026,7 +1040,7 @@ class StreamSettings extends XrayCommonClass {
         grpcSettings = new GrpcStreamSettings(),
         httpupgradeSettings = new HttpUpgradeStreamSettings(),
         xhttpSettings = new xHTTPStreamSettings(),
-        finalmask = { udp: [] },
+        finalmask = new FinalMaskStreamSettings(),
         sockopt = undefined,
     ) {
         super();
@@ -1046,16 +1060,17 @@ class StreamSettings extends XrayCommonClass {
     }
 
     addUdpMask(type = 'salamander') {
-        if (!this.finalmask.udp) {
-            this.finalmask.udp = [];
-        }
-        this.finalmask.udp.push(new FinalMask(type));
+        this.finalmask.udp.push(new UdpMask(type));
     }
 
     delUdpMask(index) {
         if (this.finalmask.udp) {
             this.finalmask.udp.splice(index, 1);
         }
+    }
+
+    get hasFinalMask() {
+        return this.finalmask.udp && this.finalmask.udp.length > 0;
     }
 
     get isTls() {
@@ -1092,14 +1107,6 @@ class StreamSettings extends XrayCommonClass {
     }
 
     static fromJson(json = {}) {
-        let finalmask = { udp: [] };
-        if (json.finalmask) {
-            if (Array.isArray(json.finalmask)) {
-                finalmask.udp = json.finalmask.map(mask => FinalMask.fromJson(mask));
-            } else if (json.finalmask.udp) {
-                finalmask.udp = json.finalmask.udp.map(mask => FinalMask.fromJson(mask));
-            }
-        }
         return new StreamSettings(
             json.network,
             json.security,
@@ -1112,7 +1119,7 @@ class StreamSettings extends XrayCommonClass {
             GrpcStreamSettings.fromJson(json.grpcSettings),
             HttpUpgradeStreamSettings.fromJson(json.httpupgradeSettings),
             xHTTPStreamSettings.fromJson(json.xhttpSettings),
-            finalmask,
+            FinalMaskStreamSettings.fromJson(json.finalmask),
             SockoptStreamSettings.fromJson(json.sockopt),
         );
     }
@@ -1131,9 +1138,7 @@ class StreamSettings extends XrayCommonClass {
             grpcSettings: network === 'grpc' ? this.grpc.toJson() : undefined,
             httpupgradeSettings: network === 'httpupgrade' ? this.httpupgrade.toJson() : undefined,
             xhttpSettings: network === 'xhttp' ? this.xhttp.toJson() : undefined,
-            finalmask: (this.finalmask.udp && this.finalmask.udp.length > 0) ? {
-                udp: this.finalmask.udp.map(mask => mask.toJson())
-            } : undefined,
+            finalmask: this.hasFinalMask ? this.finalmask.toJson() : undefined,
             sockopt: this.sockopt != undefined ? this.sockopt.toJson() : undefined,
         };
     }
