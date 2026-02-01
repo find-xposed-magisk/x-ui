@@ -163,15 +163,13 @@ class TcpStreamSettings extends CommonClass {
 
 class KcpStreamSettings extends CommonClass {
     constructor(
-        mtu = 1250,
-        tti = 50,
+        mtu = 1350,
+        tti = 20,
         uplinkCapacity = 5,
         downlinkCapacity = 20,
         congestion = false,
-        readBufferSize = 2,
-        writeBufferSize = 2,
-        type = 'none',
-        seed = '',
+        readBufferSize = 1,
+        writeBufferSize = 1,
     ) {
         super();
         this.mtu = mtu;
@@ -181,8 +179,6 @@ class KcpStreamSettings extends CommonClass {
         this.congestion = congestion;
         this.readBuffer = readBufferSize;
         this.writeBuffer = writeBufferSize;
-        this.type = type;
-        this.seed = seed;
     }
 
     static fromJson(json = {}) {
@@ -194,8 +190,6 @@ class KcpStreamSettings extends CommonClass {
             json.congestion,
             json.readBufferSize,
             json.writeBufferSize,
-            ObjectUtil.isEmpty(json.header) ? 'none' : json.header.type,
-            json.seed,
         );
     }
 
@@ -208,10 +202,6 @@ class KcpStreamSettings extends CommonClass {
             congestion: this.congestion,
             readBufferSize: this.readBuffer,
             writeBufferSize: this.writeBuffer,
-            header: {
-                type: this.type,
-            },
-            seed: this.seed,
         };
     }
 }
@@ -561,27 +551,48 @@ class SockoptStreamSettings extends CommonClass {
     }
 }
 
-class UdpMask extends CommonClass {
-    constructor(type = 'salamander', password = '') {
+class FinalMask extends CommonClass {
+    constructor(type = 'salamander', settings = {}) {
         super();
         this.type = type;
-        this.password = password;
+        this.settings = this._getDefaultSettings(type, settings);
+    }
+
+    _getDefaultSettings(type, settings = {}) {
+        switch (type) {
+            case 'salamander':
+            case 'mkcp-aes128gcm':
+                return { password: settings.password || '' };
+            case 'header-dns':
+            case 'xdns':
+                return { domain: settings.domain || '' };
+            case 'mkcp-original':
+            case 'header-dtls':
+            case 'header-srtp':
+            case 'header-utp':
+            case 'header-wechat':
+            case 'header-wireguard':
+                return {}; // No settings needed
+            default:
+                return settings;
+        }
     }
 
     static fromJson(json = {}) {
-        return new UdpMask(
-            json.type,
-            json.settings?.password || ''
+        return new FinalMask(
+            json.type || 'salamander',
+            json.settings || {}
         );
     }
 
     toJson() {
-        return {
-            type: this.type,
-            settings: {
-                password: this.password
-            }
+        const result = {
+            type: this.type
         };
+        if (this.settings && Object.keys(this.settings).length > 0) {
+            result.settings = this.settings;
+        }
+        return result;
     }
 }
 
@@ -598,7 +609,7 @@ class StreamSettings extends CommonClass {
         httpupgradeSettings = new HttpUpgradeStreamSettings(),
         xhttpSettings = new xHTTPStreamSettings(),
         hysteriaSettings = new HysteriaStreamSettings(),
-        udpmasks = [],
+        finalmask = { udp: [] },
         sockopt = undefined,
     ) {
         super();
@@ -613,16 +624,21 @@ class StreamSettings extends CommonClass {
         this.httpupgrade = httpupgradeSettings;
         this.xhttp = xhttpSettings;
         this.hysteria = hysteriaSettings;
-        this.udpmasks = udpmasks;
+        this.finalmask = finalmask;
         this.sockopt = sockopt;
     }
 
-    addUdpMask() {
-        this.udpmasks.push(new UdpMask());
+    addUdpMask(type = 'salamander') {
+        if (!this.finalmask.udp) {
+            this.finalmask.udp = [];
+        }
+        this.finalmask.udp.push(new FinalMask(type));
     }
 
     delUdpMask(index) {
-        this.udpmasks.splice(index, 1);
+        if (this.finalmask.udp) {
+            this.finalmask.udp.splice(index, 1);
+        }
     }
 
     get isTls() {
@@ -642,6 +658,14 @@ class StreamSettings extends CommonClass {
     }
 
     static fromJson(json = {}) {
+        let finalmask = { udp: [] };
+        if (json.finalmask) {
+            if (Array.isArray(json.finalmask)) {
+                finalmask.udp = json.finalmask.map(mask => FinalMask.fromJson(mask));
+            } else if (json.finalmask.udp) {
+                finalmask.udp = json.finalmask.udp.map(mask => FinalMask.fromJson(mask));
+            }
+        }
         return new StreamSettings(
             json.network,
             json.security,
@@ -654,7 +678,7 @@ class StreamSettings extends CommonClass {
             HttpUpgradeStreamSettings.fromJson(json.httpupgradeSettings),
             xHTTPStreamSettings.fromJson(json.xhttpSettings),
             HysteriaStreamSettings.fromJson(json.hysteriaSettings),
-            json.udpmasks ? json.udpmasks.map(mask => UdpMask.fromJson(mask)) : [],
+            finalmask,
             SockoptStreamSettings.fromJson(json.sockopt),
         );
     }
@@ -673,7 +697,9 @@ class StreamSettings extends CommonClass {
             httpupgradeSettings: network === 'httpupgrade' ? this.httpupgrade.toJson() : undefined,
             xhttpSettings: network === 'xhttp' ? this.xhttp.toJson() : undefined,
             hysteriaSettings: network === 'hysteria' ? this.hysteria.toJson() : undefined,
-            udpmasks: this.udpmasks.length > 0 ? this.udpmasks.map(mask => mask.toJson()) : undefined,
+            finalmask: (this.finalmask.udp && this.finalmask.udp.length > 0) ? {
+                udp: this.finalmask.udp.map(mask => mask.toJson())
+            } : undefined,
             sockopt: this.sockopt != undefined ? this.sockopt.toJson() : undefined,
         };
     }
@@ -1279,11 +1305,13 @@ Outbound.VLESSSettings = class extends CommonClass {
             flow: this.flow,
             encryption: this.encryption,
         };
-        if (this.testpre > 0) {
-            result.testpre = this.testpre;
-        }
-        if (this.testseed && this.testseed.length >= 4) {
-            result.testseed = this.testseed;
+        if (this.flow && this.flow !== '') {
+            if (this.testpre > 0) {
+                result.testpre = this.testpre;
+            }
+            if (this.testseed && this.testseed.length >= 4) {
+                result.testseed = this.testseed;
+            }
         }
         return result;
     }
@@ -1416,7 +1444,7 @@ Outbound.HttpSettings = class extends CommonClass {
 
 Outbound.WireguardSettings = class extends CommonClass {
     constructor(
-        mtu = 1250,
+        mtu = 1420,
         secretKey = '',
         address = [''],
         workers = 2,
