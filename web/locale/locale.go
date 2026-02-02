@@ -48,10 +48,10 @@ func InitLocalizer(i18nFS embed.FS, settingService SettingService) error {
 	return nil
 }
 
-func createTemplateData(params []string, seperator ...string) map[string]interface{} {
+func createTemplateData(params []string, separator ...string) map[string]interface{} {
 	var sep string = "=="
-	if len(seperator) > 0 {
-		sep = seperator[0]
+	if len(separator) > 0 {
+		sep = separator[0]
 	}
 
 	templateData := make(map[string]interface{})
