@@ -980,6 +980,8 @@ class UdpMask extends XrayCommonClass {
             case 'header-dns':
             case 'xdns':
                 return { domain: settings.domain || '' };
+            case 'xicmp':
+                return { ip: settings.ip || '', id: settings.id ?? 0 };
             case 'mkcp-original':
             case 'header-dtls':
             case 'header-srtp':
@@ -1305,14 +1307,6 @@ class Inbound extends XrayCommonClass {
         return null;
     }
 
-    get kcpType() {
-        return this.stream.kcp.type;
-    }
-
-    get kcpSeed() {
-        return this.stream.kcp.seed;
-    }
-
     get serviceName() {
         return this.stream.grpc.serviceName;
     }
@@ -1388,8 +1382,6 @@ class Inbound extends XrayCommonClass {
             }
         } else if (network === 'kcp') {
             const kcp = this.stream.kcp;
-            obj.type = kcp.type;
-            obj.path = kcp.seed;
         } else if (network === 'ws') {
             const ws = this.stream.ws;
             obj.path = ws.path;
@@ -1452,8 +1444,6 @@ class Inbound extends XrayCommonClass {
                 break;
             case "kcp":
                 const kcp = this.stream.kcp;
-                params.set("headerType", kcp.type);
-                params.set("seed", kcp.seed);
                 break;
             case "ws":
                 const ws = this.stream.ws;
@@ -1557,8 +1547,6 @@ class Inbound extends XrayCommonClass {
                 break;
             case "kcp":
                 const kcp = this.stream.kcp;
-                params.set("headerType", kcp.type);
-                params.set("seed", kcp.seed);
                 break;
             case "ws":
                 const ws = this.stream.ws;
@@ -1638,8 +1626,6 @@ class Inbound extends XrayCommonClass {
                 break;
             case "kcp":
                 const kcp = this.stream.kcp;
-                params.set("headerType", kcp.type);
-                params.set("seed", kcp.seed);
                 break;
             case "ws":
                 const ws = this.stream.ws;
