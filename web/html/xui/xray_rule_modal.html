@@ -220,13 +220,13 @@
             newRule = {};
             rule.type = "field";
             rule.domainMatcher = value.domainMatcher;
-            rule.domain = value.domain.length>0 ? value.domain.split(',') : [];
-            rule.ip = value.ip.length>0 ? value.ip.split(',') : [];
+            rule.domain = value.domain.length>0 ? value.domain.split(',').map(s => s.trim()) : [];
+            rule.ip = value.ip.length>0 ? value.ip.split(',').map(s => s.trim()) : [];
             rule.port = value.port;
             rule.sourcePort = value.sourcePort;
             rule.network = value.network;
-            rule.source = value.source.length>0 ? value.source.split(',') : [];
-            rule.user = value.user.length>0 ? value.user.split(',') : [];
+            rule.source = value.source.length>0 ? value.source.split(',').map(s => s.trim()) : [];
+            rule.user = value.user.length>0 ? value.user.split(',').map(s => s.trim()) : [];
             rule.inboundTag = value.inboundTag;
             rule.protocol = value.protocol;
             rule.attrs = Object.fromEntries(value.attrs);
