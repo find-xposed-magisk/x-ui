@@ -15,3 +15,4 @@ release/
 /release.sh
 /x-ui
 .DS_Store
+/dev/
