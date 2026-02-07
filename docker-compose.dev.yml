@@ -1,0 +1,15 @@
+services:
+  xui:
+    build:
+      context: .
+      target: builder
+    working_dir: /app
+    volumes:
+      - .:/app
+      - ./dev/db:/etc/x-ui
+    environment:
+      XUI_BIN_FOLDER: /app/dev/bin
+      XUI_DB_FOLDER: /etc/x-ui
+      XUI_LOG_LEVEL: debug
+      XUI_DEBUG: "true"
+    command: ["go","run","./main.go"]
