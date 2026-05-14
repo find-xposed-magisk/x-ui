@@ -2,6 +2,8 @@
 <!-- base -->
 <a-tabs :active-key="outModal.activeKey"  style="padding: 0; background-color: transparent;" @change="(activeKey) => {outModal.toggleJson(activeKey == '2'); }">
 <a-tab-pane key="1" tab="Form">
+<a-tabs :animated="false" class="outbound-detail-inner-tabs" style="padding: 1rem;">
+<a-tab-pane key="ob-basic" tab="{{ i18n "pages.xray.outbound.settings" }}">
 <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
         <a-form-item label='{{ i18n "protocol" }}'>
             <a-select v-model="outbound.protocol" :dropdown-class-name="themeSwitcher.currentTheme">
@@ -14,7 +16,10 @@
         <a-form-item label='{{ i18n "pages.xray.outbound.sendThrough" }}'>
             <a-input v-model="outbound.sendThrough"></a-input>
         </a-form-item>
-
+</a-form>
+</a-tab-pane>
+<a-tab-pane key="ob-protocol" tab="{{ i18n "protocol" }}">
+<a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
 <!-- freedom settings-->
 <template v-if="outbound.protocol === Protocols.Freedom">
     <a-form-item label='{{ i18n "pages.xray.outbound.freedom.strategy" }}'>
@@ -294,7 +299,10 @@
         </a-form-item>
       </template>
 </template>
-
+</a-form>
+</a-tab-pane>
+<a-tab-pane v-if="outbound.canEnableStream()" key="ob-transmission" tab="{{ i18n "transmission" }}">
+<a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
 <!-- stream settings -->
 <template v-if="outbound.canEnableStream()">
     <a-form-item label='{{ i18n "transmission" }}'>
@@ -901,7 +909,65 @@
         </template>
     </template>
 </template>
-
+<a-divider>Sockopt</a-divider>
+<a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.sockopt" }}'>
+    <a-switch v-model="outbound.stream.sockoptSwitch"></a-switch>
+</a-form-item>
+<template v-if="outbound.stream.sockoptSwitch">
+    <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.dialerProxy" }}'>
+        <a-select v-model="outbound.stream.sockopt.dialerProxy" :dropdown-class-name="themeSwitcher.currentTheme">
+            <a-select-option v-for="tag in ['', ...outModal.tags]" :value="tag">[[ tag ]]</a-select-option>
+        </a-select>
+    </a-form-item>
+    <a-form-item label='{{ i18n "pages.xray.outbound.sockoptExtra.addressPortStrategy" }}'>
+        <a-select v-model="outbound.stream.sockopt.addressPortStrategy" :dropdown-class-name="themeSwitcher.currentTheme">
+        <a-select-option v-for="key in Address_Port_Strategy" :value="key">[[ key ]]</a-select-option>
+        </a-select>
+    </a-form-item>
+    <a-form-item label='{{ i18n "pages.xray.outbound.sockoptExtra.keepAliveInterval" }}'>
+        <a-input-number v-model.number="outbound.stream.sockopt.tcpKeepAliveInterval" :min="0"></a-input-number>
+    </a-form-item>
+    <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpFastOpen" }}'>
+        <a-switch v-model="outbound.stream.sockopt.tcpFastOpen"></a-switch>
+    </a-form-item>
+    <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.multipathTCP" }}'>
+        <a-switch v-model.trim="outbound.stream.sockopt.tcpMptcp"></a-switch>
+    </a-form-item>
+    <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.penetrate" }}'>
+        <a-switch v-model="outbound.stream.sockopt.penetrate"></a-switch>
+    </a-form-item>
+    <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.trustedXForwardedFor" }}'>
+        <a-select mode="tags" v-model="outbound.stream.sockopt.trustedXForwardedFor" :style="{ width: '100%' }"
+            :dropdown-class-name="themeSwitcher.currentTheme">
+            <a-select-option value="CF-Connecting-IP">CF-Connecting-IP</a-select-option>
+            <a-select-option value="X-Real-IP">X-Real-IP</a-select-option>
+            <a-select-option value="True-Client-IP">True-Client-IP</a-select-option>
+            <a-select-option value="X-Client-IP">X-Client-IP</a-select-option>
+        </a-select>
+    </a-form-item>
+</template>
+<template v-if="outbound.canEnableMux()">
+    <a-form-item label='{{ i18n "pages.xray.outbound.mux.mux" }}'>
+        <a-switch v-model="outbound.mux.enabled"></a-switch>
+    </a-form-item>
+    <template v-if="outbound.mux.enabled">
+        <a-form-item label='{{ i18n "pages.xray.outbound.mux.concurrency" }}'>
+            <a-input-number v-model.number="outbound.mux.concurrency" :min="-1" :max="1024"></a-input-number>
+        </a-form-item>
+        <a-form-item label='{{ i18n "pages.xray.outbound.mux.xudpConcurrency" }}'>
+            <a-input-number v-model.number="outbound.mux.xudpConcurrency" :min="-1" :max="1024"></a-input-number>
+        </a-form-item>
+        <a-form-item label='{{ i18n "pages.xray.outbound.mux.xudpUDP443" }}'>
+            <a-select v-model="outbound.mux.xudpProxyUDP443" :dropdown-class-name="themeSwitcher.currentTheme">
+                <a-select-option v-for="c in ['reject', 'allow', 'skip']" :value="c">[[ c ]]</a-select-option>
+            </a-select>
+        </a-form-item>
+    </template>
+</template>
+</a-form>
+</a-tab-pane>
+<a-tab-pane v-if="outbound.canEnableTls()" key="ob-security" tab="{{ i18n "security" }}">
+<a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
 <!-- tls settings -->
 <template v-if="outbound.canEnableTls()">
         <a-form-item label='{{ i18n "security" }}'>
@@ -973,66 +1039,9 @@
                 </a-form-item>
         </template>
 </template>
-
-<!-- sockopt settings -->
-<a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.sockopt" }}'>
-    <a-switch v-model="outbound.stream.sockoptSwitch"></a-switch>
-</a-form-item>
-<template v-if="outbound.stream.sockoptSwitch">
-    <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.dialerProxy" }}'>
-        <a-select v-model="outbound.stream.sockopt.dialerProxy" :dropdown-class-name="themeSwitcher.currentTheme">
-            <a-select-option v-for="tag in ['', ...outModal.tags]" :value="tag">[[ tag ]]</a-select-option>
-        </a-select>
-    </a-form-item>
-    <a-form-item label='{{ i18n "pages.xray.outbound.sockoptExtra.addressPortStrategy" }}'>
-        <a-select v-model="outbound.stream.sockopt.addressPortStrategy" :dropdown-class-name="themeSwitcher.currentTheme">
-        <a-select-option v-for="key in Address_Port_Strategy" :value="key">[[ key ]]</a-select-option>
-        </a-select>
-    </a-form-item>
-    <a-form-item label='{{ i18n "pages.xray.outbound.sockoptExtra.keepAliveInterval" }}'>
-        <a-input-number v-model.number="outbound.stream.sockopt.tcpKeepAliveInterval" :min="0"></a-input-number>
-    </a-form-item>
-    <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpFastOpen" }}'>
-        <a-switch v-model="outbound.stream.sockopt.tcpFastOpen"></a-switch>
-    </a-form-item>
-    <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.multipathTCP" }}'>
-        <a-switch v-model.trim="outbound.stream.sockopt.tcpMptcp"></a-switch>
-    </a-form-item>
-    <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.penetrate" }}'>
-        <a-switch v-model="outbound.stream.sockopt.penetrate"></a-switch>
-    </a-form-item>
-    <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.trustedXForwardedFor" }}'>
-        <a-select mode="tags" v-model="outbound.stream.sockopt.trustedXForwardedFor" :style="{ width: '100%' }"
-            :dropdown-class-name="themeSwitcher.currentTheme">
-            <a-select-option value="CF-Connecting-IP">CF-Connecting-IP</a-select-option>
-            <a-select-option value="X-Real-IP">X-Real-IP</a-select-option>
-            <a-select-option value="True-Client-IP">True-Client-IP</a-select-option>
-            <a-select-option value="X-Client-IP">X-Client-IP</a-select-option>
-        </a-select>
-    </a-form-item>
-</template>
-
-<!-- mux settings -->
-<template v-if="outbound.canEnableMux()">
-    <a-form-item label='{{ i18n "pages.xray.outbound.mux.mux" }}'>
-        <a-switch v-model="outbound.mux.enabled"></a-switch>
-    </a-form-item>
-    <template v-if="outbound.mux.enabled">
-        <a-form-item label='{{ i18n "pages.xray.outbound.mux.concurrency" }}'>
-            <a-input-number v-model.number="outbound.mux.concurrency" :min="-1" :max="1024"></a-input-number>
-        </a-form-item>
-        <a-form-item label='{{ i18n "pages.xray.outbound.mux.xudpConcurrency" }}'>
-            <a-input-number v-model.number="outbound.mux.xudpConcurrency" :min="-1" :max="1024"></a-input-number>
-        </a-form-item>
-        <a-form-item label='{{ i18n "pages.xray.outbound.mux.xudpUDP443" }}'>
-            <a-select v-model="outbound.mux.xudpProxyUDP443" :dropdown-class-name="themeSwitcher.currentTheme">
-                <a-select-option v-for="c in ['reject', 'allow', 'skip']" :value="c">[[ c ]]</a-select-option>
-            </a-select>
-        </a-form-item>
-    </template>
-</template>
-
 </a-form>
+</a-tab-pane>
+</a-tabs>
 </a-tab-pane>
 <a-tab-pane key="2" tab="JSON" force-render="true">
     <a-form-item style="margin: 10px 0">

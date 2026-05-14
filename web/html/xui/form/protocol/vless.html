@@ -1,25 +1,4 @@
 {{define "form/vless"}}
-<a-collapse activeKey="0" v-for="(client, index) in inbound.settings.vlesses.slice(0,1)" v-if="!isEdit">    
-    <a-collapse-panel header='{{ i18n "pages.inbounds.client" }}'>
-        {{template "form/client"}}
-    </a-collapse-panel>
-</a-collapse>
-<a-collapse v-else>
-    <a-collapse-panel :header="'{{ i18n "pages.client.clientCount"}} : ' + inbound.settings.vlesses.length">
-        <table width="100%">
-            <tr class="client-table-header">
-                <th>{{ i18n "pages.inbounds.email" }}</th>
-                <th>Flow</th>
-                <th>ID</th>
-            </tr>
-            <tr v-for="(client, index) in inbound.settings.vlesses" :class="index % 2 == 1 ? 'client-table-odd-row' : ''">
-                <td>[[ client.email ]]</td>
-                <td>[[ client.flow ]]</td>
-                <td>[[ client.id ]]</td>
-            </tr>
-        </table>
-    </a-collapse-panel>
-</a-collapse>
 <template v-if="!inbound.stream.isTLS || !inbound.stream.isReality">
   <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
     <a-form-item label='{{ i18n "pages.inbounds.protocols.authentication" }}'>
@@ -73,9 +52,9 @@
             <a-input-number v-model.number="fallback.xver" :min="0" :max="2"></a-input-number>
         </a-form-item>
     </a-form>
-    <a-divider style="margin:5px 0;"></a-divider>
 </template>
 <template v-if="inbound.canEnableVisionSeed()">
+  <a-divider style="margin:5px 0;"></a-divider>
   <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
     <a-form-item label='{{ i18n "pages.inbounds.protocols.visionSeed" }}'>
       <a-row :gutter="8">
@@ -102,6 +81,26 @@
       </a-space>
     </a-form-item>
   </a-form>
-  <a-divider :style="{ margin: '5px 0' }"></a-divider>
 </template>
+<a-collapse activeKey="0" v-for="(client, index) in inbound.settings.vlesses.slice(0,1)" v-if="!isEdit">    
+  <a-collapse-panel header='{{ i18n "pages.inbounds.client" }}'>
+      {{template "form/client"}}
+  </a-collapse-panel>
+</a-collapse>
+<a-collapse v-else>
+  <a-collapse-panel :header="'{{ i18n "pages.client.clientCount"}} : ' + inbound.settings.vlesses.length">
+      <table width="100%">
+          <tr class="client-table-header">
+              <th>{{ i18n "pages.inbounds.email" }}</th>
+              <th>Flow</th>
+              <th>ID</th>
+          </tr>
+          <tr v-for="(client, index) in inbound.settings.vlesses" :class="index % 2 == 1 ? 'client-table-odd-row' : ''">
+              <td>[[ client.email ]]</td>
+              <td>[[ client.flow ]]</td>
+              <td>[[ client.id ]]</td>
+          </tr>
+      </table>
+  </a-collapse-panel>
+</a-collapse>
 {{end}}

@@ -454,7 +454,7 @@ class TlsStreamSettings extends CommonClass {
         fingerprint = '',
         allowInsecure = false,
         echConfigList = '',
-        verifyPeerCertByName = 'cloudflare-dns.com',
+        verifyPeerCertByName = '',
         pinnedPeerCertSha256 = '',
     ) {
         super();
