@@ -477,17 +477,14 @@ class HttpUpgradeStreamSettings extends XrayCommonClass {
     }
 }
 
-class xHTTPStreamSettings extends XrayCommonClass {
-    constructor(
-        path = '/',
-        host = '',
+class XhttpExtraSettings extends XrayCommonClass {
+    constructor({
         headers = [],
         scMaxBufferedPosts = 30,
-        scMaxEachPostBytes = "1000000",
         scStreamUpServerSecs = "20-80",
         noSSEHeader = false,
+        serverMaxHeaderBytes = 0,
         xPaddingBytes = "100-1000",
-        mode = MODE_OPTION.AUTO,
         xPaddingObfsMode = false,
         xPaddingKey = '',
         xPaddingHeader = '',
@@ -501,17 +498,19 @@ class xHTTPStreamSettings extends XrayCommonClass {
         uplinkDataPlacement = '',
         uplinkDataKey = '',
         uplinkChunkSize = 0,
-    ) {
+        noGRPCHeader = false,
+        scMaxEachPostBytes = "1000000",
+        scMinPostsIntervalMs = "30",
+        xmux = undefined,
+        downloadSettings = '',
+    } = {}) {
         super();
-        this.path = path;
-        this.host = host;
         this.headers = headers;
         this.scMaxBufferedPosts = scMaxBufferedPosts;
-        this.scMaxEachPostBytes = scMaxEachPostBytes;
         this.scStreamUpServerSecs = scStreamUpServerSecs;
         this.noSSEHeader = noSSEHeader;
+        this.serverMaxHeaderBytes = serverMaxHeaderBytes;
         this.xPaddingBytes = xPaddingBytes;
-        this.mode = mode;
         this.xPaddingObfsMode = xPaddingObfsMode;
         this.xPaddingKey = xPaddingKey;
         this.xPaddingHeader = xPaddingHeader;
@@ -525,6 +524,20 @@ class xHTTPStreamSettings extends XrayCommonClass {
         this.uplinkDataPlacement = uplinkDataPlacement;
         this.uplinkDataKey = uplinkDataKey;
         this.uplinkChunkSize = uplinkChunkSize;
+        this.noGRPCHeader = noGRPCHeader;
+        this.scMaxEachPostBytes = scMaxEachPostBytes;
+        this.scMinPostsIntervalMs = scMinPostsIntervalMs;
+        this.xmux = xmux || {
+            maxConcurrency: "16-32",
+            maxConnections: 0,
+            cMaxReuseTimes: 0,
+            hMaxRequestTimes: "600-900",
+            hMaxReusableSecs: "1800-3000",
+            hKeepAlivePeriod: 0,
+        };
+        this.downloadSettings = typeof downloadSettings === 'object' && downloadSettings !== null
+            ? JSON.stringify(downloadSettings, null, 2)
+            : (downloadSettings || '');
     }
 
     addHeader(name, value) {
@@ -535,44 +548,88 @@ class xHTTPStreamSettings extends XrayCommonClass {
         this.headers.splice(index, 1);
     }
 
+    get downloadSettingsEnable() {
+        return !!(this.downloadSettings && this.downloadSettings.trim().length > 0);
+    }
+
+    set downloadSettingsEnable(value) {
+        if (!value) {
+            this.downloadSettings = '';
+        } else if (!this.downloadSettings || this.downloadSettings.trim().length === 0) {
+            this.downloadSettings = JSON.stringify({
+                address: '',
+                port: 443,
+                network: 'xhttp',
+                security: 'tls',
+                tlsSettings: {},
+                xhttpSettings: { path: '/', mode: 'auto' },
+            }, null, 2);
+        }
+    }
+
+    static hasAnyMeaningfulValue(src) {
+        if (!src || typeof src !== 'object') return false;
+        const keys = [
+            'headers',
+            'scMaxBufferedPosts', 'scStreamUpServerSecs', 'noSSEHeader', 'serverMaxHeaderBytes',
+            'xPaddingBytes', 'xPaddingObfsMode', 'xPaddingKey', 'xPaddingHeader',
+            'xPaddingPlacement', 'xPaddingMethod',
+            'uplinkHTTPMethod', 'sessionPlacement', 'sessionKey',
+            'seqPlacement', 'seqKey',
+            'uplinkDataPlacement', 'uplinkDataKey', 'uplinkChunkSize',
+            'noGRPCHeader', 'scMaxEachPostBytes', 'scMinPostsIntervalMs',
+            'xmux', 'downloadSettings',
+        ];
+        return keys.some(k => src[k] !== undefined && src[k] !== null);
+    }
+
     static fromJson(json = {}) {
-        return new xHTTPStreamSettings(
-            json.path,
-            json.host,
-            XrayCommonClass.toHeaders(json.headers),
-            json.scMaxBufferedPosts,
-            json.scMaxEachPostBytes,
-            json.scStreamUpServerSecs,
-            json.noSSEHeader,
-            json.xPaddingBytes,
-            json.mode,
-            json.xPaddingObfsMode,
-            json.xPaddingKey,
-            json.xPaddingHeader,
-            json.xPaddingPlacement,
-            json.xPaddingMethod,
-            json.uplinkHTTPMethod,
-            json.sessionPlacement,
-            json.sessionKey,
-            json.seqPlacement,
-            json.seqKey,
-            json.uplinkDataPlacement,
-            json.uplinkDataKey,
-            json.uplinkChunkSize,
-        );
+        const headers = XrayCommonClass.toHeaders(json.headers);
+        return new XhttpExtraSettings({
+            headers: headers,
+            scMaxBufferedPosts: json.scMaxBufferedPosts,
+            scStreamUpServerSecs: json.scStreamUpServerSecs,
+            noSSEHeader: json.noSSEHeader,
+            serverMaxHeaderBytes: json.serverMaxHeaderBytes,
+            xPaddingBytes: json.xPaddingBytes,
+            xPaddingObfsMode: json.xPaddingObfsMode,
+            xPaddingKey: json.xPaddingKey,
+            xPaddingHeader: json.xPaddingHeader,
+            xPaddingPlacement: json.xPaddingPlacement,
+            xPaddingMethod: json.xPaddingMethod,
+            uplinkHTTPMethod: json.uplinkHTTPMethod,
+            sessionPlacement: json.sessionPlacement,
+            sessionKey: json.sessionKey,
+            seqPlacement: json.seqPlacement,
+            seqKey: json.seqKey,
+            uplinkDataPlacement: json.uplinkDataPlacement,
+            uplinkDataKey: json.uplinkDataKey,
+            uplinkChunkSize: json.uplinkChunkSize,
+            noGRPCHeader: json.noGRPCHeader,
+            scMaxEachPostBytes: json.scMaxEachPostBytes,
+            scMinPostsIntervalMs: json.scMinPostsIntervalMs,
+            xmux: json.xmux,
+            downloadSettings: json.downloadSettings,
+        });
     }
 
     toJson() {
+        let download;
+        if (this.downloadSettingsEnable) {
+            try {
+                download = JSON.parse(this.downloadSettings);
+            } catch (_) {
+                download = this.downloadSettings;
+            }
+        }
+        const xmux = this.xmux || {};
         return {
-            path: this.path,
-            host: this.host,
             headers: XrayCommonClass.toV2Headers(this.headers, false),
             scMaxBufferedPosts: this.scMaxBufferedPosts,
             scMaxEachPostBytes: this.scMaxEachPostBytes,
             scStreamUpServerSecs: this.scStreamUpServerSecs,
             noSSEHeader: this.noSSEHeader,
             xPaddingBytes: this.xPaddingBytes,
-            mode: this.mode,
             xPaddingObfsMode: this.xPaddingObfsMode,
             xPaddingKey: this.xPaddingKey,
             xPaddingHeader: this.xPaddingHeader,
@@ -586,6 +643,68 @@ class xHTTPStreamSettings extends XrayCommonClass {
             uplinkDataPlacement: this.uplinkDataPlacement,
             uplinkDataKey: this.uplinkDataKey,
             uplinkChunkSize: this.uplinkChunkSize,
+            downloadSettings: download,
+            noGRPCHeader: this.noGRPCHeader,
+            scMinPostsIntervalMs: this.scMinPostsIntervalMs,
+            xmux: {
+                maxConcurrency: xmux.maxConcurrency,
+                maxConnections: xmux.maxConnections,
+                cMaxReuseTimes: xmux.cMaxReuseTimes,
+                hMaxRequestTimes: xmux.hMaxRequestTimes,
+                hMaxReusableSecs: xmux.hMaxReusableSecs,
+                hKeepAlivePeriod: xmux.hKeepAlivePeriod,
+            },
+            serverMaxHeaderBytes: this.serverMaxHeaderBytes,
+        };
+    }
+}
+
+class xHTTPStreamSettings extends XrayCommonClass {
+    constructor(
+        path = '/',
+        host = '',
+        mode = MODE_OPTION.AUTO,
+        extra = undefined,
+    ) {
+        super();
+        this.path = path;
+        this.host = host;
+        this.mode = mode;
+        this.extra = extra;
+    }
+
+    get extraEnable() {
+        return this.extra != undefined;
+    }
+
+    set extraEnable(value) {
+        if (value && this.extra == undefined) {
+            this.extra = new XhttpExtraSettings();
+        } else if (!value) {
+            this.extra = undefined;
+        }
+    }
+
+    get headers() {
+        return this.extra ? this.extra.headers : [];
+    }
+
+    static fromJson(json = {}) {
+        let extra;
+        if (json.extra && typeof json.extra === 'object') {
+            extra = XhttpExtraSettings.fromJson(json.extra);
+        } else if (XhttpExtraSettings.hasAnyMeaningfulValue(json)) {
+            extra = XhttpExtraSettings.fromJson(json);
+        }
+        return new xHTTPStreamSettings(json.path, json.host, json.mode, extra);
+    }
+
+    toJson() {
+        return {
+            path: this.path,
+            host: this.host,
+            mode: this.mode,
+            extra: this.extra ? this.extra.toJson() : undefined,
         };
     }
 }
@@ -1398,6 +1517,33 @@ class Inbound extends XrayCommonClass {
         return "";
     }
 
+    getXhttpExtraForShare() {
+        if (!this.isXHTTP) return null;
+        const xhttpJson = this.stream.xhttp.toJson();
+        const extra = xhttpJson.extra || {};
+        const cleaned = {};
+        for (const [k, v] of Object.entries(extra)) {
+            if (v === undefined || v === null) continue;
+            if (typeof v === 'string' && v.length === 0) continue;
+            if (typeof v === 'boolean' && v === false) continue;
+            if (typeof v === 'number' && v === 0) continue;
+            if (Array.isArray(v) && v.length === 0) continue;
+            if (typeof v === 'object' && !Array.isArray(v)) {
+                const objKeys = Object.keys(v);
+                if (objKeys.length === 0) continue;
+                if (k === 'xmux') {
+                    const allEmpty = objKeys.every(key => {
+                        const val = v[key];
+                        return val === 0 || val === undefined || val === null || val === '';
+                    });
+                    if (allEmpty) continue;
+                }
+            }
+            cleaned[k] = v;
+        }
+        return Object.keys(cleaned).length > 0 ? cleaned : null;
+    }
+
     get host() {
         if (this.isTcp) {
             return this.getHeader(this.stream.tcp.request, 'host');
@@ -1519,6 +1665,8 @@ class Inbound extends XrayCommonClass {
             obj.path = xhttp.path;
             obj.host = xhttp.host?.length > 0 ? xhttp.host : this.getHeader(xhttp, 'host');
             obj.type = xhttp.mode;
+            const xExtra = this.getXhttpExtraForShare();
+            if (xExtra) obj.extra = xExtra;
         }
 
         if (tls === 'tls') {
@@ -1586,6 +1734,8 @@ class Inbound extends XrayCommonClass {
                 params.set("path", xhttp.path);
                 params.set("host", xhttp.host?.length > 0 ? xhttp.host : this.getHeader(xhttp, 'host'));
                 params.set("mode", xhttp.mode);
+                const xhttpExtra = this.getXhttpExtraForShare();
+                if (xhttpExtra) params.set("extra", JSON.stringify(xhttpExtra));
                 break;
         }
 
@@ -1689,6 +1839,8 @@ class Inbound extends XrayCommonClass {
                 params.set("path", xhttp.path);
                 params.set("host", xhttp.host?.length > 0 ? xhttp.host : this.getHeader(xhttp, 'host'));
                 params.set("mode", xhttp.mode);
+                const xhttpExtra = this.getXhttpExtraForShare();
+                if (xhttpExtra) params.set("extra", JSON.stringify(xhttpExtra));
                 break;
         }
 
@@ -1768,6 +1920,8 @@ class Inbound extends XrayCommonClass {
                 params.set("path", xhttp.path);
                 params.set("host", xhttp.host?.length > 0 ? xhttp.host : this.getHeader(xhttp, 'host'));
                 params.set("mode", xhttp.mode);
+                const xhttpExtra = this.getXhttpExtraForShare();
+                if (xhttpExtra) params.set("extra", JSON.stringify(xhttpExtra));
                 break;
         }
 

@@ -225,9 +225,17 @@ func (s *SubService) genVmessLink(inbound *model.Inbound, email string) string {
 			obj["host"] = host
 		} else {
 			headers, _ := xhttp["headers"].(map[string]interface{})
+			if len(headers) == 0 {
+				if h, ok := searchKey(xhttp["extra"], "headers"); ok {
+					headers, _ = h.(map[string]interface{})
+				}
+			}
 			obj["host"] = searchHost(headers)
 		}
 		obj["mode"] = xhttp["mode"].(string)
+		if xExtra := buildXhttpExtraForShare(xhttp); xExtra != nil {
+			obj["extra"] = xExtra
+		}
 	}
 
 	security, _ := stream["security"].(string)
@@ -379,9 +387,19 @@ func (s *SubService) genVlessLink(inbound *model.Inbound, email string) string {
 			params["host"] = host
 		} else {
 			headers, _ := xhttp["headers"].(map[string]interface{})
+			if len(headers) == 0 {
+				if h, ok := searchKey(xhttp["extra"], "headers"); ok {
+					headers, _ = h.(map[string]interface{})
+				}
+			}
 			params["host"] = searchHost(headers)
 		}
 		params["mode"] = xhttp["mode"].(string)
+		if xExtra := buildXhttpExtraForShare(xhttp); xExtra != nil {
+			if xExtraJSON, err := json.Marshal(xExtra); err == nil {
+				params["extra"] = string(xExtraJSON)
+			}
+		}
 	}
 	security, _ := stream["security"].(string)
 	if security == "tls" {
@@ -578,9 +596,19 @@ func (s *SubService) genTrojanLink(inbound *model.Inbound, email string) string 
 			params["host"] = host
 		} else {
 			headers, _ := xhttp["headers"].(map[string]interface{})
+			if len(headers) == 0 {
+				if h, ok := searchKey(xhttp["extra"], "headers"); ok {
+					headers, _ = h.(map[string]interface{})
+				}
+			}
 			params["host"] = searchHost(headers)
 		}
 		params["mode"] = xhttp["mode"].(string)
+		if xExtra := buildXhttpExtraForShare(xhttp); xExtra != nil {
+			if xExtraJSON, err := json.Marshal(xExtra); err == nil {
+				params["extra"] = string(xExtraJSON)
+			}
+		}
 	}
 	security, _ := stream["security"].(string)
 	if security == "tls" {
@@ -773,9 +801,19 @@ func (s *SubService) genShadowsocksLink(inbound *model.Inbound, email string) st
 			params["host"] = host
 		} else {
 			headers, _ := xhttp["headers"].(map[string]interface{})
+			if len(headers) == 0 {
+				if h, ok := searchKey(xhttp["extra"], "headers"); ok {
+					headers, _ = h.(map[string]interface{})
+				}
+			}
 			params["host"] = searchHost(headers)
 		}
 		params["mode"] = xhttp["mode"].(string)
+		if xExtra := buildXhttpExtraForShare(xhttp); xExtra != nil {
+			if xExtraJSON, err := json.Marshal(xExtra); err == nil {
+				params["extra"] = string(xExtraJSON)
+			}
+		}
 	}
 
 	security, _ := stream["security"].(string)
@@ -1012,6 +1050,84 @@ func (s *SubService) genRemark(inbound *model.Inbound, email string, extra strin
 		}
 	}
 	return strings.Join(remark, separationChar)
+}
+
+func buildXhttpExtraForShare(xhttp map[string]interface{}) map[string]interface{} {
+	if xhttp == nil {
+		return nil
+	}
+	extra, _ := xhttp["extra"].(map[string]interface{})
+	if len(extra) == 0 {
+		return nil
+	}
+	cleaned := map[string]interface{}{}
+	for k, v := range extra {
+		switch val := v.(type) {
+		case nil:
+			continue
+		case string:
+			if val == "" {
+				continue
+			}
+		case bool:
+			if !val {
+				continue
+			}
+		case float64:
+			if val == 0 {
+				continue
+			}
+		case int:
+			if val == 0 {
+				continue
+			}
+		case int64:
+			if val == 0 {
+				continue
+			}
+		case []interface{}:
+			if len(val) == 0 {
+				continue
+			}
+		case map[string]interface{}:
+			if len(val) == 0 {
+				continue
+			}
+			if k == "xmux" {
+				allEmpty := true
+				for _, mv := range val {
+					switch mvt := mv.(type) {
+					case nil:
+					case string:
+						if mvt != "" {
+							allEmpty = false
+						}
+					case bool:
+						if mvt {
+							allEmpty = false
+						}
+					case float64:
+						if mvt != 0 {
+							allEmpty = false
+						}
+					default:
+						allEmpty = false
+					}
+					if !allEmpty {
+						break
+					}
+				}
+				if allEmpty {
+					continue
+				}
+			}
+		}
+		cleaned[k] = v
+	}
+	if len(cleaned) == 0 {
+		return nil
+	}
+	return cleaned
 }
 
 func searchKey(data interface{}, key string) (interface{}, bool) {

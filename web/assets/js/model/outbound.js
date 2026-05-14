@@ -283,40 +283,158 @@ class HttpUpgradeStreamSettings extends CommonClass {
     }
 }
 
-class xHTTPStreamSettings extends CommonClass {
-    constructor(
-        path = '/',
-        host = '',
-        mode = '',
+class XhttpExtraSettings extends CommonClass {
+    constructor({
+        headers = [],
+        xPaddingBytes = '',
+        scMaxEachPostBytes = '',
         noGRPCHeader = false,
         scMinPostsIntervalMs = "30",
-        xmux = {
+        xmux = undefined,
+        downloadSettings = '',
+    } = {}) {
+        super();
+        this.headers = headers;
+        this.xPaddingBytes = xPaddingBytes;
+        this.scMaxEachPostBytes = scMaxEachPostBytes;
+        this.noGRPCHeader = noGRPCHeader;
+        this.scMinPostsIntervalMs = scMinPostsIntervalMs;
+        this.xmux = xmux || {
             maxConcurrency: "16-32",
             maxConnections: 0,
             cMaxReuseTimes: 0,
             hMaxRequestTimes: "600-900",
             hMaxReusableSecs: "1800-3000",
             hKeepAlivePeriod: 0,
-        },
+        };
+        this.downloadSettings = typeof downloadSettings === 'object' && downloadSettings !== null
+            ? JSON.stringify(downloadSettings, null, 2)
+            : (downloadSettings || '');
+    }
+
+    addHeader(name, value) {
+        this.headers.push({ name: name, value: value });
+    }
+
+    removeHeader(index) {
+        this.headers.splice(index, 1);
+    }
+
+    get downloadSettingsEnable() {
+        return !!(this.downloadSettings && this.downloadSettings.trim().length > 0);
+    }
+
+    set downloadSettingsEnable(value) {
+        if (!value) {
+            this.downloadSettings = '';
+        } else if (!this.downloadSettings || this.downloadSettings.trim().length === 0) {
+            this.downloadSettings = JSON.stringify({
+                address: '',
+                port: 443,
+                network: 'xhttp',
+                security: 'tls',
+                tlsSettings: {},
+                xhttpSettings: { path: '/', mode: 'auto' },
+            }, null, 2);
+        }
+    }
+
+    static hasAnyMeaningfulValue(src) {
+        if (!src || typeof src !== 'object') return false;
+        const keys = [
+            'headers', 'xPaddingBytes', 'scMaxEachPostBytes',
+            'noGRPCHeader', 'scMinPostsIntervalMs', 'xmux', 'downloadSettings',
+        ];
+        return keys.some(k => src[k] !== undefined && src[k] !== null);
+    }
+
+    static fromJson(json = {}) {
+        const headers = [];
+        if (json.headers && typeof json.headers === 'object') {
+            for (const [name, value] of Object.entries(json.headers)) {
+                headers.push({ name: name, value: value });
+            }
+        }
+        return new XhttpExtraSettings({
+            headers: headers,
+            xPaddingBytes: json.xPaddingBytes,
+            scMaxEachPostBytes: json.scMaxEachPostBytes,
+            noGRPCHeader: json.noGRPCHeader,
+            scMinPostsIntervalMs: json.scMinPostsIntervalMs,
+            xmux: json.xmux,
+            downloadSettings: json.downloadSettings,
+        });
+    }
+
+    toJson() {
+        let download;
+        if (this.downloadSettingsEnable) {
+            try {
+                download = JSON.parse(this.downloadSettings);
+            } catch (_) {
+                download = this.downloadSettings;
+            }
+        }
+        const headersMap = {};
+        if (Array.isArray(this.headers)) {
+            for (const h of this.headers) {
+                if (h && h.name) headersMap[h.name] = h.value;
+            }
+        }
+        const xmux = this.xmux || {};
+        return {
+            headers: headersMap,
+            xPaddingBytes: this.xPaddingBytes,
+            scMaxEachPostBytes: this.scMaxEachPostBytes,
+            noGRPCHeader: this.noGRPCHeader,
+            scMinPostsIntervalMs: this.scMinPostsIntervalMs,
+            xmux: {
+                maxConcurrency: xmux.maxConcurrency,
+                maxConnections: xmux.maxConnections,
+                cMaxReuseTimes: xmux.cMaxReuseTimes,
+                hMaxRequestTimes: xmux.hMaxRequestTimes,
+                hMaxReusableSecs: xmux.hMaxReusableSecs,
+                hKeepAlivePeriod: xmux.hKeepAlivePeriod,
+            },
+            downloadSettings: download,
+        };
+    }
+}
+
+class xHTTPStreamSettings extends CommonClass {
+    constructor(
+        path = '/',
+        host = '',
+        mode = '',
+        extra = undefined,
     ) {
         super();
         this.path = path;
         this.host = host;
         this.mode = mode;
-        this.noGRPCHeader = noGRPCHeader;
-        this.scMinPostsIntervalMs = scMinPostsIntervalMs;
-        this.xmux = xmux;
+        this.extra = extra;
+    }
+
+    get extraEnable() {
+        return this.extra != undefined;
+    }
+
+    set extraEnable(value) {
+        if (value && this.extra == undefined) {
+            this.extra = new XhttpExtraSettings();
+        } else if (!value) {
+            this.extra = undefined;
+        }
     }
 
     static fromJson(json = {}) {
-        return new xHTTPStreamSettings(
-            json.path,
-            json.host,
-            json.mode,
-            json.noGRPCHeader,
-            json.scMinPostsIntervalMs,
-            json.xmux
-        );
+        let extra;
+        if (json.extra && typeof json.extra === 'object') {
+            extra = XhttpExtraSettings.fromJson(json.extra);
+        } else if (XhttpExtraSettings.hasAnyMeaningfulValue(json)) {
+            extra = XhttpExtraSettings.fromJson(json);
+        }
+        return new xHTTPStreamSettings(json.path, json.host, json.mode, extra);
     }
 
     toJson() {
@@ -324,16 +442,7 @@ class xHTTPStreamSettings extends CommonClass {
             path: this.path,
             host: this.host,
             mode: this.mode,
-            noGRPCHeader: this.noGRPCHeader,
-            scMinPostsIntervalMs: this.scMinPostsIntervalMs,
-            xmux: {
-                maxConcurrency: this.xmux.maxConcurrency,
-                maxConnections: this.xmux.maxConnections,
-                cMaxReuseTimes: this.xmux.cMaxReuseTimes,
-                hMaxRequestTimes: this.xmux.hMaxRequestTimes,
-                hMaxReusableSecs: this.xmux.hMaxReusableSecs,
-                hKeepAlivePeriod: this.xmux.hKeepAlivePeriod,
-            },
+            extra: this.extra ? this.extra.toJson() : undefined,
         };
     }
 }
@@ -937,7 +1046,12 @@ class Outbound extends CommonClass {
         } else if (network === 'httpupgrade') {
             stream.httpupgrade = new HttpUpgradeStreamSettings(json.path, json.host);
         } else if (network === 'xhttp') {
-            stream.xhttp = new xHTTPStreamSettings(json.path, json.host, json.mode);
+            stream.xhttp = xHTTPStreamSettings.fromJson({
+                path: json.path,
+                host: json.host,
+                mode: json.mode,
+                extra: json.extra,
+            });
         }
 
         if (json.tls && json.tls == 'tls') {
@@ -980,7 +1094,17 @@ class Outbound extends CommonClass {
         } else if (type === 'httpupgrade') {
             stream.httpupgrade = new HttpUpgradeStreamSettings(path, host);
         } else if (type === 'xhttp') {
-            stream.xhttp = new xHTTPStreamSettings(path, host, mode);
+            let extra;
+            const extraStr = url.searchParams.get('extra');
+            if (extraStr) {
+                try { extra = JSON.parse(extraStr); } catch (_) { extra = undefined; }
+            }
+            stream.xhttp = xHTTPStreamSettings.fromJson({
+                path: path,
+                host: host,
+                mode: mode,
+                extra: extra,
+            });
         }
 
         if (security == 'tls') {

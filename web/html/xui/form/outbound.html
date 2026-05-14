@@ -400,31 +400,97 @@
                 <a-select-option v-for="key in MODE_OPTION" :value="key">[[ key ]]</a-select-option>
             </a-select>
         </a-form-item>
-        <a-form-item label="No gRPC Header"
-            v-if="outbound.stream.xhttp.mode === 'stream-up' || outbound.stream.xhttp.mode === 'stream-one'">
-            <a-switch v-model="outbound.stream.xhttp.noGRPCHeader"></a-switch>
+
+        <a-form-item label="Extra Settings">
+            <a-tooltip placement="bottom">
+                <template slot="title">
+                    <span>
+                        Per xray-core XHTTP, all settings other than host/path/mode
+                        live under "extra". When disabled the object is omitted
+                        from the generated JSON and xray-core uses its defaults.
+                    </span>
+                </template>
+                <a-switch v-model="outbound.stream.xhttp.extraEnable"></a-switch>
+            </a-tooltip>
         </a-form-item>
-        <a-form-item label="Min Upload Interval (Ms)" v-if="outbound.stream.xhttp.mode === 'packet-up'">
-            <a-input v-model.trim="outbound.stream.xhttp.scMinPostsIntervalMs"></a-input>
-        </a-form-item>
-        <a-form-item label="Max Concurrency" v-if="!outbound.stream.xhttp.xmux.maxConnections">
-            <a-input v-model="outbound.stream.xhttp.xmux.maxConcurrency"></a-input>
-        </a-form-item>
-        <a-form-item label="Max Connections" v-if="!outbound.stream.xhttp.xmux.maxConcurrency">
-            <a-input v-model="outbound.stream.xhttp.xmux.maxConnections"></a-input>
-        </a-form-item>
-        <a-form-item label="Max Reuse Times">
-            <a-input v-model="outbound.stream.xhttp.xmux.cMaxReuseTimes"></a-input>
-        </a-form-item>
-        <a-form-item label="Max Request Times">
-            <a-input v-model="outbound.stream.xhttp.xmux.hMaxRequestTimes"></a-input>
-        </a-form-item>
-        <a-form-item label="Max Reusable Secs">
-            <a-input v-model="outbound.stream.xhttp.xmux.hMaxReusableSecs"></a-input>
-        </a-form-item>
-        <a-form-item label='Keep Alive Period'>
-            <a-input-number v-model.number="outbound.stream.xhttp.xmux.hKeepAlivePeriod"></a-input-number>
-        </a-form-item>
+
+        <template v-if="outbound.stream.xhttp.extraEnable">
+            <a-form-item label="Request Headers">
+                <a-button icon="plus" size="small"
+                    @click="outbound.stream.xhttp.extra.addHeader('', '')"></a-button>
+            </a-form-item>
+            <a-form-item :wrapper-col="{ span: 24 }">
+                <a-input-group compact v-for="(header, index) in outbound.stream.xhttp.extra.headers">
+                    <a-input style="width: 50%" v-model.trim="header.name" placeholder='Name'
+                        :class="header.name && header.name.toLowerCase() === 'host' ? 'has-error' : ''">
+                        <template slot="addonBefore" style="margin: 0;">[[ index+1 ]]</template>
+                    </a-input>
+                    <a-input style="width: 50%" v-model.trim="header.value" placeholder='Value'>
+                        <a-button slot="addonAfter" size="small"
+                            @click="outbound.stream.xhttp.extra.removeHeader(index)">-</a-button>
+                    </a-input>
+                </a-input-group>
+                <a-alert v-if="outbound.stream.xhttp.extra.headers.some(h => h.name && h.name.toLowerCase() === 'host')"
+                    type="warning" show-icon style="margin-top: 4px;"
+                    message='"Host" header is not allowed here; use the Host field above (#4113).'>
+                </a-alert>
+            </a-form-item>
+            <a-form-item label="Padding Bytes">
+                <a-input v-model.trim="outbound.stream.xhttp.extra.xPaddingBytes" placeholder="100-1000"></a-input>
+            </a-form-item>
+            <a-form-item label="Max Upload Size (Byte)" v-if="outbound.stream.xhttp.mode === 'packet-up'">
+                <a-input v-model.trim="outbound.stream.xhttp.extra.scMaxEachPostBytes" placeholder="1000000"></a-input>
+            </a-form-item>
+            <a-form-item label="No gRPC Header"
+                v-if="outbound.stream.xhttp.mode === 'stream-up' || outbound.stream.xhttp.mode === 'stream-one'">
+                <a-switch v-model="outbound.stream.xhttp.extra.noGRPCHeader"></a-switch>
+            </a-form-item>
+            <a-form-item label="Min Upload Interval (Ms)" v-if="outbound.stream.xhttp.mode === 'packet-up'">
+                <a-input v-model.trim="outbound.stream.xhttp.extra.scMinPostsIntervalMs"></a-input>
+            </a-form-item>
+            <a-form-item label="Max Concurrency" v-if="!outbound.stream.xhttp.extra.xmux.maxConnections">
+                <a-input v-model="outbound.stream.xhttp.extra.xmux.maxConcurrency"></a-input>
+            </a-form-item>
+            <a-form-item label="Max Connections" v-if="!outbound.stream.xhttp.extra.xmux.maxConcurrency">
+                <a-input v-model="outbound.stream.xhttp.extra.xmux.maxConnections"></a-input>
+            </a-form-item>
+            <a-form-item label="Max Reuse Times">
+                <a-input v-model="outbound.stream.xhttp.extra.xmux.cMaxReuseTimes"></a-input>
+            </a-form-item>
+            <a-form-item label="Max Request Times">
+                <a-input v-model="outbound.stream.xhttp.extra.xmux.hMaxRequestTimes"></a-input>
+            </a-form-item>
+            <a-form-item label="Max Reusable Secs">
+                <a-input v-model="outbound.stream.xhttp.extra.xmux.hMaxReusableSecs"></a-input>
+            </a-form-item>
+            <a-form-item label='Keep Alive Period'>
+                <a-input-number v-model.number="outbound.stream.xhttp.extra.xmux.hKeepAlivePeriod"></a-input-number>
+            </a-form-item>
+            <a-form-item label="Download Settings">
+                <a-tooltip placement="bottom">
+                    <template slot="title">
+                        <span>
+                            XHTTP upstream/downstream separation. When enabled, the
+                            JSON below is sent to xray-core as
+                            "extra.downloadSettings". Must be a full streamSettings
+                            object (address, port, network, security,
+                            tlsSettings/realitySettings, xhttpSettings, sockopt).
+                            Inner xhttpSettings.path MUST match the upload path.
+                        </span>
+                    </template>
+                    <a-switch v-model="outbound.stream.xhttp.extra.downloadSettingsEnable"></a-switch>
+                </a-tooltip>
+            </a-form-item>
+            <a-form-item v-if="outbound.stream.xhttp.extra.downloadSettingsEnable" label="Download JSON">
+                <a-input
+                    type="textarea"
+                    :auto-size="{ minRows: 8, maxRows: 20 }"
+                    v-model="outbound.stream.xhttp.extra.downloadSettings"
+                    style="font-family: monospace; direction: ltr; text-align: left;"
+                    placeholder='{"address": "another.example.com", "port": 443, "network": "xhttp", "security": "tls", "tlsSettings": {}, "xhttpSettings": {"path": "/yourpath", "mode": "auto"}}'>
+                </a-input>
+            </a-form-item>
+        </template>
     </template>
     <!-- hysteria -->
     <template v-if="outbound.stream.network === 'hysteria'">
