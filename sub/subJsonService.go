@@ -182,6 +182,7 @@ func (s *SubJsonService) getConfig(inbound *model.Inbound, client model.Client, 
 		inbound.Listen = extPrxy["dest"].(string)
 		inbound.Port = int(extPrxy["port"].(float64))
 		newStream := stream
+		var newOutbounds []json_util.RawMessage
 		switch extPrxy["forceTls"].(string) {
 		case "tls":
 			if newStream["security"] != "tls" {
@@ -194,9 +195,37 @@ func (s *SubJsonService) getConfig(inbound *model.Inbound, client model.Client, 
 				delete(newStream, "tlsSettings")
 			}
 		}
-		streamSettings, _ := json.MarshalIndent(newStream, "", "  ")
+		if newStream["security"] != "none" {
+			newTlsSettings := newStream["tlsSettings"].(map[string]interface{})
+			if utlsValue, ok := extPrxy["utls"].(string); ok && len(utlsValue) > 0 {
+				newTlsSettings["fingerprint"] = utlsValue
+			}
+			if sniValue, ok := extPrxy["sni"].(string); ok && len(sniValue) > 0 {
+				newTlsSettings["serverName"] = sniValue
+			}
+			if alpnValue, ok := extPrxy["alpn"].([]interface{}); ok && len(alpnValue) > 0 {
+				newTlsSettings["alpn"] = alpnValue
+			}
+			if allowInsecureValue, ok := extPrxy["allowInsecure"].(bool); ok && allowInsecureValue {
+				newTlsSettings["allowInsecure"] = "1"
+			}
+			newStream["tlsSettings"] = newTlsSettings
+		}
 
-		var newOutbounds []json_util.RawMessage
+		if fragmentValue, ok := extPrxy["fragment"].(map[string]interface{}); ok {
+			newTag := "freedom_out_" + extPrxy["remark"].(string) + "_" + random.Seq(10)
+			newOutboundFreedom := map[string]interface{}{
+				"protocol": "freedom",
+				"settings": map[string]interface{}{
+					"fragment": fragmentValue,
+				},
+				"tag": newTag,
+			}
+			newOutboundFreedomJson, _ := json.MarshalIndent(newOutboundFreedom, "", "  ")
+			newOutbounds = append(newOutbounds, newOutboundFreedomJson)
+			newStream["sockopt"] = json_util.RawMessage(fmt.Sprintf(`{"dialerProxy": "%s"}`, newTag))
+		}
+		streamSettings, _ := json.MarshalIndent(newStream, "", "  ")
 
 		switch inbound.Protocol {
 		case "vmess":

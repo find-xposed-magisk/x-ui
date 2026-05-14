@@ -250,6 +250,10 @@ style attribute {
     margin-bottom: 2px;
 }
 
+.ant-select-selection--multiple {
+    padding-bottom: 0 !important;
+}
+
 @media (min-width: 769px) {
     .drawer-handle {
         display: none;

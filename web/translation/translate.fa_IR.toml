@@ -398,8 +398,8 @@
 [pages.xray.outbound.freedom]
 "strategy" = "استراتژی"
 "redirect" = "تغییر مسیر"
-"fragment" = "Fragment"
-"packets" = "Packets"
+"fragment" = "فرگمنت"
+"packets" = "بسته‌ها"
 "length" = "طول"
 "interval" = "بازه"
 "noises" = "نویزها"

@@ -295,6 +295,27 @@ func (s *SubService) genVmessLink(inbound *model.Inbound, email string) string {
 			if newSecurity != "same" {
 				newObj["tls"] = newSecurity
 			}
+			if utlsValue, ok := ep["utls"].(string); ok && len(utlsValue) > 0 {
+				newObj["fp"] = utlsValue
+			}
+			if sniValue, ok := ep["sni"].(string); ok && len(sniValue) > 0 {
+				newObj["sni"] = sniValue
+			}
+			if alpnValue, ok := ep["alpn"].([]interface{}); ok && len(alpnValue) > 0 {
+				alpn := make([]string, len(alpnValue))
+				for i, a := range alpnValue {
+					alpn[i] = a.(string)
+				}
+				newObj["alpn"] = strings.Join(alpn, ",")
+			}
+			if allowInsecureValue, ok := ep["allowInsecure"].(bool); ok && allowInsecureValue {
+				newObj["allowInsecure"] = "1"
+			}
+			if fragmentValue, ok := ep["fragment"].(map[string]interface{}); ok {
+				newObj["packets"], _ = fragmentValue["packets"].(string)
+				newObj["length"], _ = fragmentValue["length"].(string)
+				newObj["interval"], _ = fragmentValue["interval"].(string)
+			}
 			if index > 0 {
 				links += "\n"
 			}
@@ -481,6 +502,27 @@ func (s *SubService) genVlessLink(inbound *model.Inbound, email string) string {
 			newSecurity, _ := ep["forceTls"].(string)
 			dest, _ := ep["dest"].(string)
 			port := int(ep["port"].(float64))
+			if utlsValue, ok := ep["utls"].(string); ok && len(utlsValue) > 0 {
+				params["fp"] = utlsValue
+			}
+			if sniValue, ok := ep["sni"].(string); ok && len(sniValue) > 0 {
+				params["sni"] = sniValue
+			}
+			if alpnValue, ok := ep["alpn"].([]interface{}); ok && len(alpnValue) > 0 {
+				alpn := make([]string, len(alpnValue))
+				for i, a := range alpnValue {
+					alpn[i] = a.(string)
+				}
+				params["alpn"] = strings.Join(alpn, ",")
+			}
+			if allowInsecureValue, ok := ep["allowInsecure"].(bool); ok && allowInsecureValue {
+				params["allowInsecure"] = "1"
+			}
+			if fragmentValue, ok := ep["fragment"].(map[string]interface{}); ok {
+				params["packets"] = fragmentValue["packets"].(string)
+				params["length"] = fragmentValue["length"].(string)
+				params["interval"] = fragmentValue["interval"].(string)
+			}
 			link := fmt.Sprintf("vless://%s@%s:%d", uuid, dest, port)
 
 			if newSecurity != "same" {
@@ -682,6 +724,27 @@ func (s *SubService) genTrojanLink(inbound *model.Inbound, email string) string 
 			newSecurity, _ := ep["forceTls"].(string)
 			dest, _ := ep["dest"].(string)
 			port := int(ep["port"].(float64))
+			if utlsValue, ok := ep["utls"].(string); ok && len(utlsValue) > 0 {
+				params["fp"] = utlsValue
+			}
+			if sniValue, ok := ep["sni"].(string); ok && len(sniValue) > 0 {
+				params["sni"] = sniValue
+			}
+			if alpnValue, ok := ep["alpn"].([]interface{}); ok && len(alpnValue) > 0 {
+				alpn := make([]string, len(alpnValue))
+				for i, a := range alpnValue {
+					alpn[i] = a.(string)
+				}
+				params["alpn"] = strings.Join(alpn, ",")
+			}
+			if allowInsecureValue, ok := ep["allowInsecure"].(bool); ok && allowInsecureValue {
+				params["allowInsecure"] = "1"
+			}
+			if fragmentValue, ok := ep["fragment"].(map[string]interface{}); ok {
+				params["packets"] = fragmentValue["packets"].(string)
+				params["length"] = fragmentValue["length"].(string)
+				params["interval"] = fragmentValue["interval"].(string)
+			}
 			link := fmt.Sprintf("trojan://%s@%s:%d", password, dest, port)
 
 			if newSecurity != "same" {
@@ -859,6 +922,27 @@ func (s *SubService) genShadowsocksLink(inbound *model.Inbound, email string) st
 			newSecurity, _ := ep["forceTls"].(string)
 			dest, _ := ep["dest"].(string)
 			port := int(ep["port"].(float64))
+			if utlsValue, ok := ep["utls"].(string); ok && len(utlsValue) > 0 {
+				params["fp"] = utlsValue
+			}
+			if sniValue, ok := ep["sni"].(string); ok && len(sniValue) > 0 {
+				params["sni"] = sniValue
+			}
+			if alpnValue, ok := ep["alpn"].([]interface{}); ok && len(alpnValue) > 0 {
+				alpn := make([]string, len(alpnValue))
+				for i, a := range alpnValue {
+					alpn[i] = a.(string)
+				}
+				params["alpn"] = strings.Join(alpn, ",")
+			}
+			if allowInsecureValue, ok := ep["allowInsecure"].(bool); ok && allowInsecureValue {
+				params["allowInsecure"] = "1"
+			}
+			if fragmentValue, ok := ep["fragment"].(map[string]interface{}); ok {
+				params["packets"] = fragmentValue["packets"].(string)
+				params["length"] = fragmentValue["length"].(string)
+				params["interval"] = fragmentValue["interval"].(string)
+			}
 			link := fmt.Sprintf("ss://%s@%s:%d", base64.StdEncoding.EncodeToString([]byte(encPart)), dest, port)
 
 			if newSecurity != "same" {
@@ -954,6 +1038,57 @@ func (s *SubService) genHysteriaLink(inbound *model.Inbound, email string) strin
 	protocol := "hysteria2"
 	if int(version) == 1 {
 		protocol = "hysteria"
+	}
+
+	externalProxies, _ := stream["externalProxy"].([]interface{})
+
+	if len(externalProxies) > 0 {
+		links := ""
+		for index, externalProxy := range externalProxies {
+			ep, _ := externalProxy.(map[string]interface{})
+			newSecurity, _ := ep["forceTls"].(string)
+			dest, _ := ep["dest"].(string)
+			port := int(ep["port"].(float64))
+			if utlsValue, ok := ep["utls"].(string); ok && len(utlsValue) > 0 {
+				params["fp"] = utlsValue
+			}
+			if sniValue, ok := ep["sni"].(string); ok && len(sniValue) > 0 {
+				params["sni"] = sniValue
+			}
+			if alpnValue, ok := ep["alpn"].([]interface{}); ok && len(alpnValue) > 0 {
+				alpn := make([]string, len(alpnValue))
+				for i, a := range alpnValue {
+					alpn[i] = a.(string)
+				}
+				params["alpn"] = strings.Join(alpn, ",")
+			}
+			if allowInsecureValue, ok := ep["allowInsecure"].(bool); ok && allowInsecureValue {
+				params["allowInsecure"] = "1"
+			}
+			if fragmentValue, ok := ep["fragment"].(map[string]interface{}); ok {
+				params["packets"] = fragmentValue["packets"].(string)
+				params["length"] = fragmentValue["length"].(string)
+				params["interval"] = fragmentValue["interval"].(string)
+			}
+			link := fmt.Sprintf("%s://%s@%s:%d", protocol, auth, dest, port)
+			if newSecurity != "same" {
+				params["security"] = newSecurity
+			} else {
+				params["security"] = "tls"
+			}
+			url, _ := url.Parse(link)
+			q := url.Query()
+			for k, v := range params {
+				q.Add(k, v)
+			}
+			url.RawQuery = q.Encode()
+			url.Fragment = s.genRemark(inbound, email, ep["remark"].(string))
+			if index > 0 {
+				links += "\n"
+			}
+			links += url.String()
+		}
+		return links
 	}
 
 	link := fmt.Sprintf("%s://%s@%s:%d", protocol, auth, address, port)
