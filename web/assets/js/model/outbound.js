@@ -691,7 +691,7 @@ class UdpMask extends CommonClass {
             case 'xdns':
                 return { domain: settings.domain || '' };
             case 'xicmp':
-                return { ip: settings.ip || '', id: settings.id ?? 0 };
+                return { listenIp: settings.listenIp || settings.ip || '0.0.0.0', id: settings.id ?? 0 };
             case 'mkcp-original':
             case 'header-dtls':
             case 'header-srtp':
@@ -700,11 +700,18 @@ class UdpMask extends CommonClass {
             case 'header-wireguard':
                 return {}; // No settings needed
             case 'header-custom':
-                return { client: [], server: [] };
+                return { client: settings.client || [], server: settings.server || [] };
             case 'noise':
-                return { reset: 0, noise: [] };
+                return { reset: settings.reset ?? 0, noise: settings.noise || [] };
             case 'sudoku':
-                return { ascii: '', customTable: '', customTables: [], paddingMin: 0, paddingMax: 0 };
+                return {
+                    password: settings.password || '',
+                    ascii: settings.ascii || '',
+                    customTable: settings.customTable || '',
+                    customTables: settings.customTables || [],
+                    paddingMin: settings.paddingMin ?? 0,
+                    paddingMax: settings.paddingMax ?? 0,
+                };
             default:
                 return settings;
         }
@@ -725,20 +732,178 @@ class UdpMask extends CommonClass {
     }
 }
 
-class FinalMaskStreamSettings extends CommonClass {
-    constructor(udp = []) {
+class TcpMask extends CommonClass {
+    constructor(type = 'header-custom', settings = {}) {
         super();
-        this.udp = Array.isArray(udp) ? udp.map(u => new UdpMask(u.type, u.settings)) : [new UdpMask(udp.type, udp.settings)];
+        this.type = type;
+        this.settings = this._getDefaultSettings(type, settings);
+    }
+
+    _getDefaultSettings(type, settings = {}) {
+        switch (type) {
+            case 'header-custom':
+                return {
+                    clients: settings.clients || [],
+                    servers: settings.servers || [],
+                    errors: settings.errors || [],
+                };
+            case 'fragment':
+                return {
+                    packets: settings.packets || 'tlshello',
+                    length: settings.length || '100-200',
+                    delay: settings.delay || '10-20',
+                    maxSplit: settings.maxSplit || '',
+                };
+            case 'sudoku':
+                return {
+                    password: settings.password || '',
+                    ascii: settings.ascii || '',
+                    customTable: settings.customTable || '',
+                    customTables: settings.customTables || [],
+                    paddingMin: settings.paddingMin ?? 0,
+                    paddingMax: settings.paddingMax ?? 0,
+                };
+            default:
+                return settings;
+        }
     }
 
     static fromJson(json = {}) {
-        return new FinalMaskStreamSettings(json.udp || []);
+        return new TcpMask(
+            json.type || 'header-custom',
+            json.settings || {}
+        );
     }
 
     toJson() {
         return {
-            udp: this.udp.map(udp => udp.toJson())
+            type: this.type,
+            settings: (this.settings && Object.keys(this.settings).length > 0) ? this.settings : undefined
         };
+    }
+}
+
+class QuicParams extends CommonClass {
+    constructor({
+        congestion = '',
+        debug = false,
+        brutalUp = '',
+        brutalDown = '',
+        udpHopPorts = '',
+        udpHopInterval = '',
+        initStreamReceiveWindow = 0,
+        maxStreamReceiveWindow = 0,
+        initConnectionReceiveWindow = 0,
+        maxConnectionReceiveWindow = 0,
+        maxIdleTimeout = 0,
+        keepAlivePeriod = 0,
+        disablePathMTUDiscovery = false,
+        maxIncomingStreams = 0,
+    } = {}) {
+        super();
+        this.congestion = congestion;
+        this.debug = debug;
+        this.brutalUp = brutalUp;
+        this.brutalDown = brutalDown;
+        this.udpHopPorts = udpHopPorts;
+        this.udpHopInterval = udpHopInterval;
+        this.initStreamReceiveWindow = initStreamReceiveWindow;
+        this.maxStreamReceiveWindow = maxStreamReceiveWindow;
+        this.initConnectionReceiveWindow = initConnectionReceiveWindow;
+        this.maxConnectionReceiveWindow = maxConnectionReceiveWindow;
+        this.maxIdleTimeout = maxIdleTimeout;
+        this.keepAlivePeriod = keepAlivePeriod;
+        this.disablePathMTUDiscovery = disablePathMTUDiscovery;
+        this.maxIncomingStreams = maxIncomingStreams;
+    }
+
+    static hasAnyMeaningfulValue(json) {
+        if (!json || typeof json !== 'object') return false;
+        const keys = ['congestion', 'debug', 'brutalUp', 'brutalDown', 'udpHop',
+            'initStreamReceiveWindow', 'maxStreamReceiveWindow',
+            'initConnectionReceiveWindow', 'maxConnectionReceiveWindow',
+            'maxIdleTimeout', 'keepAlivePeriod', 'disablePathMTUDiscovery',
+            'maxIncomingStreams'];
+        return keys.some(k => json[k] !== undefined && json[k] !== '' && json[k] !== 0 && json[k] !== false);
+    }
+
+    static fromJson(json = {}) {
+        const udpHop = json.udpHop || {};
+        return new QuicParams({
+            congestion: json.congestion || '',
+            debug: !!json.debug,
+            brutalUp: json.brutalUp || '',
+            brutalDown: json.brutalDown || '',
+            udpHopPorts: udpHop.ports || '',
+            udpHopInterval: udpHop.interval !== undefined ? String(udpHop.interval) : '',
+            initStreamReceiveWindow: json.initStreamReceiveWindow || 0,
+            maxStreamReceiveWindow: json.maxStreamReceiveWindow || 0,
+            initConnectionReceiveWindow: json.initConnectionReceiveWindow || 0,
+            maxConnectionReceiveWindow: json.maxConnectionReceiveWindow || 0,
+            maxIdleTimeout: json.maxIdleTimeout || 0,
+            keepAlivePeriod: json.keepAlivePeriod || 0,
+            disablePathMTUDiscovery: !!json.disablePathMTUDiscovery,
+            maxIncomingStreams: json.maxIncomingStreams || 0,
+        });
+    }
+
+    toJson() {
+        const result = {};
+        if (this.congestion) result.congestion = this.congestion;
+        if (this.debug) result.debug = this.debug;
+        if (this.brutalUp) result.brutalUp = this.brutalUp;
+        if (this.brutalDown) result.brutalDown = this.brutalDown;
+        if (this.udpHopPorts) {
+            result.udpHop = { ports: this.udpHopPorts };
+            if (this.udpHopInterval !== '') result.udpHop.interval = this.udpHopInterval;
+        }
+        if (this.initStreamReceiveWindow) result.initStreamReceiveWindow = this.initStreamReceiveWindow;
+        if (this.maxStreamReceiveWindow) result.maxStreamReceiveWindow = this.maxStreamReceiveWindow;
+        if (this.initConnectionReceiveWindow) result.initConnectionReceiveWindow = this.initConnectionReceiveWindow;
+        if (this.maxConnectionReceiveWindow) result.maxConnectionReceiveWindow = this.maxConnectionReceiveWindow;
+        if (this.maxIdleTimeout) result.maxIdleTimeout = this.maxIdleTimeout;
+        if (this.keepAlivePeriod) result.keepAlivePeriod = this.keepAlivePeriod;
+        if (this.disablePathMTUDiscovery) result.disablePathMTUDiscovery = this.disablePathMTUDiscovery;
+        if (this.maxIncomingStreams) result.maxIncomingStreams = this.maxIncomingStreams;
+        return Object.keys(result).length > 0 ? result : undefined;
+    }
+}
+
+class FinalMaskStreamSettings extends CommonClass {
+    constructor(udp = [], tcp = [], quicParams = undefined) {
+        super();
+        this.udp = Array.isArray(udp) ? udp.map(u => new UdpMask(u.type, u.settings)) : [];
+        this.tcp = Array.isArray(tcp) ? tcp.map(t => new TcpMask(t.type, t.settings)) : [];
+        this.quicParams = quicParams;
+    }
+
+    static fromJson(json = {}) {
+        const quicParams = QuicParams.hasAnyMeaningfulValue(json.quicParams)
+            ? QuicParams.fromJson(json.quicParams) : undefined;
+        return new FinalMaskStreamSettings(
+            json.udp || [],
+            json.tcp || [],
+            quicParams,
+        );
+    }
+
+    toJson() {
+        const result = {};
+        if (this.udp && this.udp.length > 0) result.udp = this.udp.map(udp => udp.toJson());
+        if (this.tcp && this.tcp.length > 0) result.tcp = this.tcp.map(tcp => tcp.toJson());
+        if (this.quicParams) {
+            const qp = this.quicParams.toJson();
+            if (qp) result.quicParams = qp;
+        }
+        return result;
+    }
+
+    get quicParamsEnable() {
+        return this.quicParams != undefined;
+    }
+
+    set quicParamsEnable(value) {
+        this.quicParams = value ? new QuicParams() : undefined;
     }
 }
 
@@ -784,8 +949,20 @@ class StreamSettings extends CommonClass {
         }
     }
 
+    addTcpMask(type = 'header-custom') {
+        this.finalmask.tcp.push(new TcpMask(type));
+    }
+
+    delTcpMask(index) {
+        if (this.finalmask.tcp) {
+            this.finalmask.tcp.splice(index, 1);
+        }
+    }
+
     get hasFinalMask() {
-        return this.finalmask.udp && this.finalmask.udp.length > 0;
+        return (this.finalmask.udp && this.finalmask.udp.length > 0) ||
+               (this.finalmask.tcp && this.finalmask.tcp.length > 0) ||
+               this.finalmask.quicParams !== undefined;
     }
 
     get isTls() {
