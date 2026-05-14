@@ -15,16 +15,17 @@
 
     <!-- tls settings -->
     <template v-if="inbound.stream.isTls">
-        <a-form-item label="SNI" placeholder="Server Name Indication">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.tls.sni" }}'
+            placeholder='{{ i18n "pages.inbounds.stream.tls.sniDesc" }}'>
             <a-input v-model.trim="inbound.stream.tls.sni"></a-input>
         </a-form-item>
-        <a-form-item label="Cipher Suites">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.tls.cipherSuites" }}'>
             <a-select v-model="inbound.stream.tls.cipherSuites" :dropdown-class-name="themeSwitcher.currentTheme">
                 <a-select-option value="">Auto</a-select-option>
                 <a-select-option v-for="key,value in TLS_CIPHER_OPTION" :value="key">[[ value ]]</a-select-option>
             </a-select>
         </a-form-item>
-        <a-form-item label="Min/Max Version">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.tls.minMaxVersion" }}'>
             <a-input-group compact>
                 <a-select v-model="inbound.stream.tls.minVersion" style="width:100px;"
                     :dropdown-class-name="themeSwitcher.currentTheme">
@@ -36,29 +37,29 @@
                 </a-select>
             </a-input-group>
         </a-form-item>
-        <a-form-item label="uTLS">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.tls.uTLS" }}'>
             <a-select v-model="inbound.stream.tls.settings.fingerprint"
                 :dropdown-class-name="themeSwitcher.currentTheme">
                 <a-select-option value=''>None</a-select-option>
                 <a-select-option v-for="key in UTLS_FINGERPRINT" :value="key">[[ key ]]</a-select-option>
             </a-select>
         </a-form-item>
-        <a-form-item label="ALPN">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.tls.alpn" }}'>
             <a-select mode="multiple" :dropdown-class-name="themeSwitcher.currentTheme"
                 v-model="inbound.stream.tls.alpn">
                 <a-select-option v-for="alpn in ALPN_OPTION" :value="alpn">[[ alpn ]]</a-select-option>
             </a-select>
         </a-form-item>
-        <a-form-item label="Allow Insecure">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.tls.allowInsecure" }}'>
             <a-switch v-model="inbound.stream.tls.settings.allowInsecure"></a-switch>
         </a-form-item>
-        <a-form-item label="Reject Unknown SNI">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.tls.rejectUnknownSni" }}'>
             <a-switch v-model="inbound.stream.tls.rejectUnknownSni"></a-switch>
         </a-form-item>
-        <a-form-item label="Disable System Root">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.tls.disableSystemRoot" }}'>
         <a-switch v-model="inbound.stream.tls.disableSystemRoot"></a-switch>
         </a-form-item>
-        <a-form-item label="Session Resumption">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.tls.sessionResumption" }}'>
         <a-switch v-model="inbound.stream.tls.enableSessionResumption"></a-switch>
         </a-form-item>
         <a-divider :style="{ margin: '0' }"></a-divider>
@@ -93,17 +94,17 @@
                     <a-input type="textarea" :rows="3" style="width:250px;" v-model="cert.key"></a-input>
                 </a-form-item>
             </template>
-            <a-form-item label='OCSP stapling'>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.tls.ocspStapling" }}'>
                 <a-input-number v-model.number="cert.ocspStapling" :min="0"></a-input-number>
             </a-form-item>
         </template>
-        <a-form-item label='ECH key'>
+        <a-form-item label='{{ i18n "pages.inbounds.stream.tls.echKey" }}'>
             <a-input v-model="inbound.stream.tls.echServerKeys"></a-input>
         </a-form-item>
-        <a-form-item label='ECH config'>
+        <a-form-item label='{{ i18n "pages.inbounds.stream.tls.echConfig" }}'>
             <a-input v-model="inbound.stream.tls.settings.echConfigList"></a-input>
         </a-form-item>
-        <a-form-item label='ECH force query'>
+        <a-form-item label='{{ i18n "pages.inbounds.stream.tls.echForceQuery" }}'>
             <a-select v-model="inbound.stream.tls.echForceQuery" :dropdown-class-name="themeSwitcher.currentTheme">
                 <a-select-option v-for="key in ['none', 'half', 'full']" :value="key">[[ key ]]</a-select-option>
             </a-select>

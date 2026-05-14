@@ -6,20 +6,17 @@
     <a-form-item label='{{ i18n "path" }}'>
         <a-input v-model.trim="inbound.stream.xhttp.path"></a-input>
     </a-form-item>
-    <a-form-item label='Mode'>
+    <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.mode" }}'>
         <a-select v-model="inbound.stream.xhttp.mode" style="width: 50%"
             :dropdown-class-name="themeSwitcher.currentTheme">
             <a-select-option v-for="key in MODE_OPTION" :value="key">[[ key ]]</a-select-option>
         </a-select>
     </a-form-item>
-    <a-form-item label="Extra Settings">
+
+    <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.extraSettings" }}'>
         <a-tooltip placement="bottom">
             <template slot="title">
-                <span>
-                    Per xray-core XHTTP, all settings other than host/path/mode
-                    live under "extra". When disabled the object is omitted from
-                    the generated JSON and xray-core uses its defaults.
-                </span>
+                <span>{{ i18n "pages.inbounds.stream.xhttp.extraSettingsDesc" }}</span>
             </template>
             <a-switch v-model="inbound.stream.xhttp.extraEnable"></a-switch>
         </a-tooltip>
@@ -45,34 +42,37 @@
             </a-input-group>
             <a-alert v-if="inbound.stream.xhttp.extra.headers.some(h => h.name && h.name.toLowerCase() === 'host')"
                 type="warning" show-icon style="margin-top: 4px;"
-                message='"Host" header is not allowed here; use the Host field above (#4113).'>
+                message='{{ i18n "pages.inbounds.stream.xhttp.hostHeaderForbidden" }}'>
             </a-alert>
         </a-form-item>
-        <a-form-item label="Max Buffered Upload" v-if="inbound.stream.xhttp.mode === 'packet-up'">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.maxBufferedUpload" }}'
+            v-if="inbound.stream.xhttp.mode === 'packet-up'">
             <a-input-number v-model.number="inbound.stream.xhttp.extra.scMaxBufferedPosts"></a-input-number>
         </a-form-item>
-        <a-form-item label="Max Upload Size (Byte)" v-if="inbound.stream.xhttp.mode === 'packet-up'">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.maxUploadSize" }}'
+            v-if="inbound.stream.xhttp.mode === 'packet-up'">
             <a-input v-model.trim="inbound.stream.xhttp.extra.scMaxEachPostBytes"></a-input>
         </a-form-item>
-        <a-form-item label="Stream-Up Server" v-if="inbound.stream.xhttp.mode === 'stream-up'">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.streamUpServer" }}'
+            v-if="inbound.stream.xhttp.mode === 'stream-up'">
             <a-input v-model.trim="inbound.stream.xhttp.extra.scStreamUpServerSecs"></a-input>
         </a-form-item>
-        <a-form-item label="Padding Bytes">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.paddingBytes" }}'>
             <a-input v-model.trim="inbound.stream.xhttp.extra.xPaddingBytes"></a-input>
         </a-form-item>
-        <a-form-item label="Padding Obfs Mode">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.paddingObfsMode" }}'>
             <a-switch v-model="inbound.stream.xhttp.extra.xPaddingObfsMode"></a-switch>
         </a-form-item>
         <template v-if="inbound.stream.xhttp.extra.xPaddingObfsMode">
-            <a-form-item label="Padding Key">
+            <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.paddingKey" }}'>
                 <a-input v-model.trim="inbound.stream.xhttp.extra.xPaddingKey"
                     placeholder="x_padding"></a-input>
             </a-form-item>
-            <a-form-item label="Padding Header">
+            <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.paddingHeader" }}'>
                 <a-input v-model.trim="inbound.stream.xhttp.extra.xPaddingHeader"
                     placeholder="X-Padding"></a-input>
             </a-form-item>
-            <a-form-item label="Padding Placement">
+            <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.paddingPlacement" }}'>
                 <a-select v-model="inbound.stream.xhttp.extra.xPaddingPlacement"
                     :dropdown-class-name="themeSwitcher.currentTheme">
                     <a-select-option value>Default (queryInHeader)</a-select-option>
@@ -81,7 +81,7 @@
                     <a-select-option value="header">header</a-select-option>
                 </a-select>
             </a-form-item>
-            <a-form-item label="Padding Method">
+            <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.paddingMethod" }}'>
                 <a-select v-model="inbound.stream.xhttp.extra.xPaddingMethod"
                     :dropdown-class-name="themeSwitcher.currentTheme">
                     <a-select-option value>Default (repeat-x)</a-select-option>
@@ -90,7 +90,7 @@
                 </a-select>
             </a-form-item>
         </template>
-        <a-form-item label="Uplink HTTP Method">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.uplinkHTTPMethod" }}'>
             <a-select v-model="inbound.stream.xhttp.extra.uplinkHTTPMethod"
                 :dropdown-class-name="themeSwitcher.currentTheme">
                 <a-select-option value>Default (POST)</a-select-option>
@@ -99,7 +99,7 @@
                 <a-select-option value="GET">GET (packet-up only)</a-select-option>
             </a-select>
         </a-form-item>
-        <a-form-item label="Session Placement">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.sessionPlacement" }}'>
             <a-select v-model="inbound.stream.xhttp.extra.sessionPlacement"
                 :dropdown-class-name="themeSwitcher.currentTheme">
                 <a-select-option value>Default (path)</a-select-option>
@@ -109,12 +109,12 @@
                 <a-select-option value="query">query</a-select-option>
             </a-select>
         </a-form-item>
-        <a-form-item label="Session Key"
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.sessionKey" }}'
             v-if="inbound.stream.xhttp.extra.sessionPlacement && inbound.stream.xhttp.extra.sessionPlacement !== 'path'">
             <a-input v-model.trim="inbound.stream.xhttp.extra.sessionKey"
                 placeholder="x_session"></a-input>
         </a-form-item>
-        <a-form-item label="Sequence Placement">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.seqPlacement" }}'>
             <a-select v-model="inbound.stream.xhttp.extra.seqPlacement"
                 :dropdown-class-name="themeSwitcher.currentTheme">
                 <a-select-option value>Default (path)</a-select-option>
@@ -124,12 +124,12 @@
                 <a-select-option value="query">query</a-select-option>
             </a-select>
         </a-form-item>
-        <a-form-item label="Sequence Key"
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.seqKey" }}'
             v-if="inbound.stream.xhttp.extra.seqPlacement && inbound.stream.xhttp.extra.seqPlacement !== 'path'">
             <a-input v-model.trim="inbound.stream.xhttp.extra.seqKey"
                 placeholder="x_seq"></a-input>
         </a-form-item>
-        <a-form-item label="Uplink Data Placement"
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.uplinkDataPlacement" }}'
             v-if="inbound.stream.xhttp.mode === 'packet-up'">
             <a-select v-model="inbound.stream.xhttp.extra.uplinkDataPlacement"
                 :dropdown-class-name="themeSwitcher.currentTheme">
@@ -139,27 +139,23 @@
                 <a-select-option value="query">query</a-select-option>
             </a-select>
         </a-form-item>
-        <a-form-item label="Uplink Data Key"
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.uplinkDataKey" }}'
             v-if="inbound.stream.xhttp.mode === 'packet-up' && inbound.stream.xhttp.extra.uplinkDataPlacement && inbound.stream.xhttp.extra.uplinkDataPlacement !== 'body'">
             <a-input v-model.trim="inbound.stream.xhttp.extra.uplinkDataKey"
                 placeholder="x_data"></a-input>
         </a-form-item>
-        <a-form-item label="Uplink Chunk Size"
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.uplinkChunkSize" }}'
             v-if="inbound.stream.xhttp.mode === 'packet-up' && inbound.stream.xhttp.extra.uplinkDataPlacement && inbound.stream.xhttp.extra.uplinkDataPlacement !== 'body'">
             <a-input-number v-model.number="inbound.stream.xhttp.extra.uplinkChunkSize"
                 :min="0" placeholder="0 (unlimited)"></a-input-number>
         </a-form-item>
-        <a-form-item label="No SSE Header">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.noSSEHeader" }}'>
             <a-switch v-model="inbound.stream.xhttp.extra.noSSEHeader"></a-switch>
         </a-form-item>
-        <a-form-item label="Server Max Header Bytes">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.serverMaxHeaderBytes" }}'>
             <a-tooltip placement="bottom">
                 <template slot="title">
-                    <span>
-                        Server-only. Max size of request headers accepted by the
-                        server. Default 8192. Increase if a CDN/reverse proxy in
-                        front sends larger headers. 0 = use default.
-                    </span>
+                    <span>{{ i18n "pages.inbounds.stream.xhttp.serverMaxHeaderBytesDesc" }}</span>
                 </template>
                 <a-input-number v-model.number="inbound.stream.xhttp.extra.serverMaxHeaderBytes"
                     :min="0" placeholder="0 (=8192)"></a-input-number>
@@ -167,66 +163,57 @@
         </a-form-item>
 
         <a-divider style="margin: 8px 0;">
-            <span style="font-size: 12px; opacity: 0.7;">Client Defaults (shared via extra)</span>
+            <span style="font-size: 12px; opacity: 0.7;">{{ i18n "pages.inbounds.stream.xhttp.clientDefaults" }}</span>
         </a-divider>
-        <a-form-item label="No gRPC Header"
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.noGRPCHeader" }}'
             v-if="inbound.stream.xhttp.mode === 'stream-up' || inbound.stream.xhttp.mode === 'stream-one' || inbound.stream.xhttp.mode === 'auto'">
             <a-tooltip placement="bottom">
                 <template slot="title">
-                    <span>
-                        Pushed to clients via extra. Client-only: tells the client
-                        not to send the gRPC Content-Type header on stream-up/one
-                        requests. Only meaningful for stream-up/stream-one modes.
-                    </span>
+                    <span>{{ i18n "pages.inbounds.stream.xhttp.noGRPCHeaderDesc" }}</span>
                 </template>
                 <a-switch v-model="inbound.stream.xhttp.extra.noGRPCHeader"></a-switch>
             </a-tooltip>
         </a-form-item>
-        <a-form-item label="Min Upload Interval (Ms)"
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.minUploadInterval" }}'
             v-if="inbound.stream.xhttp.mode === 'packet-up' || inbound.stream.xhttp.mode === 'auto'">
             <a-input v-model.trim="inbound.stream.xhttp.extra.scMinPostsIntervalMs"
                 placeholder="30 or 10-50 (range)"></a-input>
         </a-form-item>
-        <a-form-item label="Max Concurrency"
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.maxConcurrency" }}'
             v-if="!inbound.stream.xhttp.extra.xmux.maxConnections">
             <a-input v-model="inbound.stream.xhttp.extra.xmux.maxConcurrency" placeholder="16-32"></a-input>
         </a-form-item>
-        <a-form-item label="Max Connections"
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.maxConnections" }}'
             v-if="!inbound.stream.xhttp.extra.xmux.maxConcurrency">
             <a-input v-model="inbound.stream.xhttp.extra.xmux.maxConnections" placeholder="0 (unlimited)"></a-input>
         </a-form-item>
-        <a-form-item label="Max Reuse Times">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.maxReuseTimes" }}'>
             <a-input v-model="inbound.stream.xhttp.extra.xmux.cMaxReuseTimes"
                 placeholder="0 (unlimited)"></a-input>
         </a-form-item>
-        <a-form-item label="Max Request Times">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.maxRequestTimes" }}'>
             <a-input v-model="inbound.stream.xhttp.extra.xmux.hMaxRequestTimes"
                 placeholder="600-900"></a-input>
         </a-form-item>
-        <a-form-item label="Max Reusable Secs">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.maxReusableSecs" }}'>
             <a-input v-model="inbound.stream.xhttp.extra.xmux.hMaxReusableSecs"
                 placeholder="1800-3000"></a-input>
         </a-form-item>
-        <a-form-item label="Keep Alive Period">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.keepAlivePeriod" }}'>
             <a-input-number v-model.number="inbound.stream.xhttp.extra.xmux.hKeepAlivePeriod"
                 placeholder="0 (auto)"></a-input-number>
         </a-form-item>
-        <a-form-item label="Download Settings">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.downloadSettings" }}'>
             <a-tooltip placement="bottom">
                 <template slot="title">
-                    <span>
-                        XHTTP upstream/downstream separation. When enabled, the JSON
-                        below is shared with clients via "extra.downloadSettings".
-                        Must be a full streamSettings object (address, port, network,
-                        security, tlsSettings/realitySettings, xhttpSettings, sockopt).
-                        The inner xhttpSettings.path MUST match the upload path.
-                    </span>
+                    <span>{{ i18n "pages.inbounds.stream.xhttp.downloadSettingsDesc" }}</span>
                 </template>
                 <a-switch v-model="inbound.stream.xhttp.extra.downloadSettingsEnable"></a-switch>
             </a-tooltip>
         </a-form-item>
         <a-form-item v-if="inbound.stream.xhttp.extra.downloadSettingsEnable"
-            label="Download JSON" :wrapper-col="{ md: { span: 22 } }" :label-col="{ md: { span: 24 } }">
+            label='{{ i18n "pages.inbounds.stream.xhttp.downloadJSON" }}'
+            :wrapper-col="{ md: { span: 22 } }" :label-col="{ md: { span: 24 } }">
             <a-input
                 type="textarea"
                 :auto-size="{ minRows: 8, maxRows: 20 }"

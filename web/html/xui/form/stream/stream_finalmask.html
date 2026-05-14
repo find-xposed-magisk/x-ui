@@ -3,7 +3,7 @@
     v-if="inbound.protocol == Protocols.HYSTERIA || inbound.stream.network == 'kcp'"
     :wrapper-col="{ md: {span:14} }">
     <a-divider :style="{ margin: '5px 0 0' }"></a-divider>
-    <a-form-item label="UDP Masks">
+    <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.udpMasks" }}'>
         <a-button icon="plus" type="primary" size="small"
             @click="inbound.stream.addUdpMask(inbound.protocol === Protocols.HYSTERIA ? 'salamander' : 'mkcp-aes128gcm')"></a-button>
     </a-form-item>
@@ -12,7 +12,7 @@
         <a-form v-for="(mask, index) in inbound.stream.finalmask.udp"
             :key="index" :colon="false"
             :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
-            <a-divider :style="{ margin: '0' }"> UDP Mask [[ index + 1 ]]
+            <a-divider :style="{ margin: '0' }"> {{ i18n "pages.inbounds.stream.finalmask.udpMask" }} [[ index + 1 ]]
                 <a-icon type="delete"
                     @click="() => inbound.stream.delUdpMask(index)"
                     :style="{ color: 'rgb(255, 77, 79)', cursor: 'pointer' }"></a-icon>
@@ -41,30 +41,30 @@
                     </template>
                 </a-select>
             </a-form-item>
-            <a-form-item label='Password'
+            <a-form-item label='{{ i18n "password" }}'
                 v-if="['mkcp-aes128gcm', 'salamander', 'sudoku'].includes(mask.type)">
                 <a-input v-model.trim="mask.settings.password"
-                    placeholder="Obfuscation password"></a-input>
+                    placeholder='{{ i18n "pages.inbounds.stream.finalmask.obfuscationPassword" }}'></a-input>
             </a-form-item>
-            <a-form-item label='Domain'
+            <a-form-item label='{{ i18n "pages.xray.outbound.domain" }}'
                 v-if="['header-dns', 'xdns'].includes(mask.type)">
                 <a-input v-model.trim="mask.settings.domain"
                     placeholder="e.g., www.example.com"></a-input>
             </a-form-item>
             <template v-if="mask.type === 'header-custom'">
-                <a-form-item label='Client'>
+                <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.client" }}'>
                     <a-icon type="plus" type="primary" size="small" @click="mask.settings.client.push({rand: 0, randRange: '0-255', type: 'array', packet: []})" />
                 </a-form-item>
                 <template v-for="(c, index) in mask.settings.client" :key="index">
-                    <a-divider :style="{ margin: '0' }"> Client [[ index + 1 ]]
+                    <a-divider :style="{ margin: '0' }"> {{ i18n "pages.inbounds.stream.finalmask.client" }} [[ index + 1 ]]
                         <a-icon type="delete"
                             @click="() => mask.settings.client.splice(index, 1)"
                             :style="{ color: 'rgb(255, 77, 79)', cursor: 'pointer' }"></a-icon>
                     </a-divider>
-                    <a-form-item label='Rand'>
+                    <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.rand" }}'>
                         <a-input-number v-model.number="c.rand" />
                     </a-form-item>
-                    <a-form-item label='Rand Range'>
+                    <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.randRange" }}'>
                         <a-input v-model.trim="c.randRange" placeholder="0-255" />
                     </a-form-item>
                     <a-form-item label='{{ i18n "pages.xray.outbound.type" }}'>
@@ -75,24 +75,24 @@
                             <a-select-option value="base64">Base64</a-select-option>
                         </a-select>
                     </a-form-item>
-                    <a-form-item label='Packet'>
-                        <a-input v-model.trim="c.packet" placeholder="binary data" />
+                    <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.packet" }}'>
+                        <a-input v-model.trim="c.packet" placeholder='{{ i18n "pages.inbounds.stream.finalmask.binaryData" }}' />
                     </a-form-item>
                 </template>
                 <a-divider :style="{ margin: '0' }"></a-divider>
-                <a-form-item label='Server'>
+                <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.server" }}'>
                     <a-icon type="plus" type="primary" size="small" @click="mask.settings.server.push({rand: 0, randRange: '0-255', type: 'array', packet: []})" />
                 </a-form-item>
                 <template v-for="(s, index) in mask.settings.server" :key="index">
-                    <a-divider :style="{ margin: '0' }"> Server [[ index + 1 ]]
+                    <a-divider :style="{ margin: '0' }"> {{ i18n "pages.inbounds.stream.finalmask.server" }} [[ index + 1 ]]
                         <a-icon type="delete"
                             @click="() => mask.settings.server.splice(index, 1)"
                             :style="{ color: 'rgb(255, 77, 79)', cursor: 'pointer' }"></a-icon>
                     </a-divider>
-                    <a-form-item label='Rand'>
+                    <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.rand" }}'>
                         <a-input-number v-model.number="s.rand" />
                     </a-form-item>
-                    <a-form-item label='Rand Range'>
+                    <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.randRange" }}'>
                         <a-input v-model.trim="s.randRange" placeholder="0-255" />
                     </a-form-item>
                     <a-form-item label='{{ i18n "pages.xray.outbound.type" }}'>
@@ -103,28 +103,28 @@
                             <a-select-option value="base64">Base64</a-select-option>
                         </a-select>
                     </a-form-item>
-                    <a-form-item label='Packet'>
-                        <a-input v-model.trim="s.packet" placeholder="binary data" />
+                    <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.packet" }}'>
+                        <a-input v-model.trim="s.packet" placeholder='{{ i18n "pages.inbounds.stream.finalmask.binaryData" }}' />
                     </a-form-item>
                 </template>
             </template>
             <template v-if="mask.type === 'noise'">
-                <a-form-item label='Reset'>
+                <a-form-item label='{{ i18n "reset" }}'>
                     <a-input-number v-model.number="mask.settings.reset" :min="0" />
                 </a-form-item>
-                <a-form-item label='Noise'>
+                <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.noise" }}'>
                     <a-icon type="plus" type="primary" size="small" @click="mask.settings.noise.push({rand: '1-8192', randRange: '0-255', type: 'array', packet: '', delay: ''})" />
                 </a-form-item>
                 <template v-for="(n, index) in mask.settings.noise" :key="index">
-                    <a-divider :style="{ margin: '0' }"> Noise [[ index + 1 ]]
+                    <a-divider :style="{ margin: '0' }"> {{ i18n "pages.inbounds.stream.finalmask.noise" }} [[ index + 1 ]]
                         <a-icon type="delete"
                             @click="() => mask.settings.noise.splice(index, 1)"
                             :style="{ color: 'rgb(255, 77, 79)', cursor: 'pointer' }"></a-icon>
                     </a-divider>
-                    <a-form-item label='Rand'>
+                    <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.rand" }}'>
                         <a-input v-model.trim="n.rand" placeholder="1-8192" />
                     </a-form-item>
-                    <a-form-item label='Rand Range'>
+                    <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.randRange" }}'>
                         <a-input v-model.trim="n.randRange" placeholder="0-255" />
                     </a-form-item>
                     <a-form-item label='{{ i18n "pages.xray.outbound.type" }}'>
@@ -135,28 +135,28 @@
                             <a-select-option value="base64">Base64</a-select-option>
                         </a-select>
                     </a-form-item>
-                    <a-form-item label='Packet'>
-                        <a-input v-model.trim="n.packet" placeholder="binary data" />
+                    <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.packet" }}'>
+                        <a-input v-model.trim="n.packet" placeholder='{{ i18n "pages.inbounds.stream.finalmask.binaryData" }}' />
                     </a-form-item>
-                    <a-form-item label='Delay'>
+                    <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.delay" }}'>
                         <a-input v-model.trim="n.delay" placeholder="10-20" />
                     </a-form-item>
                 </template>
             </template>
             <template v-if="mask.type === 'sudoku'">
-                <a-form-item label='ASCII'>
-                    <a-input v-model.trim="mask.settings.ascii" placeholder="ASCII" />
+                <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.ascii" }}'>
+                    <a-input v-model.trim="mask.settings.ascii" placeholder='{{ i18n "pages.inbounds.stream.finalmask.ascii" }}' />
                 </a-form-item>
-                <a-form-item label='Custom Table'>
-                    <a-input v-model.trim="mask.settings.customTable" placeholder="Custom Table" />
+                <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.customTable" }}'>
+                    <a-input v-model.trim="mask.settings.customTable" placeholder='{{ i18n "pages.inbounds.stream.finalmask.customTable" }}' />
                 </a-form-item>
-                <a-form-item label='Custom Tables'>
-                    <a-input v-model.trim="mask.settings.customTables" placeholder="Custom Tables" />
+                <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.customTables" }}'>
+                    <a-input v-model.trim="mask.settings.customTables" placeholder='{{ i18n "pages.inbounds.stream.finalmask.customTables" }}' />
                 </a-form-item>
-                <a-form-item label='Padding Min'>
+                <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.paddingMin" }}'>
                     <a-input-number v-model.number="mask.settings.paddingMin" :min="0" />
                 </a-form-item>
-                <a-form-item label='Padding Max'>
+                <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.paddingMax" }}'>
                     <a-input-number v-model.number="mask.settings.paddingMax" :min="0" />
                 </a-form-item>
             </template>

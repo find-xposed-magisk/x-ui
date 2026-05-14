@@ -1,7 +1,7 @@
 {{define "form/externalProxy"}}
 <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
     <a-divider style="margin:0;"></a-divider>
-    <a-form-item label="External Proxy">
+    <a-form-item label='{{ i18n "pages.inbounds.stream.common.externalProxy" }}'>
         <a-switch v-model="externalProxy"></a-switch>
         <a-button v-if="externalProxy" type="primary" style="margin-left: 10px" size="small" @click="inbound.stream.externalProxy.push({forceTls: 'same', dest: '', port: 443, remark: ''})">+</a-button>
     </a-form-item>

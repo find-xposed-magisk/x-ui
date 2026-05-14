@@ -22,16 +22,16 @@
 </a-collapse>
 <template v-if="!inbound.stream.isTLS || !inbound.stream.isReality">
   <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
-    <a-form-item label="Authentication">
+    <a-form-item label='{{ i18n "pages.inbounds.protocols.authentication" }}'>
       <a-select v-model="inbound.settings.selectedAuth" @change="getNewVlessEnc" :dropdown-class-name="themeSwitcher.currentTheme">
         <a-select-option value="X25519, not Post-Quantum">X25519 (not Post-Quantum)</a-select-option>
         <a-select-option value="ML-KEM-768, Post-Quantum">ML-KEM-768 (Post-Quantum)</a-select-option>
       </a-select>
     </a-form-item>
-    <a-form-item label="decryption">
+    <a-form-item label='{{ i18n "pages.inbounds.protocols.decryption" }}'>
       <a-input v-model.trim="inbound.settings.decryption"></a-input>
     </a-form-item>
-    <a-form-item label="encryption">
+    <a-form-item label='{{ i18n "pages.inbounds.protocols.encryption" }}'>
       <a-input v-model="inbound.settings.encryption"></a-input>
     </a-form-item>
     <a-form-item label=" ">
@@ -44,7 +44,7 @@
 </template>
 <template v-if="inbound.isTcp && !inbound.settings.selectedAuth">
     <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
-        <a-form-item label="Fallbacks">
+        <a-form-item label='{{ i18n "pages.inbounds.protocols.fallbacks" }}'>
             <a-button type="primary" size="small" @click="inbound.settings.addFallback()">+</a-button>
         </a-form-item>
     </a-form>
@@ -57,19 +57,19 @@
             <a-icon type="delete" @click="() => inbound.settings.delFallback(index)"
                 style="color: rgb(255, 77, 79);cursor: pointer;" />
         </a-divider>
-        <a-form-item label='SNI'>
+        <a-form-item label='{{ i18n "pages.inbounds.stream.tls.sni" }}'>
             <a-input v-model="fallback.name"></a-input>
         </a-form-item>
-        <a-form-item label='ALPN'>
+        <a-form-item label='{{ i18n "pages.inbounds.protocols.alpn" }}'>
             <a-input v-model="fallback.alpn"></a-input>
         </a-form-item>
-        <a-form-item label='Path'>
+        <a-form-item label='{{ i18n "pages.inbounds.protocols.path" }}'>
             <a-input v-model="fallback.path"></a-input>
         </a-form-item>
-        <a-form-item label='Dest'>
+        <a-form-item label='{{ i18n "pages.inbounds.protocols.dest" }}'>
             <a-input v-model="fallback.dest"></a-input>
         </a-form-item>
-        <a-form-item label='xVer'>
+        <a-form-item label='{{ i18n "pages.inbounds.protocols.xVer" }}'>
             <a-input-number v-model.number="fallback.xver" :min="0" :max="2"></a-input-number>
         </a-form-item>
     </a-form>
@@ -77,7 +77,7 @@
 </template>
 <template v-if="inbound.canEnableVisionSeed()">
   <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
-    <a-form-item label="Vision Seed">
+    <a-form-item label='{{ i18n "pages.inbounds.protocols.visionSeed" }}'>
       <a-row :gutter="8">
         <a-col :span="6">
           <a-input-number :value="(inbound.settings.testseed && inbound.settings.testseed[0] !== undefined) ? inbound.settings.testseed[0] : 900" @change="(val) => updateTestseed(0, val)" :min="0" :max="9999" :style="{ width: '100%' }" placeholder="900" addon-before="[0]"></a-input-number>

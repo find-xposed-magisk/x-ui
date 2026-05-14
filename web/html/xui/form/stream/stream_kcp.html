@@ -1,30 +1,30 @@
 {{define "form/streamKCP"}}
 <a-form :colon="false" :label-col="{ md: {span:8} }"
     :wrapper-col="{ md: {span:14} }">
-    <a-form-item label='MTU'>
+    <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.mtu" }}'>
         <a-input-number v-model.number="inbound.stream.kcp.mtu" :min="576"
             :max="1460"></a-input-number>
     </a-form-item>
-    <a-form-item label='TTI (ms)'>
+    <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.tti" }}'>
         <a-input-number v-model.number="inbound.stream.kcp.tti" :min="10"
             :max="100"></a-input-number>
     </a-form-item>
-    <a-form-item label='Uplink (MB/s)'>
+    <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.uplinkMBps" }}'>
         <a-input-number v-model.number="inbound.stream.kcp.upCap"
             :min="0"></a-input-number>
     </a-form-item>
-    <a-form-item label='Downlink (MB/s)'>
+    <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.downlinkMBps" }}'>
         <a-input-number v-model.number="inbound.stream.kcp.downCap"
             :min="0"></a-input-number>
     </a-form-item>
-    <a-form-item label='Congestion'>
+    <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.congestion" }}'>
         <a-switch v-model="inbound.stream.kcp.congestion"></a-switch>
     </a-form-item>
-    <a-form-item label='Read Buffer (MB)'>
+    <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.readBuffer" }}'>
         <a-input-number v-model.number="inbound.stream.kcp.readBuffer"
             :min="0"></a-input-number>
     </a-form-item>
-    <a-form-item label='Write Buffer (MB)'>
+    <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.writeBuffer" }}'>
         <a-input-number v-model.number="inbound.stream.kcp.writeBuffer"
             :min="0"></a-input-number>
     </a-form-item>

@@ -20,7 +20,7 @@
 </a-collapse>
 <template v-if="inbound.isTcp && !inbound.stream.isReality">
     <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
-        <a-form-item label="Fallbacks">
+        <a-form-item label='{{ i18n "pages.inbounds.protocols.fallbacks" }}'>
             <a-button type="primary" size="small" @click="inbound.settings.addFallback()">+</a-button>
         </a-form-item>
     </a-form>
@@ -33,19 +33,19 @@
             <a-icon type="delete" @click="() => inbound.settings.delFallback(index)"
                 style="color: rgb(255, 77, 79);cursor: pointer;" />
         </a-divider>
-        <a-form-item label='SNI'>
+        <a-form-item label='{{ i18n "pages.inbounds.stream.tls.sni" }}'>
             <a-input v-model="fallback.name"></a-input>
         </a-form-item>
-        <a-form-item label='ALPN'>
+        <a-form-item label='{{ i18n "pages.inbounds.protocols.alpn" }}'>
             <a-input v-model="fallback.alpn"></a-input>
         </a-form-item>
-        <a-form-item label='Path'>
+        <a-form-item label='{{ i18n "pages.inbounds.protocols.path" }}'>
             <a-input v-model="fallback.path"></a-input>
         </a-form-item>
-        <a-form-item label='Dest'>
+        <a-form-item label='{{ i18n "pages.inbounds.protocols.dest" }}'>
             <a-input v-model="fallback.dest"></a-input>
         </a-form-item>
-        <a-form-item label='xVer'>
+        <a-form-item label='{{ i18n "pages.inbounds.protocols.xVer" }}'>
             <a-input-number v-model.number="fallback.xver" :min="0" :max="2"></a-input-number>
         </a-form-item>
     </a-form>

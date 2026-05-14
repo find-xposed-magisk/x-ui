@@ -3,7 +3,7 @@
          :confirm-loading="ruleModal.confirmLoading" :closable="true" :mask-closable="false"
          :ok-text="ruleModal.okText" cancel-text='{{ i18n "close" }}' :class="themeSwitcher.currentTheme">
     <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
-        <a-form-item label='Domain Matcher'>
+        <a-form-item label='{{ i18n "pages.xray.rule.domainMatcher" }}'>
                     <a-select v-model="ruleModal.rule.domainMatcher" :dropdown-class-name="themeSwitcher.currentTheme">
                         <a-select-option v-for="dm in ['','hybrid','linear']" :value="dm">[[ dm ]]</a-select-option>
                     </a-select>
@@ -30,17 +30,17 @@
             </template>
             <a-input v-model.trim="ruleModal.rule.sourcePort"></a-input>
         </a-form-item>
-        <a-form-item label='Network'>
+        <a-form-item label='{{ i18n "pages.xray.rule.network" }}'>
             <a-select v-model="ruleModal.rule.network" :dropdown-class-name="themeSwitcher.currentTheme">
                 <a-select-option v-for="x in ['','tcp','udp','tcp,udp']" :value="x">[[ x ]]</a-select-option>
             </a-select>
         </a-form-item>
-        <a-form-item label='Protocol'>
+        <a-form-item label='{{ i18n "pages.xray.rule.protocol" }}'>
             <a-select v-model="ruleModal.rule.protocol" mode="multiple" :dropdown-class-name="themeSwitcher.currentTheme">
                 <a-select-option v-for="x in ['http','tls','bittorrent']" :value="x">[[ x ]]</a-select-option>
             </a-select>
         </a-form-item>
-        <a-form-item label='Attributes'>
+        <a-form-item label='{{ i18n "pages.xray.rule.attributes" }}'>
             <a-button size="small" style="margin-left: 10px" @click="ruleModal.rule.attrs.push(['', ''])">+</a-button>
         </a-form-item>
         <a-form-item :wrapper-col="{span: 24}">
@@ -97,12 +97,12 @@
             </template>
             <a-input v-model.trim="ruleModal.rule.port"></a-input>
         </a-form-item>
-        <a-form-item label='Inbound Tags'>
+        <a-form-item label='{{ i18n "pages.xray.rule.inboundTags" }}'>
             <a-select v-model="ruleModal.rule.inboundTag" mode="multiple" :dropdown-class-name="themeSwitcher.currentTheme">
                 <a-select-option v-for="tag in ruleModal.inboundTags" :value="tag">[[ tag ]]</a-select-option>
             </a-select>
         </a-form-item>
-        <a-form-item label='Outbound Tag'>
+        <a-form-item label='{{ i18n "pages.xray.rule.outboundTag" }}'>
             <a-select v-model="ruleModal.rule.outboundTag" :dropdown-class-name="themeSwitcher.currentTheme">
                 <a-select-option v-for="tag in ruleModal.outboundTags" :value="tag">[[ tag ]]</a-select-option>
             </a-select>
