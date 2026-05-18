@@ -1,0 +1,79 @@
+{{define "geodataAssetModal"}}
+<a-modal id="geodata-asset-modal" v-model="geodataAssetModal.visible" :title="geodataAssetModal.title" @ok="geodataAssetModal.ok"
+  :confirm-loading="geodataAssetModal.confirmLoading" :closable="true" :mask-closable="false"
+  :ok-button-props="{ props: { disabled: !geodataAssetModal.isValid } }"
+  :ok-text="geodataAssetModal.okText" cancel-text='{{ i18n "close" }}' :class="themeSwitcher.currentTheme">
+  <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
+    <a-form-item label='{{ i18n "pages.xray.geodata.url" }}' has-feedback
+      :validate-status="geodataAssetModal.invalidUrl ? 'warning' : 'success'">
+      <a-input v-model.trim="geodataAssetModal.asset.url" @change="geodataAssetModal.check()"
+        placeholder="https://example.com/geoip.dat"></a-input>
+    </a-form-item>
+    <a-form-item label='{{ i18n "pages.xray.geodata.file" }}' has-feedback
+      :validate-status="geodataAssetModal.emptyFile ? 'warning' : 'success'">
+      <a-input v-model.trim="geodataAssetModal.asset.file" @change="geodataAssetModal.check()"
+        placeholder="geoip.dat"></a-input>
+    </a-form-item>
+  </a-form>
+</a-modal>
+<script>
+  const geodataAssetModal = {
+    title: '',
+    visible: false,
+    confirmLoading: false,
+    okText: '{{ i18n "confirm" }}',
+    isEdit: false,
+    confirm: null,
+    invalidUrl: false,
+    emptyFile: false,
+    isValid: false,
+    asset: {
+      url: '',
+      file: '',
+    },
+    ok() {
+      if (!geodataAssetModal.check()) return;
+      ObjectUtil.execute(geodataAssetModal.confirm, {
+        url: geodataAssetModal.asset.url,
+        file: geodataAssetModal.asset.file,
+      });
+    },
+    show({ title = '', okText = '{{ i18n "confirm" }}', asset, confirm = (asset) => { }, isEdit = false }) {
+      geodataAssetModal.title = title;
+      geodataAssetModal.okText = okText;
+      geodataAssetModal.confirm = confirm;
+      geodataAssetModal.visible = true;
+      geodataAssetModal.isEdit = isEdit;
+      if (isEdit && asset) {
+        geodataAssetModal.asset = { url: asset.url ?? '', file: asset.file ?? '' };
+      } else {
+        geodataAssetModal.asset = { url: '', file: '' };
+      }
+      geodataAssetModal.check();
+    },
+    close() {
+      geodataAssetModal.visible = false;
+      geodataAssetModal.loading(false);
+    },
+    loading(loading = true) {
+      geodataAssetModal.confirmLoading = loading;
+    },
+    check() {
+      const url = geodataAssetModal.asset.url.trim();
+      const file = geodataAssetModal.asset.file.trim();
+      geodataAssetModal.emptyFile = file.length === 0;
+      geodataAssetModal.invalidUrl = url.length === 0 || !url.toLowerCase().startsWith('https://');
+      geodataAssetModal.isValid = !geodataAssetModal.emptyFile && !geodataAssetModal.invalidUrl;
+      return geodataAssetModal.isValid;
+    },
+  };
+
+  new Vue({
+    delimiters: ['[[', ']]'],
+    el: '#geodata-asset-modal',
+    data: {
+      geodataAssetModal: geodataAssetModal,
+    },
+  });
+</script>
+{{end}}

@@ -692,6 +692,52 @@
                                 </a-table>
                             </template>
                         </a-tab-pane>
+                        <a-tab-pane key="tpl-geodata" tab='{{ i18n "pages.xray.geodata.title"}}' style="padding-top: 20px;" force-render="true">
+                            <setting-list-item type="switch" title='{{ i18n "pages.xray.geodata.enable" }}' desc='{{ i18n "pages.xray.geodata.enableDesc" }}' v-model="enableGeoData"></setting-list-item>
+                            <template v-if="enableGeoData">
+                                <setting-list-item type="text" title='{{ i18n "pages.xray.geodata.cron" }}' desc='{{ i18n "pages.xray.geodata.cronDesc" }}' v-model="geodataCron"></setting-list-item>
+                                <a-list-item>
+                                    <a-row style="padding: 20px">
+                                        <a-col :lg="24" :xl="12">
+                                            <a-list-item-meta title='{{ i18n "pages.xray.geodata.outbound" }}' description='{{ i18n "pages.xray.geodata.outboundDesc" }}' />
+                                        </a-col>
+                                        <a-col :lg="24" :xl="12">
+                                            <a-select v-model="geodataOutbound" allow-clear style="width: 100%"
+                                                :dropdown-class-name="themeSwitcher.currentTheme">
+                                                <a-select-option value="">Routing</a-select-option>
+                                                <a-select-option v-for="tag in geodataOutboundTags" :value="tag">[[ tag ]]</a-select-option>
+                                            </a-select>
+                                        </a-col>
+                                    </a-row>
+                                </a-list-item>
+                                <a-button type="primary" icon="plus" @click="addGeoDataAsset()" style="margin-bottom: 10px;">{{ i18n "pages.xray.geodata.addAsset" }}</a-button>
+                                <a-table :columns="geodataAssetColumns" bordered v-if="geodataAssets.length>0"
+                                :row-key="(r, index) => index"
+                                :data-source="geodataAssets"
+                                :scroll="isMobile ? {} : { x: 200 }"
+                                :pagination="false"
+                                :indent-size="0"
+                                :style="isMobile ? 'padding: 5px 0' : 'margin-left: 1px;'">
+                                    <template slot="action" slot-scope="text, asset, index">
+                                        [[ index+1 ]]
+                                        <a-dropdown :trigger="['click']">
+                                            <a-icon @click="e => e.preventDefault()" type="more" style="font-size: 16px; text-decoration: bold;"></a-icon>
+                                            <a-menu slot="overlay" :theme="themeSwitcher.currentTheme">
+                                                <a-menu-item @click="editGeoDataAsset(index)">
+                                                    <a-icon type="edit"></a-icon>
+                                                    {{ i18n "edit" }}
+                                                </a-menu-item>
+                                                <a-menu-item @click="deleteGeoDataAsset(index)">
+                                                    <span style="color: #FF4D4F">
+                                                        <a-icon type="delete"></a-icon> {{ i18n "delete"}}
+                                                    </span>
+                                                </a-menu-item>
+                                            </a-menu>
+                                        </a-dropdown>
+                                    </template>
+                                </a-table>
+                            </template>
+                        </a-tab-pane>
                         <a-tab-pane key="tpl-advanced" tab='{{ i18n "pages.xray.advancedTemplate"}}' style="padding-top: 20px;" force-render="true">
                             <a-list-item-meta title='{{ i18n "pages.xray.Template"}}' description='{{ i18n "pages.xray.TemplateDesc"}}'></a-list-item-meta>
                             <a-radio-group v-model="advSettings" @change="changeCode" button-style="solid" style="margin: 10px 0;" :size="isMobile ? 'small' : ''">
@@ -716,6 +762,7 @@
 {{template "balancerModal"}}
 {{template "dnsModal"}}
 {{template "fakednsModal"}}
+{{template "geodataAssetModal"}}
 {{template "warpModal"}}
 <script>
     const rulesColumns = [
@@ -770,6 +817,12 @@
         { title: "#", align: 'center', width: 20, scopedSlots: { customRender: 'action' } },
         { title: '{{ i18n "pages.xray.fakedns.ipPool"}}', dataIndex: 'ipPool', align: 'center', width: 50 },
         { title: '{{ i18n "pages.xray.fakedns.poolSize"}}', dataIndex: 'poolSize', align: 'center', width: 50 },
+    ];
+
+    const geodataAssetColumns = [
+        { title: "#", align: 'center', width: 20, scopedSlots: { customRender: 'action' } },
+        { title: '{{ i18n "pages.xray.geodata.url"}}', dataIndex: 'url', align: 'center', width: 80, ellipsis: true },
+        { title: '{{ i18n "pages.xray.geodata.file"}}', dataIndex: 'file', align: 'center', width: 40 },
     ];
 
     const app = new Vue({
@@ -1314,6 +1367,36 @@
                 fakeDns.splice(index,1);
                 this.fakeDns = fakeDns;
             },
+            addGeoDataAsset() {
+                geodataAssetModal.show({
+                    title: '{{ i18n "pages.xray.geodata.addAsset" }}',
+                    confirm: (asset) => {
+                        assets = this.geodataAssets;
+                        assets.push(asset);
+                        this.geodataAssets = assets;
+                        geodataAssetModal.close();
+                    },
+                    isEdit: false
+                });
+            },
+            editGeoDataAsset(index) {
+                geodataAssetModal.show({
+                    title: '{{ i18n "pages.xray.geodata.editAsset" }} #' + (index + 1),
+                    asset: this.geodataAssets[index],
+                    confirm: (asset) => {
+                        assets = this.geodataAssets;
+                        assets[index] = asset;
+                        this.geodataAssets = assets;
+                        geodataAssetModal.close();
+                    },
+                    isEdit: true
+                });
+            },
+            deleteGeoDataAsset(index) {
+                assets = this.geodataAssets;
+                assets.splice(index, 1);
+                this.geodataAssets = assets;
+            },
             addRule(){
                 ruleModal.show({
                     title: '{{ i18n "pages.xray.rules.add"}}',
@@ -1705,6 +1788,83 @@
                 set: function (newValue) {
                     newTemplateSettings = this.templateSettings;
                     newTemplateSettings.fakedns = newValue.length >0 ? newValue : null;
+                    this.templateSettings = newTemplateSettings;
+                }
+            },
+            geodataSettings: function () {
+                if (!this.templateSettings) return null;
+                return this.templateSettings.geodata ?? this.templateSettings.geoData ?? null;
+            },
+            enableGeoData: {
+                get: function () { return this.geodataSettings != null; },
+                set: function (newValue) {
+                    newTemplateSettings = this.templateSettings;
+                    if (newValue) {
+                        if (!newTemplateSettings.geodata) {
+                            newTemplateSettings.geodata = newTemplateSettings.geoData ?? { assets: [] };
+                            delete newTemplateSettings.geoData;
+                        }
+                    } else {
+                        delete newTemplateSettings.geodata;
+                        delete newTemplateSettings.geoData;
+                    }
+                    this.templateSettings = newTemplateSettings;
+                }
+            },
+            geodataCron: {
+                get: function () {
+                    const g = this.geodataSettings;
+                    return g && g.cron ? g.cron : '';
+                },
+                set: function (newValue) {
+                    newTemplateSettings = this.templateSettings;
+                    if (!newTemplateSettings.geodata) {
+                        newTemplateSettings.geodata = newTemplateSettings.geoData ?? { assets: [] };
+                        delete newTemplateSettings.geoData;
+                    }
+                    if (newValue) {
+                        newTemplateSettings.geodata.cron = newValue;
+                    } else {
+                        delete newTemplateSettings.geodata.cron;
+                    }
+                    this.templateSettings = newTemplateSettings;
+                }
+            },
+            geodataOutbound: {
+                get: function () {
+                    const g = this.geodataSettings;
+                    return g && g.outbound ? g.outbound : '';
+                },
+                set: function (newValue) {
+                    newTemplateSettings = this.templateSettings;
+                    if (!newTemplateSettings.geodata) {
+                        newTemplateSettings.geodata = newTemplateSettings.geoData ?? { assets: [] };
+                        delete newTemplateSettings.geoData;
+                    }
+                    if (newValue) {
+                        newTemplateSettings.geodata.outbound = newValue;
+                    } else {
+                        delete newTemplateSettings.geodata.outbound;
+                    }
+                    this.templateSettings = newTemplateSettings;
+                }
+            },
+            geodataOutboundTags: function () {
+                if (!this.templateSettings) return [];
+                return this.templateSettings.outbounds.filter((o) => !ObjectUtil.isEmpty(o.tag)).map((o) => o.tag);
+            },
+            geodataAssets: {
+                get: function () {
+                    const g = this.geodataSettings;
+                    return g && g.assets ? g.assets : [];
+                },
+                set: function (newValue) {
+                    newTemplateSettings = this.templateSettings;
+                    if (!newTemplateSettings.geodata) {
+                        newTemplateSettings.geodata = newTemplateSettings.geoData ?? { assets: [] };
+                        delete newTemplateSettings.geoData;
+                    }
+                    newTemplateSettings.geodata.assets = newValue;
                     this.templateSettings = newTemplateSettings;
                 }
             }

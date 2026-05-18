@@ -19,7 +19,8 @@ type Config struct {
 	FakeDNS          json_util.RawMessage `json:"fakedns"`
 	Observatory      json_util.RawMessage `json:"observatory"`
 	BurstObservatory json_util.RawMessage `json:"burstObservatory"`
-	Metrics          json_util.RawMessage `json:"metrics"`
+	Metrics          json_util.RawMessage `json:"metrics,omitEmpty"`
+	GeoData          json_util.RawMessage `json:"geodata,omitempty"`
 }
 
 func (c *Config) Equals(other *Config) bool {
@@ -55,13 +56,19 @@ func (c *Config) Equals(other *Config) bool {
 	if !bytes.Equal(c.Stats, other.Stats) {
 		return false
 	}
-	if !bytes.Equal(c.Reverse, other.Reverse) {
-		return false
-	}
 	if !bytes.Equal(c.FakeDNS, other.FakeDNS) {
 		return false
 	}
+	if !bytes.Equal(c.Observatory, other.Observatory) {
+		return false
+	}
+	if !bytes.Equal(c.BurstObservatory, other.BurstObservatory) {
+		return false
+	}
 	if !bytes.Equal(c.Metrics, other.Metrics) {
+		return false
+	}
+	if !bytes.Equal(c.GeoData, other.GeoData) {
 		return false
 	}
 	return true

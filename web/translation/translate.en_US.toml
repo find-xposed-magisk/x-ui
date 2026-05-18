@@ -660,6 +660,19 @@
 "ipPool" = "IP Pool Subnet"
 "poolSize" = "Pool Size"
 
+[pages.xray.geodata]
+"title" = "GeoData"
+"enable" = "Enable GeoData"
+"enableDesc" = "Reload geodata files on a schedule and download new .dat files before reloading."
+"cron" = "Cron Schedule"
+"cronDesc" = "5-field cron expression in local time, e.g. 0 4 * * * for daily at 04:00. Leave empty to disable the schedule."
+"outbound" = "Download Outbound"
+"outboundDesc" = "Outbound tag used when downloading geodata. Empty means routing decides the path."
+"addAsset" = "Add Asset"
+"editAsset" = "Edit Asset"
+"url" = "URL"
+"file" = "File"
+
 [tgbot]
 "noResult" = "❗ No result!"
 "wentWrong" = "❌ Something went wrong!"

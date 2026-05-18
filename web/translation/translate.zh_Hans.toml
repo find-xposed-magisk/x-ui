@@ -660,6 +660,19 @@
 "ipPool" = "IP 池子网"
 "poolSize" = "池大小"
 
+[pages.xray.geodata]
+"title" = "GeoData"
+"enable" = "启用 GeoData"
+"enableDesc" = "按计划重新加载 geodata 文件，并在重新加载前下载新的 .dat 文件。"
+"cron" = "Cron 计划"
+"cronDesc" = "本地时间的 5 字段 cron 表达式，例如 0 4 * * * 表示每天 04:00。留空则禁用计划任务。"
+"outbound" = "下载出站"
+"outboundDesc" = "下载 geodata 时使用的出站标签。留空则由路由决定路径。"
+"addAsset" = "添加资源"
+"editAsset" = "编辑资源"
+"url" = "URL"
+"file" = "文件"
+
 [tgbot]
 "noResult" = "❗ 没有结果！"
 "wentWrong" = "❌ 出了点问题！"

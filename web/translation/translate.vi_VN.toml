@@ -660,6 +660,19 @@
 "ipPool" = "Mạng con nhóm IP"
 "poolSize" = "Kích thước bể bơi"
 
+[pages.xray.geodata]
+"title" = "GeoData"
+"enable" = "Bật GeoData"
+"enableDesc" = "Tải lại tệp geodata theo lịch và tải xuống tệp .dat mới trước khi reload."
+"cron" = "Lịch Cron"
+"cronDesc" = "Biểu thức cron 5 trường theo giờ địa phương, ví dụ 0 4 * * * chạy hàng ngày lúc 04:00. Để trống để tắt lịch."
+"outbound" = "Outbound tải xuống"
+"outboundDesc" = "Thẻ outbound dùng khi tải geodata. Để trống thì routing quyết định đường đi."
+"addAsset" = "Thêm tài nguyên"
+"editAsset" = "Sửa tài nguyên"
+"url" = "URL"
+"file" = "Tệp"
+
 [tgbot]
 "noResult" = "❗ Không có kết quả!"
 "wentWrong" = "❌ Đã xảy ra lỗi!"

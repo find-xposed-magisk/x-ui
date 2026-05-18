@@ -660,6 +660,19 @@
 "ipPool" = "زیرشبکه استخر آی‌پی"
 "poolSize" = "اندازه استخر"
 
+[pages.xray.geodata]
+"title" = "GeoData"
+"enable" = "فعال‌سازی GeoData"
+"enableDesc" = "بارگذاری مجدد فایل‌های geodata طبق زمان‌بندی و دانلود فایل‌های .dat جدید قبل از reload."
+"cron" = "زمان‌بندی Cron"
+"cronDesc" = "عبارت cron پنج‌فیلدی بر اساس زمان محلی، مثلاً 0 4 * * * برای هر روز ساعت ۴. خالی = بدون زمان‌بندی."
+"outbound" = "خروجی دانلود"
+"outboundDesc" = "برچسب outbound برای دانلود geodata. خالی یعنی مسیریابی مسیر را تعیین می‌کند."
+"addAsset" = "افزودن فایل"
+"editAsset" = "ویرایش فایل"
+"url" = "آدرس"
+"file" = "نام فایل"
+
 [tgbot]
 "noResult" = "❗نتیجه‌ای یافت نشد"
 "wentWrong" = "❌ مشکلی رخ داده‌است"
