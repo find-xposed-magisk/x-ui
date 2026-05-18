@@ -205,7 +205,7 @@
             <a-row v-for="(link,index) in infoModal.links">
                 <a-col :sx="24" :md="22"><a-tag color="blue">[[ link.remark ]]</a-tag><br />[[ link.link ]]</a-col>
                 <a-col :sx="24" :md="2" style="text-align: right;">
-                    <a-tooltip title='{{ i18n "copy" }}'>
+                    <a-tooltip title='{{ i18n "pages.inbounds.copyLink" }}'>
                         <button class="ant-btn ant-btn-primary" :id="'copy-url-link-'+index" @click="copyToClipboard('copy-url-link-'+index, link.link)">
                             <a-icon type="snippets"></a-icon>
                         </button>
@@ -220,7 +220,7 @@
             <a-row v-for="(link,index) in infoModal.links">
                 <a-col :span="22"><a-tag color="blue">[[ link.remark ]]</a-tag><br />[[ link.link ]]</a-col>
                 <a-col :span="2" style="text-align: right;">
-                    <a-tooltip title='{{ i18n "copy" }}'>
+                    <a-tooltip title='{{ i18n "pages.inbounds.copyLink" }}'>
                         <button class="ant-btn ant-btn-primary" :id="'copy-url-link-'+index" @click="copyToClipboard('copy-url-link-'+index, link.link)">
                             <a-icon type="snippets"></a-icon>
                         </button>
@@ -327,7 +327,7 @@
                             class="client-table-odd-row"></div>
                         </a-col>
                         <a-col :span="2" style="text-align: right;">
-                            <a-tooltip title='{{ i18n "copy" }}'>
+                            <a-tooltip title='{{ i18n "pages.inbounds.copyLink" }}'>
                                 <button class="ant-btn ant-btn-primary"
                                     :id="'copy-url-link-'+index"
                                     @click="copyToClipboard('copy-url-link-'+index, infoModal.links[index])">

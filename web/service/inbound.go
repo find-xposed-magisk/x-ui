@@ -1470,6 +1470,24 @@ func (s *InboundService) GetInboundTags() (string, error) {
 	return string(tags), nil
 }
 
+func (s *InboundService) GetClientReverseTags() (string, error) {
+	db := database.GetDB()
+	var rawTags []string
+	err := db.Raw(`
+		SELECT DISTINCT JSON_EXTRACT(client.value, '$.reverse.tag')
+		FROM inbounds,
+			JSON_EACH(JSON_EXTRACT(inbounds.settings, '$.clients')) AS client
+		WHERE inbounds.protocol = 'vless'
+		  AND JSON_EXTRACT(client.value, '$.reverse.tag') IS NOT NULL
+		  AND JSON_EXTRACT(client.value, '$.reverse.tag') != ''
+	`).Scan(&rawTags).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return "[]", err
+	}
+	result, _ := json.Marshal(rawTags)
+	return string(result), nil
+}
+
 func (s *InboundService) MigrationRequirements() {
 	db := database.GetDB()
 	tx := db.Begin()

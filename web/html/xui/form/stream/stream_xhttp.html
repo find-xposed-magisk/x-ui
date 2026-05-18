@@ -151,7 +151,7 @@
         <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.uplinkChunkSize" }}'
             v-if="inbound.stream.xhttp.mode === 'packet-up' && inbound.stream.xhttp.extra.uplinkDataPlacement && inbound.stream.xhttp.extra.uplinkDataPlacement !== 'body'">
             <a-input-number v-model.number="inbound.stream.xhttp.extra.uplinkChunkSize"
-                :min="0" placeholder="0 (unlimited)"></a-input-number>
+                :min="0" :placeholder='`0 ({{ i18n "unlimited" }})`'></a-input-number>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.noSSEHeader" }}'>
             <a-switch v-model="inbound.stream.xhttp.extra.noSSEHeader"></a-switch>
@@ -189,11 +189,11 @@
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.maxConnections" }}'
             v-if="!inbound.stream.xhttp.extra.xmux.maxConcurrency">
-            <a-input v-model="inbound.stream.xhttp.extra.xmux.maxConnections" placeholder="0 (unlimited)"></a-input>
+            <a-input v-model="inbound.stream.xhttp.extra.xmux.maxConnections" :placeholder='`0 ({{ i18n "unlimited" }})`'></a-input>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.maxReuseTimes" }}'>
             <a-input v-model="inbound.stream.xhttp.extra.xmux.cMaxReuseTimes"
-                placeholder="0 (unlimited)"></a-input>
+                :placeholder='`0 ({{ i18n "unlimited" }})`'></a-input>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.maxRequestTimes" }}'>
             <a-input v-model="inbound.stream.xhttp.extra.xmux.hMaxRequestTimes"

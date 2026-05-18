@@ -105,7 +105,7 @@
         </template>
     </a-tab-pane>
 
-    <a-tab-pane v-if="inbound.canEnableStream()" key="in-transmission" tab="{{ i18n "transmission" }}">
+    <a-tab-pane v-if="inbound.canEnableStream()" key="in-transmission" tab="{{ i18n "pages.inbounds.transportConfig" }}">
         {{template "form/streamSettings"}}
     </a-tab-pane>
 

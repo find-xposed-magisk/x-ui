@@ -169,12 +169,14 @@
                             </a-row>
                         </div>
                         <div :style="isMobile ? '' : 'display: flex; align-items: center; justify-content: flex-start;'">
+                            <a-tooltip :title='`{{ i18n "filter" }}`'>
                             <a-switch v-model="enableFilter"
                                 :style="isMobile ? 'margin-bottom: .5rem; display: flex;' : 'margin-right: .5rem;'"
                                 @change="toggleFilter">
                                 <a-icon slot="checkedChildren" type="search"></a-icon>
                                 <a-icon slot="unCheckedChildren" type="filter"></a-icon>
                             </a-switch>
+                            </a-tooltip>
                             <a-input v-if="!enableFilter" v-model.lazy="searchKey" placeholder='{{ i18n "search" }}' autofocus style="max-width: 300px" :size="isMobile ? 'small' : ''"></a-input>
                             <a-radio-group v-if="enableFilter" v-model="filterBy" @change="filterInbounds" button-style="solid" :size="isMobile ? 'small' : ''">
                                 <a-radio-button value="">{{ i18n "none" }}</a-radio-button>
@@ -882,7 +884,7 @@
                 this.$confirm({
                     title: '{{ i18n "pages.inbounds.cloneInbound"}} \"' + dbInbound.remark + '\"',
                     content: '{{ i18n "pages.inbounds.cloneInboundContent"}}',
-                    okText: '{{ i18n "pages.inbounds.clone"}}',
+                    okText: '{{ i18n "pages.inbounds.cloneInboundOk"}}',
                     class: themeSwitcher.currentTheme,
                     cancelText: '{{ i18n "cancel" }}',
                     onOk: () => {

@@ -394,6 +394,8 @@
                             </a-collapse>
                         </a-tab-pane>
                         <a-tab-pane key="tpl-routing" tab='{{ i18n "pages.xray.Routings"}}' style="padding-top: 20px;">
+                            <a-alert type="warning" show-icon style="margin-bottom: 12px; text-align: center;"
+                                :message='`{{ i18n "pages.xray.RoutingsDesc" }}`'></a-alert>
                             <a-button type="primary" icon="plus" @click="addRule">{{ i18n "pages.xray.rules.add" }}</a-button>
                             <a-table :columns="isMobile ? rulesMobileColumns : rulesColumns" bordered
                                 :row-key="r => r.key"
@@ -555,34 +557,6 @@
                                 </template>
                             </a-table>
                         </a-tab-pane>
-                        <a-tab-pane key="tpl-reverse" tab='{{ i18n "pages.xray.outbound.reverse"}}' style="padding-top: 20px;" force-render="true">
-                            <a-button type="primary" icon="plus" @click="addReverse()" style="margin-bottom: 10px;">{{ i18n "pages.xray.outbound.addReverse" }}</a-button>
-                            <a-table :columns="reverseColumns" bordered v-if="reverseData.length>0"
-                            :row-key="r => r.key"
-                            :data-source="reverseData"
-                            :scroll="isMobile ? {} : { x: 200 }"
-                            :pagination="false"
-                            :indent-size="0"
-                            :style="isMobile ? 'padding: 5px 0' : 'margin-left: 1px;'">
-                                <template slot="action" slot-scope="text, reverse, index">
-                                    [[ index+1 ]]
-                                    <a-dropdown :trigger="['click']">
-                                        <a-icon @click="e => e.preventDefault()" type="more" style="font-size: 16px; text-decoration: bold;"></a-icon>
-                                        <a-menu slot="overlay" :theme="themeSwitcher.currentTheme">
-                                            <a-menu-item @click="editReverse(index)">
-                                                <a-icon type="edit"></a-icon>
-                                                {{ i18n "edit" }}
-                                            </a-menu-item>
-                                            <a-menu-item @click="deleteReverse(index)">
-                                                <span style="color: #FF4D4F">
-                                                    <a-icon type="delete"></a-icon> {{ i18n "delete"}}
-                                                </span>
-                                            </a-menu-item>
-                                        </a-menu>
-                                    </a-dropdown>
-                                </template>
-                            </a-table>
-                        </a-tab-pane>
                         <a-tab-pane key="tpl-balancer" tab='{{ i18n "pages.xray.Balancers"}}' style="padding-top: 20px;" force-render="true">
                             <a-button type="primary" icon="plus" @click="addBalancer()" style="margin-bottom: 10px;">{{ i18n "pages.xray.balancer.addBalancer"}}</a-button>
                             <a-table :columns="balancerColumns" bordered v-if="balancersData.length>0"
@@ -739,7 +713,6 @@
 {{template "component/setting"}}
 {{template "ruleModal"}}
 {{template "outModal"}}
-{{template "reverseModal"}}
 {{template "balancerModal"}}
 {{template "dnsModal"}}
 {{template "fakednsModal"}}
@@ -779,13 +752,6 @@
         { title: '{{ i18n "pages.xray.outbound.address"}}', align: 'center', width: 50, scopedSlots: { customRender: 'address' } },
     ];
 
-    const reverseColumns = [
-        { title: "#", align: 'center', width: 20, scopedSlots: { customRender: 'action' } },
-        { title: '{{ i18n "pages.xray.outbound.type"}}', dataIndex: 'type', align: 'center', width: 50 },
-        { title: '{{ i18n "pages.xray.outbound.tag"}}', dataIndex: 'tag', align: 'center', width: 50 },
-        { title: '{{ i18n "pages.xray.outbound.domain"}}', dataIndex: 'domain', align: 'center', width: 50 },
-    ];
-
     const balancerColumns = [
         { title: "#", align: 'center', width: 20, scopedSlots: { customRender: 'action' } },
         { title: '{{ i18n "pages.xray.balancer.tag"}}', dataIndex: 'tag', align: 'center', width: 50 },
@@ -817,6 +783,7 @@
             oldXraySetting: '',
             xraySetting: '',
             inboundTags: [],
+            clientReverseTags: [],
             saveBtnDisable: true,
             restartResult: '',
             showAlert: false,
@@ -934,6 +901,7 @@
                     this.oldXraySetting = xs;
                     this.xraySetting = xs;
                     this.inboundTags = result.inboundTags;
+                    this.clientReverseTags = result.clientReverseTags;
                     this.saveBtnDisable = true;
                 }
             },
@@ -1145,91 +1113,6 @@
                 outbounds = this.templateSettings.outbounds;
                 outbounds.splice(0, 0, outbounds.splice(index, 1)[0]);
                 this.outboundSettings = JSON.stringify(outbounds);
-            },
-            addReverse(){
-                reverseModal.show({
-                    title: '{{ i18n "pages.xray.outbound.addReverse"}}',
-                    okText: '{{ i18n "pages.xray.outbound.addReverse" }}',
-                    confirm: (reverse, rules) => {
-                        reverseModal.loading();
-                        if(reverse.tag.length > 0){
-                            newTemplateSettings = this.templateSettings;
-                            if(newTemplateSettings.reverse == undefined) newTemplateSettings.reverse = {};
-                            if(newTemplateSettings.reverse[reverse.type+'s']  == undefined) newTemplateSettings.reverse[reverse.type+'s'] = [];
-                            newTemplateSettings.reverse[reverse.type+'s'].push({ tag: reverse.tag, domain: reverse.domain });
-                            this.templateSettings = newTemplateSettings;
-
-                            // Add related rules
-                            this.templateSettings.routing.rules.push(...rules);
-                            this.routingRuleSettings = JSON.stringify(this.templateSettings.routing.rules);
-                        }
-                        reverseModal.close();
-                    },
-                    isEdit: false
-                });
-            },
-            editReverse(index){
-                if(this.reverseData[index].type == "bridge") {
-                    oldRules = this.templateSettings.routing.rules.filter(r => r.inboundTag && r.inboundTag[0] == this.reverseData[index].tag);
-                } else {
-                    oldRules = this.templateSettings.routing.rules.filter(r => r.outboundTag && r.outboundTag == this.reverseData[index].tag);
-                }
-                reverseModal.show({
-                    title: '{{ i18n "pages.xray.outbound.editReverse"}} ' + (index+1),
-                    reverse: this.reverseData[index],
-                    rules: oldRules,
-                    confirm: (reverse, rules) => {
-                        reverseModal.loading();
-                        if(reverse.tag.length > 0){
-                            oldData = this.reverseData[index];
-                            newTemplateSettings = this.templateSettings;
-                            oldReverseIndex = newTemplateSettings.reverse[oldData.type+'s'].findIndex(rs => rs.tag == oldData.tag);
-                            oldRuleIndex0 = oldRules.length>0 ? newTemplateSettings.routing.rules.findIndex(r => JSON.stringify(r) == JSON.stringify(oldRules[0])) : -1;
-                            oldRuleIndex1 = oldRules.length==2 ? newTemplateSettings.routing.rules.findIndex(r => JSON.stringify(r) == JSON.stringify(oldRules[1])) : -1;
-                            if(oldData.type == reverse.type){
-                                newTemplateSettings.reverse[oldData.type + 's'][oldReverseIndex] = { tag: reverse.tag, domain: reverse.domain };
-                            } else {
-                                newTemplateSettings.reverse[oldData.type+'s'].splice(oldReverseIndex,1);
-                                // delete empty object
-                                if(newTemplateSettings.reverse[oldData.type+'s'].length == 0) Reflect.deleteProperty(newTemplateSettings.reverse, oldData.type+'s');
-                                // add other type of reverse if it is not exist
-                                if(!newTemplateSettings.reverse[reverse.type+'s']) newTemplateSettings.reverse[reverse.type+'s'] = [];
-                                newTemplateSettings.reverse[reverse.type+'s'].push({ tag: reverse.tag, domain: reverse.domain });
-                            }
-                            this.templateSettings = newTemplateSettings;
-
-                            // Adjust Rules
-                            newRules = this.templateSettings.routing.rules;
-                            oldRuleIndex0 != -1 ? newRules[oldRuleIndex0] = rules[0] : newRules.push(rules[0]);
-                            oldRuleIndex1 != -1 ? newRules[oldRuleIndex1] = rules[1] : newRules.push(rules[1]);
-                            this.routingRuleSettings = JSON.stringify(newRules);
-                        }
-                        reverseModal.close();
-                    },
-                    isEdit: true
-                });
-            },
-            deleteReverse(index){
-                oldData = this.reverseData[index];
-                newTemplateSettings = this.templateSettings;
-                reverseTypeObj = newTemplateSettings.reverse[oldData.type+'s'];
-                realIndex = reverseTypeObj.findIndex(r => r.tag==oldData.tag && r.domain==oldData.domain);
-                newTemplateSettings.reverse[oldData.type+'s'].splice(realIndex,1);
-
-                // delete empty objects
-                if(reverseTypeObj.length == 0) Reflect.deleteProperty(newTemplateSettings.reverse, oldData.type+'s');
-                if(Object.keys(newTemplateSettings.reverse).length === 0) Reflect.deleteProperty(newTemplateSettings, 'reverse');
-
-                // delete related routing rules
-                newRules = newTemplateSettings.routing.rules;
-                if(oldData.type == "bridge"){
-                    newRules = newTemplateSettings.routing.rules.filter(r => !( r.inboundTag && r.inboundTag.length == 1 && r.inboundTag[0] == oldData.tag));
-                } else if(oldData.type == "portal"){
-                    newRules = newTemplateSettings.routing.rules.filter(r => r.outboundTag != oldData.tag);
-                }
-                newTemplateSettings.routing.rules = newRules;
-                
-                this.templateSettings = newTemplateSettings;
             },
             addBalancer() {
                 balancerModal.show({
@@ -1578,24 +1461,6 @@
                         this.templateSettings.outbounds.forEach((o, index) => {
                             data.push({'key': index, ...o});
                         });
-                    }
-                    return data;
-                },
-            },
-            reverseData: {
-                get: function () {
-                    data = []
-                    if (this.templateSettings != null && this.templateSettings.reverse != null) {
-                        if(this.templateSettings.reverse.bridges) {
-                            this.templateSettings.reverse.bridges.forEach((o, index) => {
-                                data.push({'key': index, 'type':'bridge', ...o});
-                            });
-                        }
-                        if(this.templateSettings.reverse.portals){
-                            this.templateSettings.reverse.portals.forEach((o, index) => {
-                                data.push({'key': index, 'type':'portal', ...o});
-                            });
-                        }
                     }
                     return data;
                 },

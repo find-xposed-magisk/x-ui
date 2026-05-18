@@ -263,7 +263,7 @@
              :class="themeSwitcher.currentTheme"
              footer="">
         <a-alert type="warning" style="margin-bottom: 12px; width: fit-content"
-        message='{{ i18n "pages.index.xraySwitchClickDesk" }}'
+        :message='`{{ i18n "pages.index.xraySwitchClick" }}\n{{ i18n "pages.index.xraySwitchClickDesk" }}`'
         show-icon
         ></a-alert>
         <template v-for="version, index in versionModal.versions">

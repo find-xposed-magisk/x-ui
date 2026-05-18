@@ -68,18 +68,23 @@ type Setting struct {
 	Value string `json:"value" form:"value"`
 }
 
+type ClientReverse struct {
+	Tag      string `json:"tag"`
+	Sniffing string `json:"sniffing" omitEmpty:"true"`
+}
 type Client struct {
-	ID         string `json:"id" omitEmpty:"true"`
-	Password   string `json:"password" omitEmpty:"true"`
-	Auth       string `json:"auth" omitEmpty:"true"`
-	Flow       string `json:"flow" omitEmpty:"true"`
-	Email      string `json:"email"`
-	TotalGB    int64  `json:"totalGB" form:"totalGB"`
-	ExpiryTime int64  `json:"expiryTime" form:"expiryTime"`
-	Enable     bool   `json:"enable" form:"enable"`
-	TgID       string `json:"tgId" form:"tgId"`
-	SubID      string `json:"subId" form:"subId"`
-	Reset      int    `json:"reset" form:"reset"`
+	ID         string         `json:"id" omitEmpty:"true"`
+	Password   string         `json:"password" omitEmpty:"true"`
+	Auth       string         `json:"auth" omitEmpty:"true"`
+	Flow       string         `json:"flow" omitEmpty:"true"`
+	Reverse    *ClientReverse `json:"reverse" omitEmpty:"true"`
+	Email      string         `json:"email"`
+	TotalGB    int64          `json:"totalGB" form:"totalGB"`
+	ExpiryTime int64          `json:"expiryTime" form:"expiryTime"`
+	Enable     bool           `json:"enable" form:"enable"`
+	TgID       string         `json:"tgId" form:"tgId"`
+	SubID      string         `json:"subId" form:"subId"`
+	Reset      int            `json:"reset" form:"reset"`
 }
 
 type VLESSSettings struct {
