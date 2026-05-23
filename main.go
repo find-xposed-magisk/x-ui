@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	_ "time/tzdata"
 	_ "unsafe"
 
 	"github.com/alireza0/x-ui/config"
