@@ -39,18 +39,6 @@ func initUser() error {
 	return nil
 }
 
-func initInbound() error {
-	return db.AutoMigrate(&model.Inbound{})
-}
-
-func initSetting() error {
-	return db.AutoMigrate(&model.Setting{})
-}
-
-func initClientTraffic() error {
-	return db.AutoMigrate(&xray.ClientTraffic{})
-}
-
 func InitDB(dbPath string) error {
 	dir := path.Dir(dbPath)
 	err := os.MkdirAll(dir, fs.ModeDir)
@@ -78,16 +66,12 @@ func InitDB(dbPath string) error {
 	if err != nil {
 		return err
 	}
-	err = initInbound()
-	if err != nil {
-		return err
-	}
-	err = initSetting()
-	if err != nil {
-		return err
-	}
-
-	err = initClientTraffic()
+	err = db.AutoMigrate(
+		&model.Inbound{},
+		&model.Outbound{},
+		&model.Setting{},
+		&xray.ClientTraffic{},
+	)
 	if err != nil {
 		return err
 	}

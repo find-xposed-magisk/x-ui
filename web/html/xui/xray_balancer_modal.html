@@ -82,8 +82,8 @@
                 };
             }
             this.balancerTags = balancerTags.filter((tag) => tag != balancer.tag);
-            this.outboundTags = app.templateSettings.outbounds.filter((o) => !ObjectUtil.isEmpty(o.tag)).map(obj => obj.tag);
-            this.outboundTags.push(...app.clientReverseTags);
+            this.outboundTags = [...(app.outboundTags || [])];
+            if (app.clientReverseTags) this.outboundTags.push(...app.clientReverseTags);
             this.isEdit = isEdit;
             this.check();
             this.checkSelector();

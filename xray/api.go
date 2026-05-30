@@ -87,6 +87,34 @@ func (x *XrayAPI) DelInbound(tag string) error {
 	return err
 }
 
+func (x *XrayAPI) AddOutbound(outbound []byte) error {
+	client := *x.HandlerServiceClient
+
+	conf := new(conf.OutboundDetourConfig)
+	err := json.Unmarshal(outbound, conf)
+	if err != nil {
+		logger.Debug("Failed to unmarshal outbound:", err)
+		return err
+	}
+	config, err := conf.Build()
+	if err != nil {
+		logger.Debug("Failed to build outbound:", err)
+		return err
+	}
+	outboundConfig := command.AddOutboundRequest{Outbound: config}
+
+	_, err = client.AddOutbound(context.Background(), &outboundConfig)
+	return err
+}
+
+func (x *XrayAPI) DelOutbound(tag string) error {
+	client := *x.HandlerServiceClient
+	_, err := client.RemoveOutbound(context.Background(), &command.RemoveOutboundRequest{
+		Tag: tag,
+	})
+	return err
+}
+
 func (x *XrayAPI) AddUser(Protocol string, inboundTag string, user map[string]interface{}) error {
 	var account *serial.TypedMessage
 	switch Protocol {

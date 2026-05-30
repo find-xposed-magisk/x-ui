@@ -56,6 +56,7 @@
 [menu]
 "dashboard" = "Обзор"
 "inbounds" = "Подключения"
+"outbounds" = "Исходящие"
 "settings" = "Настройки"
 "xray" = "Xray"
 "logout" = "Выйти"
@@ -178,6 +179,22 @@
 "exportInbound" = "Экспорт входящих"
 "import" = "Импортировать"
 "importInbound" = "Импортировать входящее сообщение"
+
+[pages.outbounds]
+"title" = "Исходящие"
+"totalDownUp" = "Всего отправлено/получено"
+"totalUsage" = "Общий трафик"
+"outboundCount" = "Всего исходящих"
+"create" = "Создать"
+"edit" = "Редактировать исходящий"
+"update" = "Обновить"
+"delete" = "Удалить исходящий"
+"deleteConfirm" = "Удалить этот исходящий?"
+"resetTraffic" = "Сбросить трафик"
+"resetAllTraffic" = "Сбросить весь трафик исходящих"
+
+[pages.outbounds.toasts]
+"obtain" = "Не удалось загрузить исходящие"
 
 [pages.client]
 "add" = "Добавить клиента"
@@ -616,6 +633,9 @@
 "reverseTagDesc" = "Тег inbound обратного прокси, который использует этот VLESS-клиент."
 "reverseTagPlaceholder" = "reverse-inbound-tag"
 "sendThrough" = "Отправить через"
+"advanced" = "Дополнительно"
+"linkConverter" = "Конвертер ссылок"
+"jsonFreeEditor" = "Свободный редактор JSON"
 
 [pages.xray.balancer]
 "addBalancer" = "Добавить балансир"

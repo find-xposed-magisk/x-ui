@@ -20,9 +20,10 @@ var (
 )
 
 type XrayService struct {
-	inboundService InboundService
-	settingService SettingService
-	xrayAPI        xray.XrayAPI
+	inboundService  InboundService
+	outboundService OutboundService
+	settingService  SettingService
+	xrayAPI         xray.XrayAPI
 }
 
 func (s *XrayService) IsXrayRunning() bool {
@@ -181,6 +182,17 @@ func (s *XrayService) GetXrayConfig() (*xray.Config, error) {
 
 		inboundConfig := inbound.GenXrayInboundConfig()
 		xrayConfig.InboundConfigs = append(xrayConfig.InboundConfigs, *inboundConfig)
+	}
+
+	xrayConfig.OutboundConfigs = []xray.OutboundConfig{}
+
+	outbounds, err := s.outboundService.GetAllOutbounds()
+	if err != nil {
+		return nil, err
+	}
+	for _, outbound := range outbounds {
+		outboundConfig := outbound.GenXrayOutboundConfig()
+		xrayConfig.OutboundConfigs = append(xrayConfig.OutboundConfigs, *outboundConfig)
 	}
 	return xrayConfig, nil
 }

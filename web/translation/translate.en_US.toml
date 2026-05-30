@@ -56,6 +56,7 @@
 [menu]
 "dashboard" = "Overview"
 "inbounds" = "Inbounds"
+"outbounds" = "Outbounds"
 "settings" = "Panel Settings"
 "xray" = "Xray Configs"
 "logout" = "Log Out"
@@ -178,6 +179,22 @@
 "exportInbound" = "Export Inbound"
 "import" = "Import"
 "importInbound" = "Import an Inbound"
+
+[pages.outbounds]
+"title" = "Outbounds"
+"totalDownUp" = "Total Sent/Received"
+"totalUsage" = "Total Usage"
+"outboundCount" = "Total Outbounds"
+"create" = "Create"
+"edit" = "Edit Outbound"
+"update" = "Update"
+"delete" = "Delete Outbound"
+"deleteConfirm" = "Are you sure you want to delete this outbound?"
+"resetTraffic" = "Reset Traffic"
+"resetAllTraffic" = "Reset All Outbound Traffic"
+
+[pages.outbounds.toasts]
+"obtain" = "Failed to load outbounds"
 
 [pages.client]
 "add" = "Add Client"
@@ -616,6 +633,9 @@
 "reverseTagDesc" = "The tag of the reverse proxy inbound that this VLESS client uses."
 "reverseTagPlaceholder" = "reverse-inbound-tag"
 "sendThrough" = "Send Through"
+"advanced" = "Advanced"
+"linkConverter" = "Link converter"
+"jsonFreeEditor" = "JSON free editor"
 
 [pages.xray.balancer]
 "addBalancer" = "Add Balancer"

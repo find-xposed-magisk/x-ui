@@ -513,50 +513,6 @@
                                 </template>
                             </a-table>
                         </a-tab-pane>
-                        <a-tab-pane key="tpl-outbound" tab='{{ i18n "pages.xray.Outbounds"}}' style="padding-top: 20px;" force-render="true">
-                            <a-button type="primary" icon="plus" @click="addOutbound()" style="margin-bottom: 10px;">{{ i18n "pages.xray.outbound.addOutbound" }}</a-button>
-                            <a-button type="primary" icon="cloud" @click="showWarp()" style="margin-bottom: 10px;">WARP</a-button>
-                            <a-table :columns="outboundColumns" bordered
-                            :row-key="r => r.key"
-                            :data-source="outboundData"
-                            :scroll="isMobile ? {} : { x: 200 }"
-                            :pagination="false"
-                            :indent-size="0"
-                            :style="isMobile ? 'padding: 5px 5px' : 'margin-right: 1px;'">
-                                <template slot="action" slot-scope="text, outbound, index">
-                                    [[ index+1 ]]
-                                    <a-dropdown :trigger="['click']">
-                                        <a-icon @click="e => e.preventDefault()" type="more" style="font-size: 16px; text-decoration: bold;"></a-icon>
-                                        <a-menu slot="overlay" :theme="themeSwitcher.currentTheme">
-                                            <a-menu-item v-if="index>0" @click="setFirstOutbound(index)">
-                                                <a-icon type="vertical-align-top"></a-icon>
-                                                {{ i18n "pages.xray.rules.first"}}
-                                            </a-menu-item>
-                                            <a-menu-item @click="editOutbound(index)">
-                                                <a-icon type="edit"></a-icon>
-                                                {{ i18n "edit" }}
-                                            </a-menu-item>
-                                            <a-menu-item @click="deleteOutbound(index)">
-                                                <span style="color: #FF4D4F">
-                                                    <a-icon type="delete"></a-icon> {{ i18n "delete"}}
-                                                </span>
-                                            </a-menu-item>
-                                        </a-menu>
-                                    </a-dropdown>
-                                </template>
-                                <template slot="address" slot-scope="text, outbound, index">
-                                    <p style="margin: 0 5px;" v-for="addr in findOutboundAddress(outbound)">[[ addr ]]</p>
-                                </template>
-                                <template slot="protocol" slot-scope="text, outbound, index">
-                                    <a-tag style="margin:0;" color="purple">[[ outbound.protocol ]]</a-tag>
-                                    <template v-if="[Protocols.VMess, Protocols.VLESS, Protocols.Trojan, Protocols.Shadowsocks].includes(outbound.protocol)">
-                                        <a-tag style="margin:0;" color="blue">[[ outbound.streamSettings.network ]]</a-tag>
-                                        <a-tag style="margin:0;" v-if="outbound.streamSettings.security=='tls'" color="green">tls</a-tag>
-                                        <a-tag style="margin:0;" v-if="outbound.streamSettings.security=='reality'" color="green">reality</a-tag>
-                                    </template>
-                                </template>
-                            </a-table>
-                        </a-tab-pane>
                         <a-tab-pane key="tpl-balancer" tab='{{ i18n "pages.xray.Balancers"}}' style="padding-top: 20px;" force-render="true">
                             <a-button type="primary" icon="plus" @click="addBalancer()" style="margin-bottom: 10px;">{{ i18n "pages.xray.balancer.addBalancer"}}</a-button>
                             <a-table :columns="balancerColumns" bordered v-if="balancersData.length>0"
@@ -743,7 +699,6 @@
                             <a-radio-group v-model="advSettings" @change="changeCode" button-style="solid" style="margin: 10px 0;" :size="isMobile ? 'small' : ''">
                                 <a-radio-button value="xraySetting">{{ i18n "pages.xray.completeTemplate"}}</a-radio-button>
                                 <a-radio-button value="inboundSettings">{{ i18n "pages.xray.Inbounds" }}</a-radio-button>
-                                <a-radio-button value="outboundSettings">{{ i18n "pages.xray.Outbounds" }}</a-radio-button>
                                 <a-radio-button value="routingRuleSettings">{{ i18n "pages.xray.Routings" }}</a-radio-button>
                             </a-radio-group>
                             <textarea style="position:absolute; left: -800px;" id="xraySetting"></textarea>
@@ -758,7 +713,6 @@
 {{template "component/themeSwitcher" .}}
 {{template "component/setting"}}
 {{template "ruleModal"}}
-{{template "outModal"}}
 {{template "balancerModal"}}
 {{template "dnsModal"}}
 {{template "fakednsModal"}}
@@ -837,6 +791,9 @@
             xraySetting: '',
             inboundTags: [],
             clientReverseTags: [],
+            outboundTags: [],
+            outboundReverseTags: [],
+            loadedOutbounds: [],
             saveBtnDisable: true,
             restartResult: '',
             showAlert: false,
@@ -955,6 +912,9 @@
                     this.xraySetting = xs;
                     this.inboundTags = result.inboundTags;
                     this.clientReverseTags = result.clientReverseTags;
+                    this.outboundTags = result.outboundTags || [];
+                    this.outboundReverseTags = result.outboundReverseTags || [];
+                    this.loadedOutbounds = result.outbounds || [];
                     this.saveBtnDisable = true;
                 }
             },
@@ -994,18 +954,6 @@
             changePage(pageKey) {
                 if(pageKey == 'tpl-advanced') this.changeCode();
                 if(pageKey == 'tpl-balancer') this.changeObsCode();
-            },
-            syncRulesWithOutbound(tag, setting) {
-                const newTemplateSettings = this.templateSettings;
-                const haveRules = newTemplateSettings.routing.rules.some((r) => r?.outboundTag === tag);
-                const outboundIndex = newTemplateSettings.outbounds.findIndex((o) => o.tag === tag);
-                if (!haveRules && outboundIndex > 0) {
-                    newTemplateSettings.outbounds.splice(outboundIndex);
-                }
-                if (haveRules && outboundIndex < 0) {
-                    newTemplateSettings.outbounds.push(setting);
-                }
-                this.templateSettings = newTemplateSettings;
             },
             templateRuleGetter(routeSettings) {
                 const { property, outboundTag } = routeSettings;
@@ -1126,46 +1074,6 @@
                         return null;
                 }
                 return serverObj ? serverObj.map(obj => obj.address + ':' + obj.port) : null;
-            },
-            addOutbound(){
-                outModal.show({
-                    title: '{{ i18n "pages.xray.outbound.addOutbound"}}',
-                    okText: '{{ i18n "pages.xray.outbound.addOutbound" }}',
-                    confirm: (outbound) => {
-                        outModal.loading();
-                        if(outbound.tag.length > 0){
-                            this.templateSettings.outbounds.push(outbound);
-                            this.outboundSettings = JSON.stringify(this.templateSettings.outbounds);
-                        }
-                        outModal.close();
-                    },
-                    isEdit: false,
-                    tags: this.templateSettings.outbounds.map(obj => obj.tag)
-                });
-            },
-            editOutbound(index){
-                outModal.show({
-                    title: '{{ i18n "pages.xray.outbound.editOutbound"}} ' + (index+1),
-                    outbound: app.templateSettings.outbounds[index],
-                    confirm: (outbound) => {
-                        outModal.loading();
-                        this.templateSettings.outbounds[index] = outbound;
-                        this.outboundSettings = JSON.stringify(this.templateSettings.outbounds);
-                        outModal.close();
-                    },
-                    isEdit: true,
-                    tags: this.outboundData.filter((o) => o.key != index ).map(obj => obj.tag)
-                });
-            },
-            deleteOutbound(index){
-                outbounds = this.templateSettings.outbounds;
-                outbounds.splice(index,1);
-                this.outboundSettings = JSON.stringify(outbounds);
-            },
-            setFirstOutbound(index){
-                outbounds = this.templateSettings.outbounds;
-                outbounds.splice(0, 0, outbounds.splice(index, 1)[0]);
-                this.outboundSettings = JSON.stringify(outbounds);
             },
             addBalancer() {
                 balancerModal.show({
@@ -1438,9 +1346,6 @@
                 rules.splice(index,1);
                 this.routingRuleSettings = JSON.stringify(rules);
             },
-            showWarp(){
-                warpModal.show();
-            }
         },
         async mounted() {
             if (window.location.protocol !== "https:") {
@@ -1529,25 +1434,6 @@
                     this.templateSettings = newTemplateSettings;
                 },
             },
-            outboundSettings: {
-                get: function () { return this.templateSettings ? JSON.stringify(this.templateSettings.outbounds, null, 2) : null; },
-                set: function (newValue) {
-                    newTemplateSettings = this.templateSettings;
-                    newTemplateSettings.outbounds = JSON.parse(newValue);
-                    this.templateSettings = newTemplateSettings;
-                },
-            },
-            outboundData: {
-                get: function () {
-                    data = []
-                    if (this.templateSettings != null) {
-                        this.templateSettings.outbounds.forEach((o, index) => {
-                            data.push({'key': index, ...o});
-                        });
-                    }
-                    return data;
-                },
-            },
             routingRuleSettings: {
                 get: function () { return this.templateSettings ? JSON.stringify(this.templateSettings.routing.rules, null, 2) : null; },
                 set: function (newValue) {
@@ -1618,23 +1504,21 @@
             burstObservatoryEnable: function () { return this.templateSettings != null && this.templateSettings.burstObservatory != undefined },
             freedomStrategy: {
                 get: function () {
-                    if (!this.templateSettings) return "AsIs";
-                    freedomOutbound = this.templateSettings.outbounds.find((o) => o.protocol === "freedom" && o.tag == "direct");
-                    if (!freedomOutbound) return "AsIs";
-                    if (!freedomOutbound.settings || !freedomOutbound.settings.domainStrategy) return "AsIs";
+                    const freedomOutbound = this.loadedOutbounds.find((o) => o.protocol === "freedom" && o.tag == "direct");
+                    if (!freedomOutbound || !freedomOutbound.settings || !freedomOutbound.settings.domainStrategy) return "AsIs";
                     return freedomOutbound.settings.domainStrategy;
                 },
                 set: function (newValue) {
-                    newTemplateSettings = this.templateSettings;
-                    freedomOutboundIndex = newTemplateSettings.outbounds.findIndex((o) => o.protocol === "freedom" && o.tag == "direct");
-                    if(freedomOutboundIndex == -1){
-                        newTemplateSettings.outbounds.push({protocol: "freedom", tag: "direct", settings: { "domainStrategy": newValue }});
-                    } else if (!newTemplateSettings.outbounds[freedomOutboundIndex].settings) {
-                        newTemplateSettings.outbounds[freedomOutboundIndex].settings = { "domainStrategy": newValue };
-                    } else {
-                        newTemplateSettings.outbounds[freedomOutboundIndex].settings.domainStrategy = newValue;
-                    }
-                    this.templateSettings = newTemplateSettings;
+                    const freedomOutbound = this.loadedOutbounds.find((o) => o.protocol === "freedom" && o.tag == "direct");
+                    if (!freedomOutbound) return;
+                    const settings = freedomOutbound.settings || {};
+                    settings.domainStrategy = newValue;
+                    const data = {
+                        protocol: freedomOutbound.protocol,
+                        tag: freedomOutbound.tag,
+                        settings: JSON.stringify(settings, null, 2),
+                    };
+                    HttpUtil.post(`/xui/outbound/update/${freedomOutbound.id}`, data).then(() => this.getXraySetting());
                 }
             },
             routingStrategy: {
@@ -1678,7 +1562,6 @@
                 },
                 set: function (newValue) {
                     this.templateRuleSetter({ outboundTag: "direct", property: "ip", data: newValue });
-                    this.syncRulesWithOutbound("direct", this.directSettings);
                 }
             },
             directDomains: {
@@ -1687,7 +1570,6 @@
                 },
                 set: function (newValue) {
                     this.templateRuleSetter({ outboundTag: "direct", property: "domain", data: newValue });
-                    this.syncRulesWithOutbound("direct", this.directSettings);
                 }
             },
             ipv4Domains: {
@@ -1696,7 +1578,6 @@
                 },
                 set: function (newValue) {
                     this.templateRuleSetter({ outboundTag: "IPv4", property: "domain", data: newValue });
-                    this.syncRulesWithOutbound("IPv4", this.ipv4Settings);
                 }
             },
             warpDomains: {
@@ -1736,7 +1617,7 @@
             },
             WarpExist: {
                 get: function() {
-                    return this.templateSettings ? this.templateSettings.outbounds.findIndex((o) => o.tag == "warp")>=0  : false;
+                    return this.outboundTags ? this.outboundTags.includes("warp") : false;
                 },
             },
             enableDNS: {
@@ -1850,8 +1731,7 @@
                 }
             },
             geodataOutboundTags: function () {
-                if (!this.templateSettings) return [];
-                return this.templateSettings.outbounds.filter((o) => !ObjectUtil.isEmpty(o.tag)).map((o) => o.tag);
+                return this.outboundTags || [];
             },
             geodataAssets: {
                 get: function () {

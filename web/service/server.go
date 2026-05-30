@@ -90,8 +90,9 @@ type Release struct {
 }
 
 type ServerService struct {
-	xrayService    XrayService
-	inboundService InboundService
+	xrayService     XrayService
+	inboundService  InboundService
+	outboundService OutboundService
 }
 
 func (s *ServerService) GetStatus(lastStatus *Status) *Status {
@@ -580,6 +581,7 @@ func (s *ServerService) ImportDB(file multipart.File) error {
 		return common.NewErrorf("Error migrating db: %v", err)
 	}
 	s.inboundService.MigrateDB()
+	s.outboundService.MigrateDB()
 
 	// Start Xray
 	err = s.RestartXrayService()

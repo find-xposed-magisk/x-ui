@@ -11,7 +11,7 @@ type Config struct {
 	RouterConfig     json_util.RawMessage `json:"routing"`
 	DNSConfig        json_util.RawMessage `json:"dns"`
 	InboundConfigs   []InboundConfig      `json:"inbounds"`
-	OutboundConfigs  json_util.RawMessage `json:"outbounds"`
+	OutboundConfigs  []OutboundConfig     `json:"outbounds"`
 	Transport        json_util.RawMessage `json:"transport"`
 	Policy           json_util.RawMessage `json:"policy"`
 	API              json_util.RawMessage `json:"api"`
@@ -41,8 +41,13 @@ func (c *Config) Equals(other *Config) bool {
 	if !bytes.Equal(c.DNSConfig, other.DNSConfig) {
 		return false
 	}
-	if !bytes.Equal(c.OutboundConfigs, other.OutboundConfigs) {
+	if len(c.OutboundConfigs) != len(other.OutboundConfigs) {
 		return false
+	}
+	for i, outbound := range c.OutboundConfigs {
+		if !outbound.Equals(&other.OutboundConfigs[i]) {
+			return false
+		}
 	}
 	if !bytes.Equal(c.Transport, other.Transport) {
 		return false

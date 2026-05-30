@@ -56,6 +56,7 @@
 [menu]
 "dashboard" = "概述"
 "inbounds" = "入站列表"
+"outbounds" = "出站列表"
 "settings" = "面板设置"
 "xray" = "Xray"
 "logout" = "退出登录"
@@ -178,6 +179,22 @@
 "exportInbound" = "导出入站数据"
 "import"="导入"
 "importInbound" = "导入入站数据"
+
+[pages.outbounds]
+"title" = "出站"
+"totalDownUp" = "总发送/接收"
+"totalUsage" = "总用量"
+"outboundCount" = "出站总数"
+"create" = "创建"
+"edit" = "编辑出站"
+"update" = "更新"
+"delete" = "删除出站"
+"deleteConfirm" = "确定要删除此出站吗？"
+"resetTraffic" = "重置流量"
+"resetAllTraffic" = "重置所有出站流量"
+
+[pages.outbounds.toasts]
+"obtain" = "获取出站失败"
 
 [pages.client]
 "add" = "添加客户端"
@@ -616,6 +633,9 @@
 "reverseTagDesc" = "此 VLESS 客户端使用的反向代理 inbound 标签。"
 "reverseTagPlaceholder" = "reverse-inbound-tag"
 "sendThrough" = "发送通过"
+"advanced" = "高级"
+"linkConverter" = "链接转换"
+"jsonFreeEditor" = "JSON 自由编辑"
 
 [pages.xray.balancer]
 "addBalancer" = "添加平衡器"

@@ -12,6 +12,7 @@ type XraySettingController struct {
 	XraySettingService service.XraySettingService
 	SettingService     service.SettingService
 	InboundService     service.InboundService
+	OutboundService    service.OutboundService
 	XrayService        service.XrayService
 	WarpService        service.WarpService
 }
@@ -47,10 +48,26 @@ func (a *XraySettingController) getXraySetting(c *gin.Context) {
 	if err != nil {
 		clientReverseTags = "[]"
 	}
+	outboundTags, err := a.OutboundService.GetOutboundTags()
+	if err != nil {
+		jsonMsg(c, I18nWeb(c, "pages.settings.toasts.getSettings"), err)
+		return
+	}
+	outboundReverseTags, err := a.OutboundService.GetOutboundReverseTags()
+	if err != nil {
+		outboundReverseTags = "[]"
+	}
+	outboundSummaries, err := a.OutboundService.GetOutboundSummariesJSON()
+	if err != nil {
+		outboundSummaries = "[]"
+	}
 	xrayResponse := map[string]any{
-		"xraySetting":       json.RawMessage(xraySetting),
-		"inboundTags":       json.RawMessage(inboundTags),
-		"clientReverseTags": json.RawMessage(clientReverseTags),
+		"xraySetting":         json.RawMessage(xraySetting),
+		"inboundTags":         json.RawMessage(inboundTags),
+		"clientReverseTags":   json.RawMessage(clientReverseTags),
+		"outboundTags":        json.RawMessage(outboundTags),
+		"outboundReverseTags": json.RawMessage(outboundReverseTags),
+		"outbounds":           json.RawMessage(outboundSummaries),
 	}
 	result, err := json.Marshal(xrayResponse)
 	if err != nil {

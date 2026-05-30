@@ -1,9 +1,7 @@
 {{define "form/outbound"}}
-<!-- base -->
-<a-tabs :active-key="outModal.activeKey"  style="padding: 0; background-color: transparent;" @change="(activeKey) => {outModal.toggleJson(activeKey == '2'); }">
-<a-tab-pane key="1" tab="Form">
-<a-tabs :animated="false" class="outbound-detail-inner-tabs" style="padding: 1rem;">
-<a-tab-pane key="ob-basic" tab="{{ i18n "pages.xray.outbound.settings" }}">
+<a-tabs :animated="false" class="outbound-detail-tabs" :active-key="outModal.activeKey" style="padding: 1rem;"
+    @change="(activeKey) => outModal.onTabChange(activeKey)">
+<a-tab-pane key="ob-settings" tab="{{ i18n "pages.xray.outbound.settings" }}">
 <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
         <a-form-item label='{{ i18n "protocol" }}'>
             <a-select v-model="outbound.protocol" :dropdown-class-name="themeSwitcher.currentTheme">
@@ -1080,14 +1078,20 @@
 </template>
 </a-form>
 </a-tab-pane>
-</a-tabs>
-</a-tab-pane>
-<a-tab-pane key="2" tab="JSON" force-render="true">
+<a-tab-pane key="ob-json" tab='{{ i18n "pages.xray.outbound.advanced" }}' force-render="true">
+    <a-divider>{{ i18n "pages.xray.outbound.linkConverter" }}</a-divider>
     <a-form-item style="margin: 10px 0">
-        Link: <a-input v-model.trim="outModal.link" style="width: 300px; margin-right: 5px;" placeholder="vmess:// vless:// trojan:// ss:// hysteria2://"></a-input>
-        <a-button @click="convertLink" type="primary"><a-icon type="form"></a-icon></a-button>
+        <a-input-search
+            v-model.trim="outModal.link"
+            style="margin-right: 5px;"
+            @search="convertLink"
+            @pressEnter="convertLink"
+            placeholder="vmess:// | vless:// | trojan:// | ss:// | hysteria2://">
+            <a-button slot="enterButton" type="primary"><a-icon type="sync"></a-icon></a-button>
+        </a-input-search>
     </a-form-item>
-        <textarea style="position:absolute; left: -800px;" id="outboundJson"></textarea>
+    <a-divider>{{ i18n "pages.xray.outbound.jsonFreeEditor" }}</a-divider>
+    <textarea style="position:absolute; left: -800px;" id="outboundJson"></textarea>
 </a-tab-pane>
 </a-tabs>
 {{end}}

@@ -1,11 +1,20 @@
-{{define "outModal"}}
+{{define "outboundModal"}}
 <a-modal id="out-modal" v-model="outModal.visible" :title="outModal.title" @ok="outModal.ok"
          :confirm-loading="outModal.confirmLoading" :closable="true" :mask-closable="false"
          :ok-button-props="{ props: { disabled: !outModal.isValid } }" style="overflow: hidden;" width="800px" body-style="padding: 0;"
          :ok-text="outModal.okText" cancel-text='{{ i18n "close" }}' :class="themeSwitcher.currentTheme">
-         {{template "form/outbound"}}
+    {{template "form/outbound"}}
 </a-modal>
 <script>
+    const outboundCmOptions = {
+        lineNumbers: true,
+        mode: "application/json",
+        lint: true,
+        theme: "xq",
+        lineWrapping: true,
+        indentUnit: 2,
+        tabSize: 2,
+    };
 
     const outModal = {
         title: '',
@@ -20,23 +29,32 @@
         cm: null,
         duplicateTag: false,
         isValid: true,
-        activeKey: '1',
+        activeKey: 'ob-settings',
         tags: [],
         ok() {
             ObjectUtil.execute(outModal.confirm, outModal.outbound.toJson());
         },
-        show({ title='', okText='{{ i18n "confirm" }}', outbound, confirm=(outbound)=>{}, isEdit=false, tags=[]  }) {
+        onTabChange(activeKey) {
+            this.activeKey = activeKey;
+            if (activeKey === 'ob-json') {
+                setTimeout(() => this.initJsonEditor(), 0);
+            } else {
+                this.destroyJsonEditor();
+            }
+        },
+        show({ title='', okText='{{ i18n "confirm" }}', outbound, confirm=(outbound)=>{}, isEdit=false, tags=[] }) {
             this.title = title;
             this.okText = okText;
             this.confirm = confirm;
             this.jsonMode = false;
             this.link = '';
-            this.activeKey = '1';
+            this.destroyJsonEditor();
+            this.activeKey = 'ob-settings';
             this.visible = true;
             this.outbound = isEdit ? Outbound.fromJson(outbound) : new Outbound();
             this.isEdit = isEdit;
             this.tags = tags;
-            this.check()
+            this.check();
         },
         close() {
             outModal.visible = false;
@@ -45,8 +63,8 @@
         loading(loading=true) {
             outModal.confirmLoading = loading;
         },
-        check(){
-            if(outModal.outbound.tag == '' || outModal.tags.includes(outModal.outbound.tag)){
+        check() {
+            if (outModal.outbound.tag == '' || outModal.tags.includes(outModal.outbound.tag)) {
                 this.duplicateTag = true;
                 this.isValid = false;
             } else {
@@ -54,29 +72,32 @@
                 this.isValid = true;
             }
         },
+        initJsonEditor() {
+            const textAreaObj = document.getElementById('outboundJson');
+            if (!textAreaObj) return;
+            this.destroyJsonEditor();
+            textAreaObj.value = JSON.stringify(this.outbound.toJson(), null, 2);
+            this.cm = CodeMirror.fromTextArea(textAreaObj, outboundCmOptions);
+            this.cm.on('change', editor => {
+                const value = editor.getValue();
+                if (this.isJsonString(value)) {
+                    this.outbound = Outbound.fromJson(JSON.parse(value));
+                    this.check();
+                }
+            });
+        },
+        destroyJsonEditor() {
+            if (this.cm != null) {
+                this.cm.toTextArea();
+                this.cm = null;
+            }
+        },
         toggleJson(jsonTab) {
-            textAreaObj = document.getElementById('outboundJson');
-            if(jsonTab){
-                if(this.cm != null) {
-                        this.cm.toTextArea();
-                        this.cm=null;
-                }
-                textAreaObj.value = JSON.stringify(this.outbound.toJson(), null, 2);
-                this.cm = CodeMirror.fromTextArea(textAreaObj, app.cmOptions);
-                this.cm.on('change',editor => {
-                    value = editor.getValue();
-                    if(this.isJsonString(value)){
-                        this.outbound = Outbound.fromJson(JSON.parse(value));
-                        this.check();
-                    }
-                });
-                this.activeKey = '2';
+            if (jsonTab) {
+                this.activeKey = 'ob-json';
+                setTimeout(() => this.initJsonEditor(), 0);
             } else {
-                if(this.cm != null) {
-                        this.cm.toTextArea();
-                        this.cm=null;
-                }
-                this.activeKey = '1';
+                this.destroyJsonEditor();
             }
         },
         isJsonString(str) {
@@ -107,13 +128,13 @@
             canEnableTls() {
                 return this.outModal.outbound.canEnableTls();
             },
-            convertLink(){
-                newOutbound = Outbound.fromLink(outModal.link);
-                if(newOutbound){
+            convertLink() {
+                const newOutbound = Outbound.fromLink(outModal.link);
+                if (newOutbound) {
                     this.outModal.outbound = newOutbound;
                     this.outModal.toggleJson(true);
                     this.outModal.check();
-                    this.$message.success('Link imported successfully...');      
+                    this.$message.success('Link imported successfully...');
                     outModal.link = '';
                 } else {
                     this.$message.error('Wrong Link!');
@@ -122,6 +143,5 @@
             },
         },
     });
-
 </script>
 {{end}}

@@ -57,7 +57,8 @@ type process struct {
 	version string
 	apiPort int
 
-	onlineClients []string
+	onlineClients   []string
+	onlineOutbounds []string
 
 	config    *Config
 	logWriter *LogWriter
@@ -113,6 +114,14 @@ func (p *Process) GetOnlineClients() []string {
 
 func (p *Process) SetOnlineClients(users []string) {
 	p.onlineClients = users
+}
+
+func (p *Process) GetOnlineOutbounds() []string {
+	return p.onlineOutbounds
+}
+
+func (p *Process) SetOnlineOutbounds(tags []string) {
+	p.onlineOutbounds = tags
 }
 
 func (p *Process) GetUptime() uint64 {

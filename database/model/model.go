@@ -46,6 +46,47 @@ type Inbound struct {
 	Sniffing       string   `json:"sniffing" form:"sniffing"`
 }
 
+type Outbound struct {
+	Id             int    `json:"id" form:"id" gorm:"primaryKey;autoIncrement"`
+	Up             int64  `json:"up" form:"up"`
+	Down           int64  `json:"down" form:"down"`
+	Sort           int    `json:"sort" form:"sort"`
+	SendThrough    string `json:"sendThrough" form:"sendThrough"`
+	Protocol       string `json:"protocol" form:"protocol"`
+	Settings       string `json:"settings" form:"settings"`
+	Tag            string `json:"tag" form:"tag" gorm:"unique"`
+	StreamSettings string `json:"streamSettings" form:"streamSettings"`
+	ProxySettings  string `json:"proxySettings" form:"proxySettings"`
+	Mux            string `json:"mux" form:"mux"`
+	TargetStrategy string `json:"targetStrategy" form:"targetStrategy"`
+}
+
+func (o *Outbound) GenXrayOutboundConfig() *xray.OutboundConfig {
+	cfg := &xray.OutboundConfig{
+		Protocol:       o.Protocol,
+		Tag:            o.Tag,
+		TargetStrategy: o.TargetStrategy,
+	}
+	if o.SendThrough != "" {
+		cfg.SendThrough = json_util.RawMessage(fmt.Sprintf("\"%s\"", o.SendThrough))
+	}
+	if len(o.Settings) > 0 {
+		cfg.Settings = json_util.RawMessage(o.Settings)
+	} else {
+		cfg.Settings = json_util.RawMessage("{}")
+	}
+	if len(o.StreamSettings) > 0 {
+		cfg.StreamSettings = json_util.RawMessage(o.StreamSettings)
+	}
+	if len(o.ProxySettings) > 0 {
+		cfg.ProxySettings = json_util.RawMessage(o.ProxySettings)
+	}
+	if len(o.Mux) > 0 {
+		cfg.Mux = json_util.RawMessage(o.Mux)
+	}
+	return cfg
+}
+
 func (i *Inbound) GenXrayInboundConfig() *xray.InboundConfig {
 	listen := i.Listen
 	if listen != "" {

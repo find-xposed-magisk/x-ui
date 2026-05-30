@@ -56,6 +56,7 @@
 [menu]
 "dashboard" = "نمای کلی"
 "inbounds" = "ورودی‌ها"
+"outbounds" = "خروجی‌ها"
 "settings" = "تنظیمات پنل"
 "xray" = "پیکربندی ایکس‌ری"
 "logout" = "خروج"
@@ -178,6 +179,22 @@
 "exportInbound" = "استخراج ورودی"
 "import" = "افزودن"
 "importInbound" = "افزودن یک ورودی"
+
+[pages.outbounds]
+"title" = "خروجی‌ها"
+"totalDownUp" = "مجموع ارسال/دریافت"
+"totalUsage" = "مجموع مصرف"
+"outboundCount" = "تعداد خروجی‌ها"
+"create" = "ایجاد"
+"edit" = "ویرایش خروجی"
+"update" = "به‌روزرسانی"
+"delete" = "حذف خروجی"
+"deleteConfirm" = "آیا از حذف این خروجی مطمئن هستید؟"
+"resetTraffic" = "ریست ترافیک"
+"resetAllTraffic" = "ریست ترافیک همه خروجی‌ها"
+
+[pages.outbounds.toasts]
+"obtain" = "دریافت خروجی‌ها ناموفق بود"
 
 [pages.client]
 "add" = "کاربر جدید"
@@ -616,6 +633,9 @@
 "reverseTagDesc" = "برچسب inbound پروکسی معکوسی که این کلاینت VLESS به آن متصل می‌شود."
 "reverseTagPlaceholder" = "reverse-inbound-tag"
 "sendThrough" = "ارسال با"
+"advanced" = "پیشرفته"
+"linkConverter" = "تبدیل لینک"
+"jsonFreeEditor" = "ویرایشگر آزاد JSON"
 
 [pages.xray.balancer]
 "addBalancer" = "افزودن بالانسر"

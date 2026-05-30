@@ -6,8 +6,9 @@ import (
 )
 
 type XrayTrafficJob struct {
-	xrayService    service.XrayService
-	inboundService service.InboundService
+	xrayService     service.XrayService
+	inboundService  service.InboundService
+	outboundService service.OutboundService
 }
 
 func NewXrayTrafficJob() *XrayTrafficJob {
@@ -26,7 +27,10 @@ func (j *XrayTrafficJob) Run() {
 	}
 	err, needRestart := j.inboundService.AddTraffic(traffics, clientTraffics)
 	if err != nil {
-		logger.Warning("add traffic failed:", err)
+		logger.Warning("add inbound traffic failed:", err)
+	}
+	if err := j.outboundService.AddTraffic(traffics); err != nil {
+		logger.Warning("add outbound traffic failed:", err)
 	}
 	if needRestart {
 		j.xrayService.SetToNeedRestart()

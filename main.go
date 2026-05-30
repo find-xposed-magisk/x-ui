@@ -47,6 +47,9 @@ func runWebServer() {
 		log.Fatal(err)
 	}
 
+	outboundService := service.OutboundService{}
+	outboundService.MigrateDB()
+
 	var server *web.Server
 
 	server = web.NewServer()
@@ -364,6 +367,7 @@ func getPanelURI() {
 
 func migrateDb() {
 	inboundService := service.InboundService{}
+	outboundService := service.OutboundService{}
 
 	err := database.InitDB(config.GetDBPath())
 	if err != nil {
@@ -371,6 +375,7 @@ func migrateDb() {
 	}
 	fmt.Println("Start migrating database...")
 	inboundService.MigrateDB()
+	outboundService.MigrateDB()
 	fmt.Println("Migration done!")
 }
 

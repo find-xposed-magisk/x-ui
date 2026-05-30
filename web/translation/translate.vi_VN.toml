@@ -56,6 +56,7 @@
 [menu]
 "dashboard" = "Tổng quan"
 "inbounds" = "Đầu Vào khách hàng"
+"outbounds" = "Đầu Ra"
 "settings" = "Cài đặt X-UI"
 "xray" = "Cài đặt Xray"
 "logout" = "Đăng xuất"
@@ -178,6 +179,22 @@
 "exportInbound" = "Xuất nhập khẩu"
 "import" = "Nhập"
 "importInbound" = "Nhập hàng gửi về"
+
+[pages.outbounds]
+"title" = "Outbounds"
+"totalDownUp" = "Tổng Gửi/Nhận"
+"totalUsage" = "Tổng sử dụng"
+"outboundCount" = "Tổng Outbound"
+"create" = "Tạo"
+"edit" = "Sửa Outbound"
+"update" = "Cập nhật"
+"delete" = "Xóa Outbound"
+"deleteConfirm" = "Bạn có chắc muốn xóa outbound này?"
+"resetTraffic" = "Đặt lại lưu lượng"
+"resetAllTraffic" = "Đặt lại tất cả lưu lượng outbound"
+
+[pages.outbounds.toasts]
+"obtain" = "Không thể tải outbounds"
 
 [pages.client]
 "add" = "Thêm máy khách"
@@ -616,6 +633,9 @@
 "reverseTagDesc" = "Thẻ inbound reverse proxy mà client VLESS này sử dụng."
 "reverseTagPlaceholder" = "reverse-inbound-tag"
 "sendThrough" = "Gửi qua"
+"advanced" = "Nâng cao"
+"linkConverter" = "Chuyển đổi liên kết"
+"jsonFreeEditor" = "Trình soạn JSON tự do"
 
 [pages.xray.balancer]
 "addBalancer" = "Thêm cân bằng"

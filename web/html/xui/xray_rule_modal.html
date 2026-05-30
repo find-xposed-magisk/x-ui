@@ -195,11 +195,13 @@
             this.isEdit = isEdit;
             this.inboundTags = app.templateSettings.inbounds.filter((i) => !ObjectUtil.isEmpty(i.tag)).map(obj => obj.tag);
             this.inboundTags.push(...app.inboundTags);
-            app.templateSettings.outbounds.filter(o => o.protocol === Protocols.VLESS && o.settings.reverse?.tag).forEach(o => {
-                this.inboundTags.push(o.settings.reverse.tag);
-            });
+            if (app.outboundReverseTags) {
+                app.outboundReverseTags.forEach(tag => {
+                    if (tag && !this.inboundTags.includes(tag)) this.inboundTags.push(tag);
+                });
+            }
             if (app.enableDNS && !ObjectUtil.isEmpty(app.dnsTag)) this.inboundTags.push(app.dnsTag)
-            this.outboundTags = ["", ...app.templateSettings.outbounds.filter((o) => !ObjectUtil.isEmpty(o.tag)).map(obj => obj.tag)];
+            this.outboundTags = ["", ...(app.outboundTags || [])];
             if (app.clientReverseTags) {
                 app.clientReverseTags.forEach(tag => {
                 if (tag && !this.outboundTags.includes(tag)) {
