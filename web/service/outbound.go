@@ -71,7 +71,7 @@ func (s *OutboundService) AddOutbound(outbound *model.Outbound) (*model.Outbound
 
 	needRestart := false
 	if p != nil && p.IsRunning() {
-		s.xrayApi.Init(p.GetAPIPort())
+		s.xrayApi.Init(p.GetAPIAddr())
 		outboundJson, err1 := json.MarshalIndent(outbound.GenXrayOutboundConfig(), "", "  ")
 		if err1 != nil {
 			logger.Debug("Unable to marshal outbound config:", err1)
@@ -99,7 +99,7 @@ func (s *OutboundService) DelOutbound(id int) (bool, error) {
 
 	needRestart := false
 	if p != nil && p.IsRunning() {
-		s.xrayApi.Init(p.GetAPIPort())
+		s.xrayApi.Init(p.GetAPIAddr())
 		err1 := s.xrayApi.DelOutbound(outbound.Tag)
 		if err1 == nil {
 			logger.Debug("Outbound deleted by api:", outbound.Tag)
@@ -139,7 +139,7 @@ func (s *OutboundService) UpdateOutbound(outbound *model.Outbound) (*model.Outbo
 
 	needRestart := false
 	if p != nil && p.IsRunning() {
-		s.xrayApi.Init(p.GetAPIPort())
+		s.xrayApi.Init(p.GetAPIAddr())
 		if s.xrayApi.DelOutbound(oldTag) == nil {
 			logger.Debug("Old outbound deleted by api:", oldTag)
 		}
@@ -328,14 +328,35 @@ func outboundFromMap(raw map[string]interface{}, sort int) *model.Outbound {
 	return o
 }
 
-func (s *OutboundService) MigrateDB() {
-	db := database.GetDB()
-	var count int64
-	db.Model(&model.Outbound{}).Count(&count)
-	if count > 0 {
-		return
+func defaultOutbounds() []*model.Outbound {
+	return []*model.Outbound{
+		{
+			Sort:     0,
+			Protocol: "freedom",
+			Tag:      "direct",
+			Settings: `{"domainStrategy":"UseIP","noises":[],"redirect":""}`,
+		},
+		{
+			Sort:     1,
+			Protocol: "blackhole",
+			Tag:      "blocked",
+			Settings: `{}`,
+		},
 	}
+}
 
+func (s *OutboundService) initDefaultOutbounds() {
+	db := database.GetDB()
+	for _, outbound := range defaultOutbounds() {
+		if err := db.Create(outbound).Error; err != nil {
+			logger.Warning("outbound init: create default failed:", err)
+		}
+	}
+	logger.Info("Initialized default outbound(s): direct, blocked")
+}
+
+func (s *OutboundService) migrateOutboundsFromTemplate() {
+	db := database.GetDB()
 	templateConfig, err := s.settingService.GetXrayConfigTemplate()
 	if err != nil {
 		logger.Warning("outbound migration: get xray template failed:", err)
@@ -353,6 +374,7 @@ func (s *OutboundService) MigrateDB() {
 		return
 	}
 
+	migrated := 0
 	for i, item := range rawOutbounds {
 		raw, ok := item.(map[string]interface{})
 		if !ok {
@@ -364,7 +386,12 @@ func (s *OutboundService) MigrateDB() {
 		}
 		if err := db.Create(outbound).Error; err != nil {
 			logger.Warning("outbound migration: create failed:", err)
+			continue
 		}
+		migrated++
+	}
+	if migrated == 0 {
+		return
 	}
 
 	cfg["outbounds"] = []interface{}{}
@@ -377,5 +404,21 @@ func (s *OutboundService) MigrateDB() {
 		logger.Warning("outbound migration: save template failed:", err)
 		return
 	}
-	logger.Info("Migrated", len(rawOutbounds), "outbound(s) from xray settings to database")
+	logger.Info("Migrated", migrated, "outbound(s) from xray settings to database")
+}
+
+func (s *OutboundService) MigrateDB() {
+	db := database.GetDB()
+	var count int64
+	db.Model(&model.Outbound{}).Count(&count)
+	if count > 0 {
+		return
+	}
+
+	s.migrateOutboundsFromTemplate()
+
+	db.Model(&model.Outbound{}).Count(&count)
+	if count == 0 {
+		s.initDefaultOutbounds()
+	}
 }

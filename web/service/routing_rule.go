@@ -85,7 +85,7 @@ func (s *RoutingRuleService) AddRule(rule *model.RoutingRule) (*model.RoutingRul
 
 	needRestart := false
 	if p != nil && p.IsRunning() {
-		s.xrayApi.Init(p.GetAPIPort())
+		s.xrayApi.Init(p.GetAPIAddr())
 		ruleJSON, err1 := rule.RuleJSON()
 		if err1 != nil {
 			logger.Debug("Unable to marshal routing rule:", err1)
@@ -114,7 +114,7 @@ func (s *RoutingRuleService) DelRule(id int) (bool, error) {
 
 	needRestart := false
 	if p != nil && p.IsRunning() {
-		s.xrayApi.Init(p.GetAPIPort())
+		s.xrayApi.Init(p.GetAPIAddr())
 		err1 := s.xrayApi.DelRule(rule.Tag)
 		if err1 == nil {
 			logger.Debug("Routing rule deleted by api:", rule.Tag)
@@ -148,7 +148,7 @@ func (s *RoutingRuleService) UpdateRule(rule *model.RoutingRule) (*model.Routing
 
 	needRestart := false
 	if p != nil && p.IsRunning() {
-		s.xrayApi.Init(p.GetAPIPort())
+		s.xrayApi.Init(p.GetAPIAddr())
 		if s.xrayApi.DelRule(oldTag) != nil {
 			needRestart = true
 		}
@@ -353,6 +353,134 @@ func (s *RoutingRuleService) ReplaceBalancerTag(oldTag, newTag string) error {
 	return nil
 }
 
+func apiListenMissing(api map[string]interface{}) bool {
+	_, ok := api["listen"]
+	return !ok
+}
+
+func defaultApiListen() string {
+	var cfg map[string]interface{}
+	if err := json.Unmarshal([]byte(xrayTemplateConfig), &cfg); err != nil {
+		return "127.0.0.1:62789"
+	}
+	api, ok := cfg["api"].(map[string]interface{})
+	if !ok {
+		return "127.0.0.1:62789"
+	}
+	s, _ := api["listen"].(string)
+	if s == "" {
+		return "127.0.0.1:62789"
+	}
+	return s
+}
+
+func inboundListenAddress(inbound map[string]interface{}) string {
+	port := 0
+	switch p := inbound["port"].(type) {
+	case float64:
+		port = int(p)
+	case int:
+		port = p
+	case int64:
+		port = int(p)
+	}
+	if port == 0 {
+		return ""
+	}
+
+	host := "127.0.0.1"
+	if listen, ok := inbound["listen"]; ok {
+		switch v := listen.(type) {
+		case string:
+			if v != "" {
+				host = v
+			}
+		case []interface{}:
+			if len(v) > 0 {
+				if s, ok := v[0].(string); ok && s != "" {
+					host = s
+				}
+			}
+		}
+	}
+	return fmt.Sprintf("%s:%d", host, port)
+}
+
+func isLegacyApiRoutingRule(rule map[string]interface{}) bool {
+	outboundTag, _ := rule["outboundTag"].(string)
+	if outboundTag != "api" {
+		return false
+	}
+	val, ok := rule["inboundTag"]
+	if !ok {
+		return false
+	}
+	switch v := val.(type) {
+	case []interface{}:
+		return len(v) == 1 && v[0] == "api"
+	case []string:
+		return len(v) == 1 && v[0] == "api"
+	default:
+		return false
+	}
+}
+
+func migrateLegacyApiConfig(cfg map[string]interface{}) bool {
+	api, ok := cfg["api"].(map[string]interface{})
+	if !ok || !apiListenMissing(api) {
+		return false
+	}
+
+	var listenAddr string
+	inbounds, _ := cfg["inbounds"].([]interface{})
+
+	apiInboundIndex := -1
+	var apiInbound map[string]interface{}
+	for i, item := range inbounds {
+		inbound, ok := item.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		tag, _ := inbound["tag"].(string)
+		protocol, _ := inbound["protocol"].(string)
+		if tag == "api" && protocol == "dokodemo-door" {
+			apiInboundIndex = i
+			apiInbound = inbound
+			break
+		}
+	}
+
+	if apiInboundIndex >= 0 {
+		listenAddr = inboundListenAddress(apiInbound)
+		if listenAddr == "" {
+			listenAddr = defaultApiListen()
+		}
+		cfg["inbounds"] = RemoveIndex(inbounds, apiInboundIndex)
+
+		if routing, ok := cfg["routing"].(map[string]interface{}); ok {
+			if rawRules, ok := routing["rules"].([]interface{}); ok {
+				for i, item := range rawRules {
+					rule, ok := item.(map[string]interface{})
+					if !ok {
+						continue
+					}
+					if isLegacyApiRoutingRule(rule) {
+						routing["rules"] = RemoveIndex(rawRules, i)
+						cfg["routing"] = routing
+						break
+					}
+				}
+			}
+		}
+	} else {
+		listenAddr = defaultApiListen()
+	}
+
+	api["listen"] = listenAddr
+	cfg["api"] = api
+	return true
+}
+
 func routingRuleFromMap(raw map[string]interface{}, index int) *model.RoutingRule {
 	tag, _ := raw["ruleTag"].(string)
 	delete(raw, "ruleTag")
@@ -371,9 +499,6 @@ func (s *RoutingRuleService) MigrateDB() {
 	db := database.GetDB()
 	var count int64
 	db.Model(&model.RoutingRule{}).Count(&count)
-	if count > 0 {
-		return
-	}
 
 	templateConfig, err := s.settingService.GetXrayConfigTemplate()
 	if err != nil {
@@ -384,6 +509,23 @@ func (s *RoutingRuleService) MigrateDB() {
 	var cfg map[string]interface{}
 	if err := json.Unmarshal([]byte(templateConfig), &cfg); err != nil {
 		logger.Warning("routing rule migration: parse template failed:", err)
+		return
+	}
+
+	if migrateLegacyApiConfig(cfg) {
+		newTemplate, err := json.MarshalIndent(cfg, "", "  ")
+		if err != nil {
+			logger.Warning("routing rule migration: marshal legacy api config failed:", err)
+			return
+		}
+		if err := s.settingService.saveSetting("xrayTemplateConfig", string(newTemplate)); err != nil {
+			logger.Warning("routing rule migration: save legacy api config failed:", err)
+			return
+		}
+		logger.Info("Migrated legacy api inbound to api.listen in xray settings")
+	}
+
+	if count > 0 {
 		return
 	}
 

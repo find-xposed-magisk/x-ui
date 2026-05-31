@@ -133,15 +133,15 @@ type Setting struct {
 }
 
 type ClientReverse struct {
-	Tag      string `json:"tag"`
-	Sniffing string `json:"sniffing" omitEmpty:"true"`
+	Tag      string               `json:"tag"`
+	Sniffing json_util.RawMessage `json:"sniffing,omitempty"`
 }
 type Client struct {
-	ID         string         `json:"id" omitEmpty:"true"`
-	Password   string         `json:"password" omitEmpty:"true"`
-	Auth       string         `json:"auth" omitEmpty:"true"`
-	Flow       string         `json:"flow" omitEmpty:"true"`
-	Reverse    *ClientReverse `json:"reverse" omitEmpty:"true"`
+	ID         string         `json:"id,omitempty"`
+	Password   string         `json:"password,omitempty"`
+	Auth       string         `json:"auth,omitempty"`
+	Flow       string         `json:"flow,omitempty"`
+	Reverse    *ClientReverse `json:"reverse,omitempty"`
 	Email      string         `json:"email"`
 	TotalGB    int64          `json:"totalGB" form:"totalGB"`
 	ExpiryTime int64          `json:"expiryTime" form:"expiryTime"`

@@ -55,7 +55,7 @@ type process struct {
 	cmd *exec.Cmd
 
 	version string
-	apiPort int
+	apiAddr string
 
 	onlineClients   []string
 	onlineOutbounds []string
@@ -100,8 +100,8 @@ func (p *process) GetVersion() string {
 	return p.version
 }
 
-func (p *Process) GetAPIPort() int {
-	return p.apiPort
+func (p *Process) GetAPIAddr() string {
+	return p.apiAddr
 }
 
 func (p *Process) GetConfig() *Config {
@@ -128,13 +128,8 @@ func (p *Process) GetUptime() uint64 {
 	return uint64(time.Since(p.startTime).Seconds())
 }
 
-func (p *process) refreshAPIPort() {
-	for _, inbound := range p.config.InboundConfigs {
-		if inbound.Tag == "api" {
-			p.apiPort = inbound.Port
-			break
-		}
-	}
+func (p *process) refreshAPIAddr() {
+	p.apiAddr = p.config.API.Listen
 }
 
 func (p *process) refreshVersion() {
@@ -189,7 +184,7 @@ func (p *process) Start() (err error) {
 	}()
 
 	p.refreshVersion()
-	p.refreshAPIPort()
+	p.refreshAPIAddr()
 
 	return nil
 }

@@ -3,7 +3,6 @@ package xray
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"regexp"
 	"time"
 
@@ -27,18 +26,18 @@ import (
 )
 
 type XrayAPI struct {
-	HandlerServiceClient  *command.HandlerServiceClient
-	RoutingServiceClient  *routingcommand.RoutingServiceClient
-	StatsServiceClient    *statsService.StatsServiceClient
-	grpcClient            *grpc.ClientConn
-	isConnected           bool
+	HandlerServiceClient *command.HandlerServiceClient
+	RoutingServiceClient *routingcommand.RoutingServiceClient
+	StatsServiceClient   *statsService.StatsServiceClient
+	grpcClient           *grpc.ClientConn
+	isConnected          bool
 }
 
-func (x *XrayAPI) Init(apiPort int) (err error) {
-	if apiPort == 0 {
-		return common.NewError("xray api port wrong:", apiPort)
+func (x *XrayAPI) Init(apiAddr string) (err error) {
+	if apiAddr == "" {
+		return common.NewError("xray api port wrong:", apiAddr)
 	}
-	x.grpcClient, err = grpc.NewClient(fmt.Sprintf("127.0.0.1:%v", apiPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	x.grpcClient, err = grpc.NewClient(apiAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
 	}
@@ -56,7 +55,10 @@ func (x *XrayAPI) Init(apiPort int) (err error) {
 }
 
 func (x *XrayAPI) Close() {
-	x.grpcClient.Close()
+	if x.grpcClient != nil {
+		x.grpcClient.Close()
+		x.grpcClient = nil
+	}
 	x.HandlerServiceClient = nil
 	x.RoutingServiceClient = nil
 	x.StatsServiceClient = nil
@@ -78,7 +80,7 @@ func (x *XrayAPI) AddRule(ruleJSON []byte, shouldAppend bool) error {
 	}
 	client := *x.RoutingServiceClient
 	_, err = client.AddRule(context.Background(), &routingcommand.AddRuleRequest{
-		Config:       serial.ToTypedMessage(built.Rule[0]),
+		Config:       serial.ToTypedMessage(built),
 		ShouldAppend: shouldAppend,
 	})
 	return err

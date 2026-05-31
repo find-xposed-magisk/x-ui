@@ -21,11 +21,11 @@ var (
 )
 
 type XrayService struct {
-	inboundService      InboundService
-	outboundService     OutboundService
-	routingRuleService  RoutingRuleService
-	settingService      SettingService
-	xrayAPI             xray.XrayAPI
+	inboundService     InboundService
+	outboundService    OutboundService
+	routingRuleService RoutingRuleService
+	settingService     SettingService
+	xrayAPI            xray.XrayAPI
 }
 
 func (s *XrayService) IsXrayRunning() bool {
@@ -227,7 +227,9 @@ func (s *XrayService) GetXrayTraffic() ([]*xray.Traffic, []*xray.ClientTraffic, 
 	if !s.IsXrayRunning() {
 		return nil, nil, errors.New("xray is not running")
 	}
-	s.xrayAPI.Init(p.GetAPIPort())
+	if err := s.xrayAPI.Init(p.GetAPIAddr()); err != nil {
+		return nil, nil, err
+	}
 	defer s.xrayAPI.Close()
 	return s.xrayAPI.GetTraffic(true)
 }
