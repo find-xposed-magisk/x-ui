@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/alireza0/x-ui/logger"
+	"github.com/alireza0/x-ui/util/json_util"
 	"github.com/alireza0/x-ui/xray"
 
 	"go.uber.org/atomic"
@@ -20,10 +21,11 @@ var (
 )
 
 type XrayService struct {
-	inboundService  InboundService
-	outboundService OutboundService
-	settingService  SettingService
-	xrayAPI         xray.XrayAPI
+	inboundService      InboundService
+	outboundService     OutboundService
+	routingRuleService  RoutingRuleService
+	settingService      SettingService
+	xrayAPI             xray.XrayAPI
 }
 
 func (s *XrayService) IsXrayRunning() bool {
@@ -194,7 +196,31 @@ func (s *XrayService) GetXrayConfig() (*xray.Config, error) {
 		outboundConfig := outbound.GenXrayOutboundConfig()
 		xrayConfig.OutboundConfigs = append(xrayConfig.OutboundConfigs, *outboundConfig)
 	}
+
+	mergedRouting, err := s.mergeRoutingRules(xrayConfig.RouterConfig)
+	if err != nil {
+		return nil, err
+	}
+	xrayConfig.RouterConfig = mergedRouting
+
 	return xrayConfig, nil
+}
+
+func (s *XrayService) mergeRoutingRules(routerConfig json_util.RawMessage) (json_util.RawMessage, error) {
+	routing := map[string]interface{}{}
+	if len(routerConfig) > 0 {
+		json.Unmarshal(routerConfig, &routing)
+	}
+	ruleList, err := s.routingRuleService.BuildRulesArray()
+	if err != nil {
+		return nil, err
+	}
+	routing["rules"] = ruleList
+	b, err := json.Marshal(routing)
+	if err != nil {
+		return nil, err
+	}
+	return json_util.RawMessage(b), nil
 }
 
 func (s *XrayService) GetXrayTraffic() ([]*xray.Traffic, []*xray.ClientTraffic, error) {

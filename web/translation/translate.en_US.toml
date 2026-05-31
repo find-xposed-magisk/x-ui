@@ -57,6 +57,7 @@
 "dashboard" = "Overview"
 "inbounds" = "Inbounds"
 "outbounds" = "Outbounds"
+"routing" = "Routing"
 "settings" = "Panel Settings"
 "xray" = "Xray Configs"
 "logout" = "Log Out"
@@ -179,6 +180,21 @@
 "exportInbound" = "Export Inbound"
 "import" = "Import"
 "importInbound" = "Import an Inbound"
+
+[pages.routingRules]
+"title" = "Routing"
+"ruleCount" = "Routing Rules"
+"ruleTag" = "Rule Tag"
+"ruleTagDesc" = "Unique tag for API (ruleTag)"
+"create" = "Create Rule"
+"update" = "Update Rule"
+"delete" = "Delete Rule"
+"deleteConfirm" = "Are you sure you want to delete this routing rule?"
+"updateMeta" = "Update Routing Settings"
+"dragToReorder" = "Drag to reorder"
+
+[pages.routingRules.toasts]
+"obtain" = "Failed to load routing rules"
 
 [pages.outbounds]
 "title" = "Outbounds"

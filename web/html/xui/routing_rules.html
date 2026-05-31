@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+{{template "head" .}}
+<style>
+    @media (min-width: 769px) {
+        .ant-layout-content { margin: 24px 16px; }
+    }
+    @media (max-width: 768px) {
+        .ant-card-body { padding: .5rem; }
+    }
+    .ant-list-item {
+        display: block;
+    }
+
+    .collapse-title {
+        color: inherit;
+        font-weight: bold;
+        font-size: 18px;
+        padding: 10px 20px;
+        border-bottom: 2px solid;
+    }
+
+    .collapse-title > i {
+        color: inherit;
+        font-size: 24px;
+    }
+
+    .rule-drag-handle {
+        cursor: grab;
+        font-size: 24px;
+        user-select: none;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 4px;
+    }
+    .rule-drag-handle:active {
+        cursor: grabbing;
+    }
+    .routing-rules-table tr.routing-rule-drag-over td {
+        border-top: 2px solid #1890ff;
+    }
+    .routing-rules-table tr.routing-rule-dragging td {
+        opacity: 0.45;
+    }
+</style>
+<body>
+<a-layout id="app" v-cloak :class="themeSwitcher.currentTheme">
+    {{ template "commonSider" . }}
+    <a-layout id="content-layout">
+        <a-layout-content>
+            <a-spin :spinning="spinning" :delay="500" tip='{{ i18n "loading"}}'>
+                <a-card hoverable style="margin-bottom: 12px;">
+                    <strong>{{ i18n "pages.routingRules.ruleCount" }}:</strong>
+                    <a-tag color="blue">[[ dbRules.length ]]</a-tag>
+                </a-card>
+
+                <a-card hoverable style="margin-bottom: 12px;">
+                    <a-collapse>
+                        <a-collapse-panel header='{{ i18n "pages.xray.basicRouting"}}'>
+                            <a-row :xs="24" :sm="24" :lg="12">
+                                <a-alert type="warning" style="text-align: center;">
+                                    <template slot="message">
+                                        <a-icon type="exclamation-circle" theme="filled" style="color: #FFA031"></a-icon>
+                                        {{ i18n "pages.xray.blockConnectionsConfigsDesc" }}
+                                    </template>
+                                </a-alert>
+                            </a-row>
+                            <a-list-item>
+                                <a-row style="padding: 0 20px">
+                                    <a-col :lg="24" :xl="4"><a-list-item-meta title='{{ i18n "pages.xray.blockips" }}'/></a-col>
+                                    <a-col :lg="24" :xl="20">
+                                        <a-select mode="tags" v-model="blockedIPs" @change="v => syncBasic('blocked','ip',v)"
+                                            style="width: 100%" :dropdown-class-name="themeSwitcher.currentTheme">
+                                            <a-select-option v-for="p in settingsData.IPsOptions" :value="p.value" :label="p.label">[[ p.label ]]</a-select-option>
+                                        </a-select>
+                                    </a-col>
+                                </a-row>
+                            </a-list-item>
+                            <a-list-item>
+                                <a-row style="padding: 0 20px">
+                                    <a-col :lg="24" :xl="4"><a-list-item-meta title='{{ i18n "pages.xray.blockdomains" }}'/></a-col>
+                                    <a-col :lg="24" :xl="20">
+                                        <a-select mode="tags" v-model="blockedDomains" @change="v => syncBasic('blocked','domain',v)"
+                                            style="width: 100%" :dropdown-class-name="themeSwitcher.currentTheme">
+                                            <a-select-option v-for="p in settingsData.DomainsOptions" :value="p.value" :label="p.label">[[ p.label ]]</a-select-option>
+                                        </a-select>
+                                    </a-col>
+                                </a-row>
+                            </a-list-item>
+                            <a-list-item>
+                                <a-row style="padding: 0 20px">
+                                    <a-col :lg="24" :xl="4">
+                                        <a-list-item-meta title='{{ i18n "pages.xray.Torrent"}}' description='{{ i18n "pages.xray.TorrentDesc"}}'/>
+                                    </a-col>
+                                    <a-col :lg="24" :xl="20">
+                                        <a-switch :checked="torrentSettings" @change="v => torrentSettings = v"></a-switch>
+                                    </a-col>
+                                </a-row>
+                            </a-list-item>
+                            <a-row :xs="24" :sm="24" :lg="12">
+                                <a-alert type="warning" style="text-align: center;">
+                                    <template slot="message">{{ i18n "pages.xray.directConnectionsConfigsDesc" }}</template>
+                                </a-alert>
+                            </a-row>
+                            <a-list-item>
+                                <a-row style="padding: 0 20px">
+                                    <a-col :lg="24" :xl="4"><a-list-item-meta title='{{ i18n "pages.xray.directips" }}'/></a-col>
+                                    <a-col :lg="24" :xl="20">
+                                        <a-select mode="tags" v-model="directIPs" @change="v => syncBasic('direct','ip',v)"
+                                            style="width: 100%" :dropdown-class-name="themeSwitcher.currentTheme">
+                                            <a-select-option v-for="p in settingsData.IPsOptions" :value="p.value" :label="p.label">[[ p.label ]]</a-select-option>
+                                        </a-select>
+                                    </a-col>
+                                </a-row>
+                            </a-list-item>
+                            <a-list-item>
+                                <a-row style="padding: 0 20px">
+                                    <a-col :lg="24" :xl="4"><a-list-item-meta title='{{ i18n "pages.xray.directdomains" }}'/></a-col>
+                                    <a-col :lg="24" :xl="20">
+                                        <a-select mode="tags" v-model="directDomains" @change="v => syncBasic('direct','domain',v)"
+                                            style="width: 100%" :dropdown-class-name="themeSwitcher.currentTheme">
+                                            <a-select-option v-for="p in settingsData.DomainsOptions" :value="p.value" :label="p.label">[[ p.label ]]</a-select-option>
+                                        </a-select>
+                                    </a-col>
+                                </a-row>
+                            </a-list-item>
+                            <a-row :xs="24" :sm="24" :lg="12">
+                                <a-alert type="warning" style="text-align: center;">
+                                    <template slot="message">{{ i18n "pages.xray.ipv4RoutingDesc" }}</template>
+                                </a-alert>
+                            </a-row>
+                            <a-list-item>
+                                <a-row style="padding: 0 20px">
+                                    <a-col :lg="24" :xl="4"><a-list-item-meta title='{{ i18n "pages.xray.ipv4Routing" }}'/></a-col>
+                                    <a-col :lg="24" :xl="20">
+                                        <a-select mode="tags" v-model="ipv4Domains" @change="v => syncBasic('IPv4','domain',v)"
+                                            style="width: 100%" :dropdown-class-name="themeSwitcher.currentTheme">
+                                            <a-select-option v-for="p in settingsData.ServicesOptions" :value="p.value" :label="p.label">[[ p.label ]]</a-select-option>
+                                        </a-select>
+                                    </a-col>
+                                </a-row>
+                            </a-list-item>
+                            <template v-if="WarpExist">
+                                <a-row :xs="24" :sm="24" :lg="12">
+                                    <a-alert type="warning" style="text-align: center;">
+                                        <template slot="message">{{ i18n "pages.xray.warpRoutingDesc" }}</template>
+                                    </a-alert>
+                                </a-row>
+                                <a-list-item>
+                                    <a-row style="padding: 0 20px">
+                                        <a-col :lg="24" :xl="4"><a-list-item-meta title='{{ i18n "pages.xray.warpRouting" }}'/></a-col>
+                                        <a-col :lg="24" :xl="20">
+                                            <a-select mode="tags" v-model="warpDomains" @change="v => syncBasic('warp','domain',v)"
+                                                style="width: 100%" :dropdown-class-name="themeSwitcher.currentTheme">
+                                                <a-select-option v-for="p in settingsData.ServicesOptions" :value="p.value" :label="p.label">[[ p.label ]]</a-select-option>
+                                            </a-select>
+                                        </a-col>
+                                    </a-row>
+                                </a-list-item>
+                            </template>
+                            <a-button v-else type="primary" icon="cloud" style="margin: 15px 20px;" @click="showWarp()">WARP</a-button>
+                        </a-collapse-panel>
+                    </a-collapse>
+                </a-card>
+
+                <a-card hoverable>
+                    <div slot="title">
+                        <a-button type="primary" icon="plus" @click="addRule">
+                            <template v-if="!isMobile">{{ i18n "pages.xray.rules.add" }}</template>
+                        </a-button>
+                    </div>
+                    <a-alert type="warning" show-icon style="margin-bottom: 12px; text-align: center;"
+                        :message='`{{ i18n "pages.xray.RoutingsDesc" }}`'></a-alert>
+                    <a-table class="routing-rules-table" :columns="isMobile ? rulesMobileColumns : rulesColumns" bordered
+                        :row-key="r => r.id"
+                        :data-source="tableRules"
+                        :custom-row="ruleCustomRow"
+                        :scroll="isMobile ? {} : { x: 1000 }"
+                        :pagination="false"
+                        style="margin-top: 10px;">
+                        <template slot="actions" slot-scope="text, row">
+                            <a-tooltip>
+                                <template slot="title">{{ i18n "pages.routingRules.dragToReorder" }}</template>
+                                <span class="rule-drag-handle" draggable="true"
+                                    @dragstart.stop="onRuleDragStart($event, row)"
+                                    @dragend="onRuleDragEnd">
+                                    <a-icon type="vertical-align-middle" style="font-size: 24px; cursor: move;" class="normal-icon"></a-icon>
+                                </span>
+                            </a-tooltip>
+                            <a-tooltip>
+                                <template slot="title">{{ i18n "edit" }}</template>
+                                <a-icon style="font-size: 24px; cursor: pointer;" class="normal-icon" type="edit" @click="editRule(row)"></a-icon>
+                            </a-tooltip>
+                            <a-tooltip>
+                                <template slot="title"><span style="color: #FF4D4F">{{ i18n "delete" }}</span></template>
+                                <a-popconfirm @confirm="deleteRule(row.id)"
+                                    title='{{ i18n "pages.routingRules.deleteConfirm" }}'
+                                    :overlay-class-name="themeSwitcher.currentTheme"
+                                    ok-text='{{ i18n "delete"}}' ok-type="danger" cancel-text='{{ i18n "cancel"}}'>
+                                    <a-icon slot="icon" type="question-circle-o" style="color: #e04141"></a-icon>
+                                    <a-icon style="font-size: 24px; cursor: pointer;" class="delete-icon" type="delete"></a-icon>
+                                </a-popconfirm>
+                            </a-tooltip>
+                        </template>
+                        <template slot="ruleTag" slot-scope="text, row">[[ row.tag ]]</template>
+                        <template slot="inbound" slot-scope="text, row">
+                            <a-popover :overlay-class-name="themeSwitcher.currentTheme">
+                                <template slot="content">
+                                    <p v-if="row.inboundTag">Inbound Tag: [[ row.inboundTag ]]</p>
+                                    <p v-if="row.user">User: [[ row.user ]]</p>
+                                </template>
+                                [[ [row.inboundTag, row.user].filter(Boolean).join('\n') ]]
+                            </a-popover>
+                        </template>
+                        <template slot="outbound" slot-scope="text, row">[[ row.outboundTag ]]</template>
+                        <template slot="balancer" slot-scope="text, row">[[ row.balancerTag ]]</template>
+                        <template slot="info" slot-scope="text, row">
+                            <a-popover placement="bottomRight" v-if="(row.source||row.sourcePort||row.network||row.protocol||row.attrs||row.ip||row.domain||row.port)"
+                                :overlay-class-name="themeSwitcher.currentTheme" trigger="click">
+                                <template slot="content">
+                                    <table cellpadding="2" style="max-width: 300px;">
+                                        <tr v-if="row.source"><td>Source</td><td>[[ row.source ]]</td></tr>
+                                        <tr v-if="row.ip"><td>IP</td><td>[[ row.ip ]]</td></tr>
+                                        <tr v-if="row.domain"><td>Domain</td><td>[[ row.domain ]]</td></tr>
+                                        <tr v-if="row.protocol"><td>Protocol</td><td>[[ row.protocol ]]</td></tr>
+                                    </table>
+                                </template>
+                                <a-button shape="round" size="small"><a-icon type="info"></a-icon></a-button>
+                            </a-popover>
+                        </template>
+                    </a-table>
+                </a-card>
+            </a-spin>
+        </a-layout-content>
+    </a-layout>
+</a-layout>
+{{template "js" .}}
+{{template "component/themeSwitcher" .}}
+<script src="{{ .base_path }}assets/js/model/dbroutingrule.js?{{ .cur_ver }}"></script>
+<script>
+    const rulesColumns = [
+        { title: '{{ i18n "pages.inbounds.operate" }}', align: 'center', width: 20, scopedSlots: { customRender: 'actions' } },
+        { title: '{{ i18n "pages.routingRules.ruleTag" }}', align: 'center', width: 20, scopedSlots: { customRender: 'ruleTag' } },
+        { title: '{{ i18n "pages.xray.rules.source"}}', children: [
+            { title: 'IP', dataIndex: "source", align: 'center', width: 20, ellipsis: true },
+            { title: 'Port', dataIndex: 'sourcePort', align: 'center', width: 10, ellipsis: true }]},
+        { title: '{{ i18n "pages.xray.rules.dest"}}', children: [
+            { title: 'IP', dataIndex: 'ip', align: 'center', width: 20, ellipsis: true },
+            { title: 'Domain', dataIndex: 'domain', align: 'center', width: 20, ellipsis: true },
+            { title: 'Port', dataIndex: 'port', align: 'center', width: 10, ellipsis: true }]},
+        { title: '{{ i18n "pages.xray.rules.inbound"}}', align: 'center', width: 40, scopedSlots: { customRender: 'inbound' } },
+        { title: '{{ i18n "pages.xray.rules.outbound"}}', align: 'center', width: 25, scopedSlots: { customRender: 'outbound' } },
+        { title: '{{ i18n "pages.xray.rules.balancer"}}', align: 'center', width: 20, scopedSlots: { customRender: 'balancer' } },
+        { title: '{{ i18n "pages.xray.rules.info"}}', align: 'center', width: 15, scopedSlots: { customRender: 'info' } },
+    ];
+    const rulesMobileColumns = [
+        { title: '{{ i18n "pages.inbounds.operate" }}', align: 'center', width: 110, scopedSlots: { customRender: 'actions' } },
+        { title: '{{ i18n "pages.routingRules.ruleTag" }}', align: 'center', scopedSlots: { customRender: 'ruleTag' } },
+        { title: '{{ i18n "pages.xray.rules.outbound"}}', align: 'center', scopedSlots: { customRender: 'outbound' } },
+        { title: '{{ i18n "pages.xray.rules.info"}}', align: 'center', scopedSlots: { customRender: 'info' } },
+    ];
+
+    const routingRulesApp = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#app',
+        data: {
+            siderDrawer,
+            themeSwitcher,
+            spinning: false,
+            isMobile: window.innerWidth <= 768,
+            dbRules: [],
+            tableRules: [],
+            blockedProtocolsList: [],
+            inboundTags: [],
+            clientReverseTags: [],
+            outboundTags: [],
+            outboundReverseTags: [],
+            routingMeta: {},
+            blockedIPs: [],
+            blockedDomains: [],
+            directIPs: [],
+            directDomains: [],
+            ipv4Domains: [],
+            warpDomains: [],
+            dragRuleId: null,
+            dragOverId: null,
+            reordering: false,
+            settingsData: {
+                protocols: {
+                    bittorrent: ["bittorrent"],
+                },
+                IPsOptions: [
+                    { label: 'Private IP', value: 'geoip:private' },
+                    { label: '🇮🇷 Iran', value: 'ext:geoip_IR.dat:ir' },
+                    { label: '🇨🇳 China', value: 'geoip:cn' },
+                    { label: '🇷🇺 Russia', value: 'geoip:ru' },
+                ],
+                DomainsOptions: [
+                    { label: 'Ads All', value: 'geosite:category-ads-all' },
+                    { label: 'Ads IR', value: 'ext:geosite_IR.dat:category-ads-all' },
+                    { label: '🇮🇷 Iran', value: 'ext:geosite_IR.dat:ir' },
+                    { label: '🇮🇷 .ir', value: 'regexp:.*\\.ir$' },
+                    { label: '🇨🇳 China', value: 'geosite:cn' },
+                    { label: '🇷🇺 Russia', value: 'geosite:category-ru' },
+                ],
+                ServicesOptions: [
+                    { label: 'Apple', value: 'geosite:apple' },
+                    { label: 'Meta', value: 'geosite:meta' },
+                    { label: 'Google', value: 'geosite:google' },
+                    { label: 'OpenAI', value: 'geosite:openai' },
+                    { label: 'Spotify', value: 'geosite:spotify' },
+                    { label: 'Netflix', value: 'geosite:netflix' },
+                ],
+            },
+        },
+        computed: {
+            WarpExist() {
+                return this.outboundTags.includes('warp');
+            },
+            balancerTags() {
+                const balancers = this.routingMeta.balancers || [];
+                return balancers.filter(b => b.tag).map(b => b.tag);
+            },
+            torrentSettings: {
+                get() {
+                    return doAllItemsExist(this.settingsData.protocols.bittorrent, this.blockedProtocolsList);
+                },
+                set(newValue) {
+                    let data = [...this.blockedProtocolsList];
+                    if (newValue) {
+                        data = [...new Set([...data, ...this.settingsData.protocols.bittorrent])];
+                    } else {
+                        data = data.filter(d => !this.settingsData.protocols.bittorrent.includes(d));
+                    }
+                    this.syncBlockedProtocols(data);
+                },
+            },
+        },
+        methods: {
+            loading(spinning = true) { this.spinning = spinning; },
+            async loadAll() {
+                this.loading(true);
+                const [listMsg, refsMsg] = await Promise.all([
+                    HttpUtil.post('/xui/routing/list'),
+                    HttpUtil.post('/xui/routing/refs'),
+                ]);
+                this.loading(false);
+                if (listMsg.success) {
+                    this.dbRules = listMsg.obj.map(r => new DBRoutingRule(r));
+                    this.tableRules = this.dbRules.map(r => r.toTableRow());
+                }
+                if (refsMsg.success) {
+                    this.inboundTags = refsMsg.obj.inboundTags || [];
+                    this.clientReverseTags = refsMsg.obj.clientReverseTags || [];
+                    this.outboundTags = refsMsg.obj.outboundTags || [];
+                    this.outboundReverseTags = refsMsg.obj.outboundReverseTags || [];
+                    this.routingMeta = refsMsg.obj.routingMeta || {};
+                }
+                await this.loadBasicFields();
+            },
+            async loadBasicFields() {
+                const protoMsg = await HttpUtil.post('/xui/routing/getBasic', { outboundTag: 'blocked', property: 'protocol' });
+                if (protoMsg.success) {
+                    this.blockedProtocolsList = protoMsg.obj || [];
+                }
+                const fields = [
+                    ['blocked', 'ip', 'blockedIPs'],
+                    ['blocked', 'domain', 'blockedDomains'],
+                    ['direct', 'ip', 'directIPs'],
+                    ['direct', 'domain', 'directDomains'],
+                    ['IPv4', 'domain', 'ipv4Domains'],
+                    ['warp', 'domain', 'warpDomains'],
+                ];
+                for (const [ot, prop, key] of fields) {
+                    const msg = await HttpUtil.post('/xui/routing/getBasic', { outboundTag: ot, property: prop });
+                    if (msg.success) {
+                        this[key] = msg.obj || [];
+                    }
+                }
+            },
+            async syncBasic(outboundTag, property, data) {
+                await HttpUtil.post('/xui/routing/syncBasic', { outboundTag, property, data: data || [] });
+                await this.loadAll();
+            },
+            async syncBlockedProtocols(data) {
+                await HttpUtil.post('/xui/routing/syncBasic', { outboundTag: 'blocked', property: 'protocol', data: data || [] });
+                const msg = await HttpUtil.post('/xui/routing/getBasic', { outboundTag: 'blocked', property: 'protocol' });
+                if (msg.success) {
+                    this.blockedProtocolsList = msg.obj || [];
+                }
+            },
+            async submit(url, data, modal) {
+                const msg = await HttpUtil.postWithModal(url, data, modal);
+                if (msg.success) {
+                    await this.loadAll();
+                }
+                return msg;
+            },
+            addRule() {
+                ruleModal.show({
+                    title: '{{ i18n "pages.xray.rules.add"}}',
+                    okText: '{{ i18n "pages.xray.rules.add" }}',
+                    confirm: async (rule, tag) => {
+                        ruleModal.loading();
+                        const db = new DBRoutingRule();
+                        const data = DBRoutingRule.payloadFromRule(rule, { ...db, tag: tag || '' });
+                        await this.submit('/xui/routing/add', data, ruleModal);
+                    },
+                    isEdit: false,
+                });
+            },
+            editRule(row) {
+                const db = this.dbRules.find(r => r.id === row.id);
+                ruleModal.show({
+                    title: '{{ i18n "pages.xray.rules.edit"}} ' + db.tag,
+                    rule: db.toRule(),
+                    tag: db.tag,
+                    confirm: async (rule, tag) => {
+                        ruleModal.loading();
+                        const data = DBRoutingRule.payloadFromRule(rule, { ...db, tag: tag || db.tag });
+                        await this.submit(`/xui/routing/update/${db.id}`, data, ruleModal);
+                    },
+                    isEdit: true,
+                });
+            },
+            async deleteRule(id) {
+                await this.submit(`/xui/routing/del/${id}`, {});
+            },
+            ruleCustomRow(record) {
+                const self = this;
+                let rowClass = '';
+                if (self.dragRuleId === record.id) {
+                    rowClass = 'routing-rule-dragging';
+                } else if (self.dragOverId === record.id && self.dragRuleId) {
+                    rowClass = 'routing-rule-drag-over';
+                }
+                return {
+                    class: rowClass,
+                    on: {
+                        dragover(e) {
+                            e.preventDefault();
+                            if (e.dataTransfer) {
+                                e.dataTransfer.dropEffect = 'move';
+                            }
+                        },
+                        dragenter(e) {
+                            e.preventDefault();
+                            if (self.dragRuleId && self.dragRuleId !== record.id) {
+                                self.dragOverId = record.id;
+                            }
+                        },
+                        dragleave(e) {
+                            if (self.dragOverId === record.id) {
+                                self.dragOverId = null;
+                            }
+                        },
+                        drop(e) {
+                            e.preventDefault();
+                            if (self.dragRuleId && self.dragRuleId !== record.id) {
+                                self.moveRule(self.dragRuleId, record.id);
+                            }
+                            self.onRuleDragEnd();
+                        },
+                    },
+                };
+            },
+            onRuleDragStart(e, row) {
+                this.dragRuleId = row.id;
+                if (e.dataTransfer) {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', String(row.id));
+                }
+            },
+            onRuleDragEnd() {
+                this.dragRuleId = null;
+                this.dragOverId = null;
+            },
+            moveRule(dragId, targetId) {
+                const rules = this.dbRules.slice();
+                const fromIdx = rules.findIndex(r => r.id === dragId);
+                const toIdx = rules.findIndex(r => r.id === targetId);
+                if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) {
+                    return;
+                }
+                const [moved] = rules.splice(fromIdx, 1);
+                rules.splice(toIdx, 0, moved);
+                this.reorderRules(rules.map(r => r.id));
+            },
+            async reorderRules(orderedIds) {
+                if (this.reordering) {
+                    return;
+                }
+                this.reordering = true;
+                const msg = await HttpUtil.post('/xui/routing/reorder', { ids: orderedIds });
+                this.reordering = false;
+                if (msg.success) {
+                    await this.loadAll();
+                }
+            },
+            showWarp() {
+                warpModal.show();
+            },
+            onResize() {
+                this.isMobile = window.innerWidth <= 768;
+            },
+        },
+        mounted() {
+            window.addEventListener('resize', this.onResize);
+            this.onResize();
+            this.loadAll();
+        },
+    });
+    const app = routingRulesApp;
+</script>
+{{template "ruleModal"}}
+{{template "warpModal"}}
+</body>
+</html>

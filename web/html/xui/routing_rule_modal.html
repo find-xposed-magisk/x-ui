@@ -3,6 +3,9 @@
          :confirm-loading="ruleModal.confirmLoading" :closable="true" :mask-closable="false"
          :ok-text="ruleModal.okText" cancel-text='{{ i18n "close" }}' :class="themeSwitcher.currentTheme">
     <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
+        <a-form-item label='{{ i18n "pages.routingRules.ruleTag" }}'>
+            <a-input v-model.trim="ruleModal.tag" placeholder='{{ i18n "pages.routingRules.ruleTagDesc" }}'></a-input>
+        </a-form-item>
         <a-form-item label='{{ i18n "pages.xray.rule.domainMatcher" }}'>
                     <a-select v-model="ruleModal.rule.domainMatcher" :dropdown-class-name="themeSwitcher.currentTheme">
                         <a-select-option v-for="dm in ['','hybrid','linear']" :value="dm">[[ dm ]]</a-select-option>
@@ -132,6 +135,7 @@
         okText: '{{ i18n "confirm" }}',
         isEdit: false,
         confirm: null,
+        tag: '',
         rule: {
             type: "field",
             domainMatcher: "",
@@ -154,12 +158,13 @@
         balancerTag: [],
         ok() {
             newRule = ruleModal.getResult();
-            ObjectUtil.execute(ruleModal.confirm, newRule);
+            ObjectUtil.execute(ruleModal.confirm, newRule, ruleModal.tag);
         },
-        show({ title='', okText='{{ i18n "confirm" }}', rule, confirm=(rule)=>{}, isEdit=false  }) {
+        show({ title='', okText='{{ i18n "confirm" }}', rule, tag='', confirm=(rule, tag)=>{}, isEdit=false  }) {
             this.title = title;
             this.okText = okText;
             this.confirm = confirm;
+            this.tag = tag || '';
             this.visible = true;
             if(isEdit) {
                 this.rule.domainMatcher = rule.domainMatcher;
@@ -177,6 +182,7 @@
                 this.rule.balancerTag = rule.balancerTag ? rule.balancerTag : "";
             } else {
                 this.rule = {
+                    type: "field",
                     domainMatcher: "",
                     domain: "",
                     ip: "",
@@ -193,25 +199,23 @@
                 }
             }
             this.isEdit = isEdit;
-            this.inboundTags = app.templateSettings.inbounds.filter((i) => !ObjectUtil.isEmpty(i.tag)).map(obj => obj.tag);
-            this.inboundTags.push(...app.inboundTags);
-            if (app.outboundReverseTags) {
-                app.outboundReverseTags.forEach(tag => {
+            const page = typeof routingRulesApp !== 'undefined' ? routingRulesApp : app;
+            this.inboundTags = [...(page.inboundTags || [])];
+            if (page.outboundReverseTags) {
+                page.outboundReverseTags.forEach(tag => {
                     if (tag && !this.inboundTags.includes(tag)) this.inboundTags.push(tag);
                 });
             }
-            if (app.enableDNS && !ObjectUtil.isEmpty(app.dnsTag)) this.inboundTags.push(app.dnsTag)
-            this.outboundTags = ["", ...(app.outboundTags || [])];
-            if (app.clientReverseTags) {
-                app.clientReverseTags.forEach(tag => {
-                if (tag && !this.outboundTags.includes(tag)) {
-                    this.outboundTags.push(tag);
-                }
+            this.outboundTags = ["", ...(page.outboundTags || [])];
+            if (page.clientReverseTags) {
+                page.clientReverseTags.forEach(tag => {
+                    if (tag && !this.outboundTags.includes(tag)) {
+                        this.outboundTags.push(tag);
+                    }
                 });
             }
-            if (app.templateSettings.routing && app.templateSettings.routing.balancers) {
-                this.balancerTags = [ "", ...app.templateSettings.routing.balancers.filter((o) => !ObjectUtil.isEmpty(o.tag)).map(obj => obj.tag)];
-            }
+            const balancers = page.routingMeta?.balancers || page.templateSettings?.routing?.balancers || [];
+            this.balancerTags = ["", ...balancers.filter((o) => !ObjectUtil.isEmpty(o.tag)).map(obj => obj.tag)];
         },
         close() {
             ruleModal.visible = false;

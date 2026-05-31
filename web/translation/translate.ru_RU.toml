@@ -57,6 +57,7 @@
 "dashboard" = "Обзор"
 "inbounds" = "Подключения"
 "outbounds" = "Исходящие"
+"routing" = "Маршрутизация"
 "settings" = "Настройки"
 "xray" = "Xray"
 "logout" = "Выйти"
@@ -179,6 +180,21 @@
 "exportInbound" = "Экспорт входящих"
 "import" = "Импортировать"
 "importInbound" = "Импортировать входящее сообщение"
+
+[pages.routingRules]
+"title" = "Маршрутизация"
+"ruleCount" = "Правила маршрутизации"
+"ruleTag" = "Тег правила"
+"ruleTagDesc" = "Уникальный тег для API (ruleTag)"
+"create" = "Создать правило"
+"update" = "Обновить правило"
+"delete" = "Удалить правило"
+"deleteConfirm" = "Удалить это правило маршрутизации?"
+"updateMeta" = "Обновить настройки маршрутизации"
+"dragToReorder" = "Перетащите для изменения порядка"
+
+[pages.routingRules.toasts]
+"obtain" = "Не удалось загрузить правила маршрутизации"
 
 [pages.outbounds]
 "title" = "Исходящие"

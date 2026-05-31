@@ -11,6 +11,7 @@ import (
 	"github.com/alireza0/x-ui/util/common"
 
 	"github.com/xtls/xray-core/app/proxyman/command"
+	routingcommand "github.com/xtls/xray-core/app/router/command"
 	statsService "github.com/xtls/xray-core/app/stats/command"
 	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/common/serial"
@@ -26,10 +27,11 @@ import (
 )
 
 type XrayAPI struct {
-	HandlerServiceClient *command.HandlerServiceClient
-	StatsServiceClient   *statsService.StatsServiceClient
-	grpcClient           *grpc.ClientConn
-	isConnected          bool
+	HandlerServiceClient  *command.HandlerServiceClient
+	RoutingServiceClient  *routingcommand.RoutingServiceClient
+	StatsServiceClient    *statsService.StatsServiceClient
+	grpcClient            *grpc.ClientConn
+	isConnected           bool
 }
 
 func (x *XrayAPI) Init(apiPort int) (err error) {
@@ -43,9 +45,11 @@ func (x *XrayAPI) Init(apiPort int) (err error) {
 	x.isConnected = true
 
 	hsClient := command.NewHandlerServiceClient(x.grpcClient)
+	rsClient := routingcommand.NewRoutingServiceClient(x.grpcClient)
 	ssClient := statsService.NewStatsServiceClient(x.grpcClient)
 
 	x.HandlerServiceClient = &hsClient
+	x.RoutingServiceClient = &rsClient
 	x.StatsServiceClient = &ssClient
 
 	return
@@ -54,8 +58,41 @@ func (x *XrayAPI) Init(apiPort int) (err error) {
 func (x *XrayAPI) Close() {
 	x.grpcClient.Close()
 	x.HandlerServiceClient = nil
+	x.RoutingServiceClient = nil
 	x.StatsServiceClient = nil
 	x.isConnected = false
+}
+
+func (x *XrayAPI) AddRule(ruleJSON []byte, shouldAppend bool) error {
+	if x.RoutingServiceClient == nil {
+		return common.NewError("routing api is not initialized")
+	}
+	rc := &conf.RouterConfig{RuleList: []json.RawMessage{ruleJSON}}
+	built, err := rc.Build()
+	if err != nil {
+		logger.Debug("Failed to build routing rule:", err)
+		return err
+	}
+	if len(built.Rule) == 0 {
+		return common.NewError("empty routing rule")
+	}
+	client := *x.RoutingServiceClient
+	_, err = client.AddRule(context.Background(), &routingcommand.AddRuleRequest{
+		Config:       serial.ToTypedMessage(built.Rule[0]),
+		ShouldAppend: shouldAppend,
+	})
+	return err
+}
+
+func (x *XrayAPI) DelRule(ruleTag string) error {
+	if x.RoutingServiceClient == nil {
+		return common.NewError("routing api is not initialized")
+	}
+	client := *x.RoutingServiceClient
+	_, err := client.RemoveRule(context.Background(), &routingcommand.RemoveRuleRequest{
+		RuleTag: ruleTag,
+	})
+	return err
 }
 
 func (x *XrayAPI) AddInbound(inbound []byte) error {

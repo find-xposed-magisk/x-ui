@@ -49,6 +49,8 @@ func runWebServer() {
 
 	outboundService := service.OutboundService{}
 	outboundService.MigrateDB()
+	routingRuleService := service.RoutingRuleService{}
+	routingRuleService.MigrateDB()
 
 	var server *web.Server
 

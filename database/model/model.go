@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/alireza0/x-ui/util/json_util"
@@ -59,6 +60,28 @@ type Outbound struct {
 	ProxySettings  string `json:"proxySettings" form:"proxySettings"`
 	Mux            string `json:"mux" form:"mux"`
 	TargetStrategy string `json:"targetStrategy" form:"targetStrategy"`
+}
+
+type RoutingRule struct {
+	Id      int    `json:"id" form:"id" gorm:"primaryKey;autoIncrement"`
+	Tag     string `json:"tag" form:"tag" gorm:"unique"`
+	Sort    int    `json:"sort" form:"sort"`
+	RawJson string `json:"rawJson" form:"rawJson"`
+}
+
+func (r *RoutingRule) RuleJSON() ([]byte, error) {
+	var raw map[string]interface{}
+	if len(r.RawJson) > 0 {
+		if err := json.Unmarshal([]byte(r.RawJson), &raw); err != nil {
+			return nil, err
+		}
+	} else {
+		raw = map[string]interface{}{"type": "field"}
+	}
+	if r.Tag != "" {
+		raw["ruleTag"] = r.Tag
+	}
+	return json.Marshal(raw)
 }
 
 func (o *Outbound) GenXrayOutboundConfig() *xray.OutboundConfig {

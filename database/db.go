@@ -69,6 +69,7 @@ func InitDB(dbPath string) error {
 	err = db.AutoMigrate(
 		&model.Inbound{},
 		&model.Outbound{},
+		&model.RoutingRule{},
 		&model.Setting{},
 		&xray.ClientTraffic{},
 	)

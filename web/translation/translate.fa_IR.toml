@@ -57,6 +57,7 @@
 "dashboard" = "نمای کلی"
 "inbounds" = "ورودی‌ها"
 "outbounds" = "خروجی‌ها"
+"routing" = "مسیریابی"
 "settings" = "تنظیمات پنل"
 "xray" = "پیکربندی ایکس‌ری"
 "logout" = "خروج"
@@ -179,6 +180,21 @@
 "exportInbound" = "استخراج ورودی"
 "import" = "افزودن"
 "importInbound" = "افزودن یک ورودی"
+
+[pages.routingRules]
+"title" = "مسیریابی"
+"ruleCount" = "قوانین مسیریابی"
+"ruleTag" = "برچسب قانون"
+"ruleTagDesc" = "برچسب یکتا برای API (ruleTag)"
+"create" = "ایجاد قانون"
+"update" = "به‌روزرسانی قانون"
+"delete" = "حذف قانون"
+"deleteConfirm" = "آیا از حذف این قانون مسیریابی مطمئن هستید؟"
+"updateMeta" = "به‌روزرسانی تنظیمات مسیریابی"
+"dragToReorder" = "برای تغییر ترتیب بکشید"
+
+[pages.routingRules.toasts]
+"obtain" = "دریافت قوانین مسیریابی ناموفق بود"
 
 [pages.outbounds]
 "title" = "خروجی‌ها"

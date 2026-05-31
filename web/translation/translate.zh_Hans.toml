@@ -57,6 +57,7 @@
 "dashboard" = "概述"
 "inbounds" = "入站列表"
 "outbounds" = "出站列表"
+"routing" = "路由"
 "settings" = "面板设置"
 "xray" = "Xray"
 "logout" = "退出登录"
@@ -179,6 +180,21 @@
 "exportInbound" = "导出入站数据"
 "import"="导入"
 "importInbound" = "导入入站数据"
+
+[pages.routingRules]
+"title" = "路由"
+"ruleCount" = "路由规则"
+"ruleTag" = "规则标签"
+"ruleTagDesc" = "API 唯一标签 (ruleTag)"
+"create" = "创建规则"
+"update" = "更新规则"
+"delete" = "删除规则"
+"deleteConfirm" = "确定要删除此路由规则吗？"
+"updateMeta" = "更新路由设置"
+"dragToReorder" = "拖动以排序"
+
+[pages.routingRules.toasts]
+"obtain" = "加载路由规则失败"
 
 [pages.outbounds]
 "title" = "出站"

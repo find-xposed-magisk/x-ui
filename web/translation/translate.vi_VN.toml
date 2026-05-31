@@ -57,6 +57,7 @@
 "dashboard" = "Tổng quan"
 "inbounds" = "Đầu Vào khách hàng"
 "outbounds" = "Đầu Ra"
+"routing" = "Định tuyến"
 "settings" = "Cài đặt X-UI"
 "xray" = "Cài đặt Xray"
 "logout" = "Đăng xuất"
@@ -179,6 +180,21 @@
 "exportInbound" = "Xuất nhập khẩu"
 "import" = "Nhập"
 "importInbound" = "Nhập hàng gửi về"
+
+[pages.routingRules]
+"title" = "Định tuyến"
+"ruleCount" = "Quy tắc định tuyến"
+"ruleTag" = "Thẻ quy tắc"
+"ruleTagDesc" = "Thẻ duy nhất cho API (ruleTag)"
+"create" = "Tạo quy tắc"
+"update" = "Cập nhật quy tắc"
+"delete" = "Xóa quy tắc"
+"deleteConfirm" = "Bạn có chắc muốn xóa quy tắc định tuyến này?"
+"updateMeta" = "Cập nhật cài đặt định tuyến"
+"dragToReorder" = "Kéo để sắp xếp lại"
+
+[pages.routingRules.toasts]
+"obtain" = "Không thể tải quy tắc định tuyến"
 
 [pages.outbounds]
 "title" = "Outbounds"
