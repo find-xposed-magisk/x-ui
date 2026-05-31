@@ -8,6 +8,7 @@ import (
 	"path"
 
 	"github.com/alireza0/x-ui/config"
+	"github.com/alireza0/x-ui/database/migrations"
 	"github.com/alireza0/x-ui/database/model"
 	"github.com/alireza0/x-ui/util/common"
 	"github.com/alireza0/x-ui/xray"
@@ -77,7 +78,7 @@ func InitDB(dbPath string) error {
 		return err
 	}
 
-	return nil
+	return migrations.Run(db)
 }
 
 func CloseDB() error {

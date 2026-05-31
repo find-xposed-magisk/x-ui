@@ -1,7 +1,6 @@
 package service
 
 import (
-	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/alireza0/x-ui/config"
 	"github.com/alireza0/x-ui/database"
 	"github.com/alireza0/x-ui/database/model"
 	"github.com/alireza0/x-ui/logger"
@@ -19,11 +19,8 @@ import (
 	"github.com/alireza0/x-ui/web/entity"
 )
 
-//go:embed config.json
-var xrayTemplateConfig string
-
 var defaultValueMap = map[string]string{
-	"xrayTemplateConfig": xrayTemplateConfig,
+	"xrayTemplateConfig": config.GetDefaultXrayTemplate(),
 	"webListen":          "",
 	"webDomain":          "",
 	"webPort":            "54321",
@@ -472,7 +469,7 @@ func (s *SettingService) UpdateAllSetting(allSetting *entity.AllSetting) error {
 
 func (s *SettingService) GetDefaultXrayConfig() (interface{}, error) {
 	var jsonData interface{}
-	err := json.Unmarshal([]byte(xrayTemplateConfig), &jsonData)
+	err := json.Unmarshal([]byte(config.GetDefaultXrayTemplate()), &jsonData)
 	if err != nil {
 		return nil, err
 	}

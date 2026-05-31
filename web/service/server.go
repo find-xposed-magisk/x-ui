@@ -581,10 +581,6 @@ func (s *ServerService) ImportDB(file multipart.File) error {
 		}
 		return common.NewErrorf("Error migrating db: %v", err)
 	}
-	s.inboundService.MigrateDB()
-	s.outboundService.MigrateDB()
-	s.routingRuleService.MigrateDB()
-
 	// Start Xray
 	err = s.RestartXrayService()
 	if err != nil {
