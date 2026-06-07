@@ -1,47 +1,54 @@
 {{define "menuItems"}}
-<a-menu-item key="{{ .base_path }}xui/">
-    <a-icon type="dashboard"></a-icon>
-    <span><strong>{{ i18n "menu.dashboard"}}</strong></span>
-</a-menu-item>
-<a-menu-item key="{{ .base_path }}xui/inbounds">
-    <a-icon type="cloud-download"></a-icon>
-    <span><strong>{{ i18n "menu.inbounds"}}</strong></span>
-</a-menu-item>
-<a-menu-item key="{{ .base_path }}xui/outbounds">
-    <a-icon type="cloud-upload"></a-icon>
-    <span><strong>{{ i18n "menu.outbounds"}}</strong></span>
-</a-menu-item>
-<a-menu-item key="{{ .base_path }}xui/routing">
-    <a-icon type="branches"></a-icon>
-    <span><strong>{{ i18n "menu.routing"}}</strong></span>
-</a-menu-item>
-<a-menu-item key="{{ .base_path }}xui/xray">
-    <a-icon type="tool"></a-icon>
-    <span><strong>{{ i18n "menu.xray"}}</strong></span>
-</a-menu-item>
-<a-menu-item key="{{ .base_path }}xui/settings">
-    <a-icon type="setting"></a-icon>
-    <span><strong>{{ i18n "menu.settings"}}</strong></span>
-</a-menu-item>
-<a-menu-item key="{{ .base_path }}logout">
-    <a-icon type="logout"></a-icon>
-    <span><strong>{{ i18n "menu.logout"}}</strong></span>
-</a-menu-item>
+<a-row style="padding: .5rem;">
+    <a-col span="12" style="font-size: 18px; font-weight: bold;">X-UI</a-col>
+    <a-col span="12" style="text-align: right; padding-top: .2rem;">
+        <a-tooltip title="Donate">
+            <a-icon type="heart"
+                @click="window.open('https://donate.alireza0.dev', '_blank')"
+                style="font-size: 1rem; margin-right: .5rem;">
+            </a-icon>
+        </a-tooltip>
+        <theme-switch />
+    </a-col>
+</a-row>
+<a-divider style="margin: 0"></a-divider>
+<a-menu :theme="themeSwitcher.currentTheme" mode="inline" :selected-keys="['{{ .request_uri }}']"
+@click="({key}) => key.startsWith('http') ? window.open(key) : location.href = key">
+    <a-menu-item key="{{ .base_path }}xui/">
+        <a-icon type="dashboard"></a-icon>
+        <span><strong>{{ i18n "menu.dashboard"}}</strong></span>
+    </a-menu-item>
+    <a-menu-item key="{{ .base_path }}xui/inbounds">
+        <a-icon type="cloud-download"></a-icon>
+        <span><strong>{{ i18n "menu.inbounds"}}</strong></span>
+    </a-menu-item>
+    <a-menu-item key="{{ .base_path }}xui/outbounds">
+        <a-icon type="cloud-upload"></a-icon>
+        <span><strong>{{ i18n "menu.outbounds"}}</strong></span>
+    </a-menu-item>
+    <a-menu-item key="{{ .base_path }}xui/routing">
+        <a-icon type="branches"></a-icon>
+        <span><strong>{{ i18n "menu.routing"}}</strong></span>
+    </a-menu-item>
+    <a-menu-item key="{{ .base_path }}xui/xray">
+        <a-icon type="tool"></a-icon>
+        <span><strong>{{ i18n "menu.xray"}}</strong></span>
+    </a-menu-item>
+    <a-menu-item key="{{ .base_path }}xui/settings">
+        <a-icon type="setting"></a-icon>
+        <span><strong>{{ i18n "menu.settings"}}</strong></span>
+    </a-menu-item>
+    <a-menu-item key="{{ .base_path }}logout">
+        <a-icon type="logout"></a-icon>
+        <span><strong>{{ i18n "menu.logout"}}</strong></span>
+    </a-menu-item>
+</a-menu>
 {{end}}
 
 
 {{define "commonSider"}}
 <a-layout-sider :theme="themeSwitcher.currentTheme" id="sider" collapsible breakpoint="md" collapsed-width="0">
-    <a-menu :theme="themeSwitcher.currentTheme" mode="inline" selected-keys="">
-        <a-menu-item mode="inline">
-            <a-icon type="bulb" :theme="themeSwitcher.isDarkTheme ? 'filled' : 'outlined'"></a-icon>
-            <theme-switch />
-        </a-menu-item>
-    </a-menu>
-    <a-menu :theme="themeSwitcher.currentTheme" mode="inline" :selected-keys="['{{ .request_uri }}']"
-            @click="({key}) => key.startsWith('http') ? window.open(key) : location.href = key">
-        {{template "menuItems" .}}
-    </a-menu>
+    {{template "menuItems" .}}
 </a-layout-sider>
 <a-drawer id="sider-drawer" placement="left" :closable="false" :class="themeSwitcher.currentTheme"
           @close="siderDrawer.close()"
@@ -50,16 +57,7 @@
     <div class="drawer-handle" @click="siderDrawer.change()" slot="handle">
         <a-icon :type="siderDrawer.visible ? 'close' : 'menu-fold'"></a-icon>
     </div>
-    <a-menu :theme="themeSwitcher.currentTheme" mode="inline" selected-keys="">
-        <a-menu-item mode="inline">
-            <a-icon type="bulb" :theme="themeSwitcher.isDarkTheme ? 'filled' : 'outlined'"></a-icon>
-            <theme-switch />
-        </a-menu-item>
-    </a-menu>
-    <a-menu :theme="themeSwitcher.currentTheme" mode="inline" :selected-keys="['{{ .request_uri }}']"
-        @click="({key}) => key.startsWith('http') ? window.open(key) : location.href = key">
-        {{template "menuItems" .}}
-    </a-menu>
+    {{template "menuItems" .}}
 </a-drawer>
 <script>
     const siderDrawer = {

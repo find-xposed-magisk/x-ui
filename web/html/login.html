@@ -124,23 +124,16 @@
                         </a-form-item>
                         <a-form-item>
                             <a-row justify="center" class="centered">
-                                <a-col :span="24">
+                                <a-col span="4">
+                                  <theme-switch />
+                                </a-col>
+                                <a-col span="20">
                                     <a-select ref="selectLang" v-model="lang" @change="setLang(lang)" style="width: 150px;" :dropdown-class-name="themeSwitcher.currentTheme">
                                         <a-select-option :value="l.value" label="English" v-for="l in supportLangs">
                                             <span role="img" aria-label="l.name" v-text="l.icon"></span>
                                             &nbsp;&nbsp;<span v-text="l.name"></span>
                                         </a-select-option>
                                     </a-select>
-                                </a-col>
-                            </a-row>
-                        </a-form-item>
-                        <a-form-item>
-                            <a-row justify="center" class="centered">
-                                <a-col>
-                                    <a-icon type="bulb" :theme="themeSwitcher.isDarkTheme ? 'filled' : 'outlined'"></a-icon>&nbsp;
-                                </a-col>
-                                <a-col>
-                                    <theme-switch />
                                 </a-col>
                             </a-row>
                         </a-form-item>

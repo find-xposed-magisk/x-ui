@@ -1,8 +1,11 @@
 {{define "component/themeSwitchTemplate"}}
 <template>
-  <a-switch size="small" :default-checked="themeSwitcher.isDarkTheme"
-            @change="themeSwitcher.toggleTheme()">
-  </a-switch>
+  <a-tooltip :title="themeSwitcher.isDarkTheme ? 'Dark Mode' : 'Light Mode'">
+    <a-icon type="bulb"
+      :theme="themeSwitcher.isDarkTheme ? 'filled' : 'outlined'"
+      style="font-size: 1rem; margin-right: .5rem;"
+      @click="themeSwitcher.toggleTheme()" />
+  </a-tooltip>
 </template>
 {{end}}
 
