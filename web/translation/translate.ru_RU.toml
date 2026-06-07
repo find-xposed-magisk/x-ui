@@ -110,7 +110,6 @@
 
 [pages.inbounds]
 "title" = "Подключения"
-"totalDownUp" = "Всего получено/отправлено"
 "totalUsage" = "Всего использовано"
 "inboundCount" = "Количество подключений"
 "operate" = "Меню"
@@ -125,6 +124,9 @@
 "resetTraffic" = "Обнулить трафик"
 "addInbound" = "Добавить подключение"
 "generalActions" = "Общие действия"
+"onlineIps" = "Онлайн IP-адреса"
+"noOnlineIps" = "Нет IP-адресов"
+"lastSeen" = "Последний визит"
 "create" = "Создать"
 "update" = "Обновить"
 "modifyInbound" = "Изменить данные"
@@ -141,6 +143,9 @@
 "monitorDesc" = "Оставьте пустым по умолчанию"
 "meansNoLimit" = "Ноль означает неограниченно. (значение: ГБ)"
 "totalFlow" = "Общий расход"
+"limitIp" = "Лимит IP"
+"limitIpDesc" = "Ноль означает неограниченно. Максимальное число одновременных IP-адресов."
+"limitIpNotSupported" = "Не поддерживается"
 "leaveBlankToNeverExpire" = "Оставьте пустым, чтобы сделать бессрочно"
 "noRecommendKeepDefault" = "Нет особых требований для сохранения настроек по умолчанию"
 "certificatePath" = "Путь файла"
@@ -183,14 +188,10 @@
 
 [pages.routingRules]
 "title" = "Маршрутизация"
-"ruleCount" = "Правила маршрутизации"
 "ruleTag" = "Тег правила"
 "ruleTagDesc" = "Уникальный тег для API (ruleTag)"
-"create" = "Создать правило"
 "update" = "Обновить правило"
-"delete" = "Удалить правило"
 "deleteConfirm" = "Удалить это правило маршрутизации?"
-"updateMeta" = "Обновить настройки маршрутизации"
 "dragToReorder" = "Перетащите для изменения порядка"
 
 [pages.routingRules.toasts]
@@ -198,7 +199,6 @@
 
 [pages.outbounds]
 "title" = "Исходящие"
-"totalDownUp" = "Всего отправлено/получено"
 "totalUsage" = "Общий трафик"
 "outboundCount" = "Всего исходящих"
 "create" = "Создать"
@@ -232,6 +232,7 @@
 
 [pages.inbounds.toasts]
 "obtain" = "Получить"
+"xrayOnlineObtain" = "Не удалось загрузить онлайн-пользователей из Xray"
 
 [pages.inbounds.stream.general]
 "request" = "Запрос"
@@ -618,8 +619,10 @@
 "dnsLogDesc" = "Включить логи запросов DNS"
 "maskAddress" = "Маскировать Адрес"
 "maskAddressDesc" = "Маска IP-адреса, при активации автоматически заменяет IP-адрес, который появляется в логе."
+"infoDesc" = "Все внесенные здесь изменения должны быть сохранены. Чтобы изменения вступили в силу, перезапустите XRAY."
 
 [pages.xray.rules]
+"infoDesc" = "Все внесенные здесь изменения должны быть сохранены, чтобы вступить в силу."
 "first" = "Первый"
 "last" = "Последний"
 "up" = "Вверх"

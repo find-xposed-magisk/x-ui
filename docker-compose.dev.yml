@@ -7,6 +7,10 @@ services:
     volumes:
       - .:/app
       - ./dev/db:/etc/x-ui
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
     environment:
       XUI_BIN_FOLDER: /app/dev/bin
       XUI_DB_FOLDER: /etc/x-ui

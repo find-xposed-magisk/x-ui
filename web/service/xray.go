@@ -233,6 +233,28 @@ func (s *XrayService) GetXrayTraffic() ([]*xray.Traffic, []*xray.ClientTraffic, 
 	return s.xrayAPI.GetTraffic(true)
 }
 
+func (s *XrayService) RefreshOnlineUsersCache() error {
+	if !s.IsXrayRunning() {
+		ClearOnlineUsersCache()
+		return nil
+	}
+	if err := s.xrayAPI.Init(p.GetAPIAddr()); err != nil {
+		return err
+	}
+	defer s.xrayAPI.Close()
+
+	users, err := s.xrayAPI.GetUsersOnlineInfo()
+	if err != nil {
+		return err
+	}
+	SetOnlineUsersCache(users)
+	return nil
+}
+
+func (s *XrayService) GetOnlineUsers() []xray.OnlineUserInfo {
+	return GetOnlineUsersCache()
+}
+
 func (s *XrayService) RestartXray(isForce bool) error {
 	lock.Lock()
 	defer lock.Unlock()
@@ -264,6 +286,7 @@ func (s *XrayService) StopXray() error {
 	lock.Lock()
 	defer lock.Unlock()
 	logger.Debug("stop xray")
+	ClearOnlineUsersCache()
 	if s.IsXrayRunning() {
 		return p.Stop()
 	}

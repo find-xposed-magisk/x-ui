@@ -110,7 +110,6 @@
 
 [pages.inbounds]
 "title" = "کاربران"
-"totalDownUp" = "دریافت/ارسال کل"
 "totalUsage" = "‌‌‌مصرف کل"
 "inboundCount" = "کل ورودی‌ها"
 "operate" = "منو"
@@ -125,6 +124,9 @@
 "resetTraffic" = "ریست ترافیک"
 "addInbound" = "افزودن ورودی"
 "generalActions" = "عملیات کلی"
+"onlineIps" = "آدرس‌های IP آنلاین"
+"noOnlineIps" = "آدرس IP وجود ندارد"
+"lastSeen" = "آخرین بازدید"
 "create" = "افزودن"
 "update" = "ویرایش"
 "modifyInbound" = "ویرایش ورودی"
@@ -141,6 +143,9 @@
 "monitorDesc" = "برای گوش‌دادن به‌تمام آی‌پی‌ها خالی‌بگذارید"
 "meansNoLimit" = "صفر یعنی نامحدود. واحد: گیگابایت"
 "totalFlow" = "ترافیک کل"
+"limitIp" = "محدودیت IP"
+"limitIpDesc" = "صفر یعنی نامحدود. حداکثر تعداد IP همزمان."
+"limitIpNotSupported" = "پشتیبانی نمی‌شود"
 "leaveBlankToNeverExpire" = "برای منقضی‌نشدن خالی‌بگذارید"
 "noRecommendKeepDefault" = "توصیه‌می‌شود به‌طور پیش‌فرض حفظ‌شود"
 "certificatePath" = "مسیر فایل"
@@ -183,14 +188,10 @@
 
 [pages.routingRules]
 "title" = "مسیریابی"
-"ruleCount" = "قوانین مسیریابی"
 "ruleTag" = "برچسب قانون"
 "ruleTagDesc" = "برچسب یکتا برای API (ruleTag)"
-"create" = "ایجاد قانون"
 "update" = "به‌روزرسانی قانون"
-"delete" = "حذف قانون"
 "deleteConfirm" = "آیا از حذف این قانون مسیریابی مطمئن هستید؟"
-"updateMeta" = "به‌روزرسانی تنظیمات مسیریابی"
 "dragToReorder" = "برای تغییر ترتیب بکشید"
 
 [pages.routingRules.toasts]
@@ -198,7 +199,6 @@
 
 [pages.outbounds]
 "title" = "خروجی‌ها"
-"totalDownUp" = "مجموع ارسال/دریافت"
 "totalUsage" = "مجموع مصرف"
 "outboundCount" = "تعداد خروجی‌ها"
 "create" = "ایجاد"
@@ -232,6 +232,7 @@
 
 [pages.inbounds.toasts]
 "obtain" = "فراهم‌سازی"
+"xrayOnlineObtain" = "دریافت کاربران آنلاین از Xray ناموفق بود"
 
 [pages.inbounds.stream.general]
 "request" = "درخواست"
@@ -618,8 +619,10 @@
 "dnsLogDesc" = "آیا ثبت‌های درخواست DNS را فعال کنید"
 "maskAddress" = "پنهان کردن آدرس"
 "maskAddressDesc" = "پوشش آدرس IP، هنگامی که فعال می‌شود، به طور خودکار آدرس IP که در لاگ ظاهر می‌شود را جایگزین می‌کند."
+"infoDesc" = "هر تغییری که در اینجا انجام می‌دهید باید ذخیره شود. لطفاً برای اعمال تغییرات، ایکس‌ری را ریستارت کنید."
 
 [pages.xray.rules]
+"infoDesc" = "هر تغییری که در اینجا انجام می‌دهید باید ذخیره شود تا اعمال شود."
 "first" = "اولین"
 "last" = "آخرین"
 "up" = "بالا"

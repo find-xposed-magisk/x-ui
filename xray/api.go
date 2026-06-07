@@ -3,15 +3,18 @@ package xray
 import (
 	"context"
 	"encoding/json"
+	"os"
 	"regexp"
 	"time"
 
+	"github.com/alireza0/x-ui/config"
 	"github.com/alireza0/x-ui/logger"
 	"github.com/alireza0/x-ui/util/common"
 
 	"github.com/xtls/xray-core/app/proxyman/command"
 	routingcommand "github.com/xtls/xray-core/app/router/command"
 	statsService "github.com/xtls/xray-core/app/stats/command"
+	"github.com/xtls/xray-core/common/platform"
 	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/common/serial"
 	"github.com/xtls/xray-core/infra/conf"
@@ -65,10 +68,18 @@ func (x *XrayAPI) Close() {
 	x.isConnected = false
 }
 
+func ensureGeodataAssetPath() {
+	binPath := config.GetBinFolderPath()
+	if binPath != "" {
+		os.Setenv(platform.AssetLocation, binPath)
+	}
+}
+
 func (x *XrayAPI) AddRule(ruleJSON []byte, shouldAppend bool) error {
 	if x.RoutingServiceClient == nil {
 		return common.NewError("routing api is not initialized")
 	}
+	ensureGeodataAssetPath()
 	rc := &conf.RouterConfig{RuleList: []json.RawMessage{ruleJSON}}
 	built, err := rc.Build()
 	if err != nil {
@@ -152,6 +163,26 @@ func (x *XrayAPI) DelOutbound(tag string) error {
 		Tag: tag,
 	})
 	return err
+}
+
+func (x *XrayAPI) HasOutbound(tag string) (bool, error) {
+	if x.HandlerServiceClient == nil {
+		return false, common.NewError("handler api is not initialized")
+	}
+	client := *x.HandlerServiceClient
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	resp, err := client.ListOutbounds(ctx, &command.ListOutboundsRequest{})
+	if err != nil {
+		return false, err
+	}
+	for _, outbound := range resp.GetOutbounds() {
+		if outbound.GetTag() == tag {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func (x *XrayAPI) AddUser(Protocol string, inboundTag string, user map[string]interface{}) error {
@@ -250,6 +281,50 @@ func (x *XrayAPI) RemoveUser(inboundTag string, email string) error {
 		}),
 	})
 	return err
+}
+
+type OnlineUserInfo struct {
+	Email string           `json:"email"`
+	IPs   map[string]int64 `json:"ips"`
+}
+
+func userStatToOnlineUserInfo(user *statsService.UserStat) OnlineUserInfo {
+	info := OnlineUserInfo{
+		Email: user.GetEmail(),
+		IPs:   map[string]int64{},
+	}
+	for _, entry := range user.GetIps() {
+		if entry.GetIp() != "" {
+			info.IPs[entry.GetIp()] = entry.GetLastSeen()
+		}
+	}
+	return info
+}
+
+func (x *XrayAPI) GetUsersOnlineInfo() ([]OnlineUserInfo, error) {
+	if x.StatsServiceClient == nil {
+		return nil, common.NewError("xray api is not initialized")
+	}
+	client := *x.StatsServiceClient
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	resp, err := client.GetUsersStats(ctx, &statsService.GetUsersStatsRequest{
+		IncludeTraffic: true,
+		Reset_:         false,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]OnlineUserInfo, 0)
+	for _, user := range resp.GetUsers() {
+		if user.GetEmail() == "" || user.GetTraffic() == nil || user.GetTraffic().GetDownlink() == 0 {
+			continue
+		}
+		result = append(result, userStatToOnlineUserInfo(user))
+	}
+	return result, nil
 }
 
 func (x *XrayAPI) GetTraffic(reset bool) ([]*Traffic, []*ClientTraffic, error) {

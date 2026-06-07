@@ -2,10 +2,8 @@
   "api": {
     "services": [
       "HandlerService",
-      "LoggerService",
       "StatsService",
-      "RoutingService",
-      "ReflectionService"
+      "RoutingService"
     ],
     "listen": "127.0.0.1:62789",
     "tag": "api"

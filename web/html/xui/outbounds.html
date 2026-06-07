@@ -61,26 +61,17 @@
                     <a-card hoverable>
                         <a-row>
                             <a-col :xs="24" :sm="24" :lg="12">
-                                <strong>{{ i18n "pages.outbounds.totalDownUp" }}:</strong>
-                                <a-tag color="blue">[[ sizeFormat(total.up) ]] / [[ sizeFormat(total.down) ]]</a-tag>
-                            </a-col>
-                            <a-col :xs="24" :sm="24" :lg="12">
                                 <strong>{{ i18n "pages.outbounds.totalUsage" }}:</strong>
-                                <a-tag color="blue">[[ sizeFormat(total.up + total.down) ]]</a-tag>
+                                <a-tag color="blue">[[ sizeFormat(total.up + total.down) ]] (↑[[ sizeFormat(total.up) ]] ↓[[ sizeFormat(total.down) ]])</a-tag>
                             </a-col>
                             <a-col :xs="24" :sm="24" :lg="12">
                                 <strong>{{ i18n "pages.outbounds.outboundCount" }}:</strong>
-                                <a-tag color="blue">[[ dbOutbounds.length ]]</a-tag>
-                            </a-col>
-                            <a-col :xs="24" :sm="24" :lg="12">
-                                <a-back-top :target="() => document.getElementById('content-layout')" visibility-height="200"></a-back-top>
-                                <strong>{{ i18n "online" }}:</strong>
-                                <a-tag color="blue">[[ onlineOutbounds.length ]]</a-tag>
+                                <a-tag color="blue" style="margin-right: 0;">[[ dbOutbounds.length ]]</a-tag>
                                 <a-popover title='{{ i18n "online" }}' :overlay-class-name="themeSwitcher.currentTheme">
                                     <template slot="content">
                                         <p v-for="tag in onlineOutbounds" style="margin: 0;">[[ tag ]]</p>
                                     </template>
-                                    <a-tag style="margin:0; padding: 0 2px;" color="green" v-if="onlineOutbounds.length">[[ onlineOutbounds.length ]]</a-tag>
+                                    <a-tag color="green" v-if="onlineOutbounds.length">[[ onlineOutbounds.length ]]</a-tag>
                                 </a-popover>
                             </a-col>
                         </a-row>

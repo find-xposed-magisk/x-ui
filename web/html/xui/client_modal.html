@@ -5,7 +5,7 @@
     <template v-if="isEdit">
         <a-tag v-if="isExpiry || isTrafficExhausted" color="red" style="margin-bottom: 10px;display: block;text-align: center;">Account is (Expired|Traffic Ended) And Disabled</a-tag>
     </template>
-    {{template "form/client"}}
+    {{template "form/client" .}}
 </a-modal>
 <script>
 
@@ -95,9 +95,9 @@
                 return this.clientModal.isEdit;
             },
             get isTrafficExhausted() {
-                if(!clientStats) return false
-                if(clientStats.total <= 0) return false
-                if(clientStats.up + clientStats.down < clientStats.total) return false
+                if(!this.clientStats) return false
+                if(this.clientStats.total <= 0) return false
+                if(this.clientStats.up + this.clientStats.down < this.clientStats.total) return false
                 return true
             },
             get isExpiry() {

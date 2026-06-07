@@ -57,7 +57,6 @@ type process struct {
 	version string
 	apiAddr string
 
-	onlineClients   []string
 	onlineOutbounds []string
 
 	config    *Config
@@ -106,14 +105,6 @@ func (p *Process) GetAPIAddr() string {
 
 func (p *Process) GetConfig() *Config {
 	return p.config
-}
-
-func (p *Process) GetOnlineClients() []string {
-	return p.onlineClients
-}
-
-func (p *Process) SetOnlineClients(users []string) {
-	p.onlineClients = users
 }
 
 func (p *Process) GetOnlineOutbounds() []string {

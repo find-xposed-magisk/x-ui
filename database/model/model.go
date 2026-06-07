@@ -144,6 +144,7 @@ type Client struct {
 	Reverse    *ClientReverse `json:"reverse,omitempty"`
 	Email      string         `json:"email"`
 	TotalGB    int64          `json:"totalGB" form:"totalGB"`
+	LimitIP    uint16         `json:"limitIp" form:"limitIp"`
 	ExpiryTime int64          `json:"expiryTime" form:"expiryTime"`
 	Enable     bool           `json:"enable" form:"enable"`
 	TgID       string         `json:"tgId" form:"tgId"`

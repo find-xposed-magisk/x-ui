@@ -68,6 +68,7 @@ func html(c *gin.Context, name string, title string, data gin.H) {
 	data["host"] = host
 	data["request_uri"] = c.Request.RequestURI
 	data["base_path"] = c.GetString("base_path")
+	data["iplimitSupported"] = c.GetString("iplimitSupported")
 	c.HTML(http.StatusOK, name, getContext(data))
 }
 

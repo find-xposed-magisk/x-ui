@@ -238,11 +238,27 @@ func (s *InboundService) AddInbound(inbound *model.Inbound) (*model.Inbound, boo
 		s.xrayApi.Close()
 	}
 
+	s.syncIpLimitStore(ipLimitUpdatesFromClients(inbound, clients), nil)
 	return inbound, needRestart, err
 }
 
 func (s *InboundService) DelInbound(id int) (bool, error) {
 	db := database.GetDB()
+
+	inbound, err := s.GetInbound(id)
+	if err != nil {
+		return false, err
+	}
+	clients, err := s.GetClients(inbound)
+	if err != nil {
+		return false, err
+	}
+	removeEmails := make([]string, 0, len(clients))
+	for _, client := range clients {
+		if client.Email != "" {
+			removeEmails = append(removeEmails, client.Email)
+		}
+	}
 
 	var tag string
 	needRestart := false
@@ -262,11 +278,12 @@ func (s *InboundService) DelInbound(id int) (bool, error) {
 	}
 
 	// Delete client traffics of inbounds
-	err := db.Where("inbound_id = ?", id).Delete(xray.ClientTraffic{}).Error
+	err = db.Where("inbound_id = ?", id).Delete(xray.ClientTraffic{}).Error
 	if err != nil {
 		return false, err
 	}
 
+	s.syncIpLimitStore(nil, removeEmails)
 	return needRestart, db.Delete(model.Inbound{}, id).Error
 }
 
@@ -290,6 +307,11 @@ func (s *InboundService) UpdateInbound(inbound *model.Inbound) (*model.Inbound, 
 	}
 
 	oldInbound, err := s.GetInbound(inbound.Id)
+	if err != nil {
+		return inbound, false, err
+	}
+
+	oldClients, err := s.GetClients(oldInbound)
 	if err != nil {
 		return inbound, false, err
 	}
@@ -352,6 +374,16 @@ func (s *InboundService) UpdateInbound(inbound *model.Inbound) (*model.Inbound, 
 	}
 	s.xrayApi.Close()
 
+	syncInbound := *oldInbound
+	syncInbound.Enable = inbound.Enable
+	newClients, err := s.GetClients(&syncInbound)
+	if err != nil {
+		return inbound, needRestart, err
+	}
+	s.syncIpLimitStore(
+		ipLimitUpdatesFromClients(&syncInbound, newClients),
+		ipLimitRemovedEmails(oldClients, newClients),
+	)
 	return inbound, needRestart, tx.Save(oldInbound).Error
 }
 
@@ -508,7 +540,11 @@ func (s *InboundService) AddInboundClient(data *model.Inbound) (bool, error) {
 	}
 	s.xrayApi.Close()
 
-	return needRestart, tx.Save(oldInbound).Error
+	err = tx.Save(oldInbound).Error
+	if err == nil {
+		s.syncIpLimitStore(ipLimitUpdatesFromClients(oldInbound, clients), nil)
+	}
+	return needRestart, err
 }
 
 func (s *InboundService) DelInboundClient(inboundId int, clientId string) (bool, error) {
@@ -592,7 +628,11 @@ func (s *InboundService) DelInboundClient(inboundId int, clientId string) (bool,
 			s.xrayApi.Close()
 		}
 	}
-	return needRestart, db.Save(oldInbound).Error
+	err = db.Save(oldInbound).Error
+	if err == nil && email != "" {
+		s.syncIpLimitStore(nil, []string{email})
+	}
+	return needRestart, err
 }
 
 func (s *InboundService) UpdateInboundClient(data *model.Inbound, clientId string) (bool, error) {
@@ -742,7 +782,17 @@ func (s *InboundService) UpdateInboundClient(data *model.Inbound, clientId strin
 		logger.Debug("Client old email not found")
 		needRestart = true
 	}
-	return needRestart, tx.Save(oldInbound).Error
+	err = tx.Save(oldInbound).Error
+	if err == nil {
+		removeEmails := []string{}
+		if oldEmail != "" && oldEmail != clients[0].Email {
+			removeEmails = append(removeEmails, oldEmail)
+		}
+		update := ipLimitUpdatesFromClients(oldInbound, []model.Client{clients[0]})
+		update[0].ResetIPs = true
+		s.syncIpLimitStore(update, removeEmails)
+	}
+	return needRestart, err
 }
 
 func (s *InboundService) AddTraffic(inboundTraffics []*xray.Traffic, clientTraffics []*xray.ClientTraffic) (error, bool) {
@@ -818,14 +868,8 @@ type newExpiryTime struct {
 
 func (s *InboundService) addClientTraffic(tx *gorm.DB, traffics []*xray.ClientTraffic) (err error) {
 	if len(traffics) == 0 {
-		// Empty onlineUsers
-		if p != nil {
-			p.SetOnlineClients(nil)
-		}
 		return nil
 	}
-
-	var onlineClients []string
 
 	emails := make([]string, 0, len(traffics))
 	for _, traffic := range traffics {
@@ -874,19 +918,9 @@ func (s *InboundService) addClientTraffic(tx *gorm.DB, traffics []*xray.ClientTr
 			if dbClientTraffics[dbTraffic_index].Email == traffics[traffic_index].Email {
 				dbClientTraffics[dbTraffic_index].Up += traffics[traffic_index].Up
 				dbClientTraffics[dbTraffic_index].Down += traffics[traffic_index].Down
-
-				// Add user in onlineUsers array on traffic
-				if traffics[traffic_index].Up+traffics[traffic_index].Down > 0 {
-					onlineClients = append(onlineClients, traffics[traffic_index].Email)
-				}
 				break
 			}
 		}
-	}
-
-	// Set onlineUsers
-	if p != nil {
-		p.SetOnlineClients(onlineClients)
 	}
 
 	for i := 0; i < len(dbClientTraffics); i += safeBatchSize {
@@ -1044,9 +1078,9 @@ func (s *InboundService) autoRenewClients(tx *gorm.DB) (bool, int64, error) {
 		inbounds[inbound_index].Settings = string(newSettings)
 	}
 	if len(inbounds) > 0 {
-	err = tx.Save(inbounds).Error
-	if err != nil {
-		return false, 0, err
+		err = tx.Save(inbounds).Error
+		if err != nil {
+			return false, 0, err
 		}
 	}
 	err = tx.Save(traffics).Error
@@ -1476,8 +1510,4 @@ func (s *InboundService) GetClientReverseTags() (string, error) {
 	}
 	result, _ := json.Marshal(rawTags)
 	return string(result), nil
-}
-
-func (s *InboundService) GetOnlineClients() []string {
-	return p.GetOnlineClients()
 }

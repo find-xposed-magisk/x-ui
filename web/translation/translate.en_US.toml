@@ -110,7 +110,6 @@
 
 [pages.inbounds]
 "title" = "Inbounds"
-"totalDownUp" = "Total Sent/Received"
 "totalUsage" = "Total Usage"
 "inboundCount" = "Total Inbounds"
 "operate" = "Menu"
@@ -125,6 +124,9 @@
 "resetTraffic" = "Reset Traffic"
 "addInbound" = "Add Inbound"
 "generalActions" = "General Actions"
+"onlineIps" = "Online IP Addresses"
+"noOnlineIps" = "No IP addresses"
+"lastSeen" = "Last Seen"
 "create" = "Create"
 "update" = "Update"
 "modifyInbound" = "Edit Inbound"
@@ -141,6 +143,9 @@
 "monitorDesc" = "Leave blank to listen on all IPs"
 "meansNoLimit" = "Zero means unlimited. (Unit: GB)"
 "totalFlow" = "Total Traffic"
+"limitIp" = "IP Limit"
+"limitIpDesc" = "Zero means unlimited. Maximum number of concurrent IP addresses."
+"limitIpNotSupported" = "Not Supported"
 "leaveBlankToNeverExpire" = "Leave blank to never expire"
 "noRecommendKeepDefault" = "It is recommended to keep the default"
 "certificatePath" = "File Path"
@@ -183,14 +188,10 @@
 
 [pages.routingRules]
 "title" = "Routing"
-"ruleCount" = "Routing Rules"
 "ruleTag" = "Rule Tag"
 "ruleTagDesc" = "Unique tag for API (ruleTag)"
-"create" = "Create Rule"
 "update" = "Update Rule"
-"delete" = "Delete Rule"
 "deleteConfirm" = "Are you sure you want to delete this routing rule?"
-"updateMeta" = "Update Routing Settings"
 "dragToReorder" = "Drag to reorder"
 
 [pages.routingRules.toasts]
@@ -198,7 +199,6 @@
 
 [pages.outbounds]
 "title" = "Outbounds"
-"totalDownUp" = "Total Sent/Received"
 "totalUsage" = "Total Usage"
 "outboundCount" = "Total Outbounds"
 "create" = "Create"
@@ -232,6 +232,7 @@
 
 [pages.inbounds.toasts]
 "obtain" = "Obtain"
+"xrayOnlineObtain" = "Failed to load online users from Xray"
 
 [pages.inbounds.stream.general]
 "request" = "Request"
@@ -618,8 +619,10 @@
 "dnsLogDesc" = "Whether to enable DNS query logs"
 "maskAddress" = "Mask Address"
 "maskAddressDesc" = "IP address mask, when enabled, will automatically replace the IP address that appears in the log."
+"infoDesc" = "Every change made here needs to be saved. Please restart XRAY for the changes to take effect."
 
 [pages.xray.rules]
+"infoDesc" = "Every change made here needs to be saved to take effect."
 "first" = "First"
 "last" = "Last"
 "up" = "Up"

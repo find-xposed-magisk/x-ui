@@ -110,7 +110,6 @@
 
 [pages.inbounds]
 "title" = "入站列表"
-"totalDownUp" = "总上传 / 下载"
 "totalUsage" = "总用量"
 "inboundCount" = "入站数量"
 "operate" = "操作"
@@ -125,6 +124,9 @@
 "resetTraffic" = "重置流量"
 "addInbound" = "添加入站"
 "generalActions" = "通用操作"
+"onlineIps" = "在线 IP 地址"
+"noOnlineIps" = "无 IP 地址"
+"lastSeen" = "最后在线"
 "create" = "添加"
 "update" = "修改"
 "modifyInbound" = "修改入站"
@@ -141,6 +143,9 @@
 "monitorDesc" = "默认留空即可"
 "meansNoLimit" = "零意味着无限。(单位：GB)"
 "totalFlow" = "总流量"
+"limitIp" = "IP 限制"
+"limitIpDesc" = "零意味着无限。最大同时在线 IP 数量。"
+"limitIpNotSupported" = "不支持"
 "leaveBlankToNeverExpire" = "留空则永不到期"
 "noRecommendKeepDefault" = "没有特殊需求保持默认即可"
 "certificatePath" = "文件路径"
@@ -183,14 +188,10 @@
 
 [pages.routingRules]
 "title" = "路由"
-"ruleCount" = "路由规则"
 "ruleTag" = "规则标签"
 "ruleTagDesc" = "API 唯一标签 (ruleTag)"
-"create" = "创建规则"
 "update" = "更新规则"
-"delete" = "删除规则"
 "deleteConfirm" = "确定要删除此路由规则吗？"
-"updateMeta" = "更新路由设置"
 "dragToReorder" = "拖动以排序"
 
 [pages.routingRules.toasts]
@@ -198,7 +199,6 @@
 
 [pages.outbounds]
 "title" = "出站"
-"totalDownUp" = "总发送/接收"
 "totalUsage" = "总用量"
 "outboundCount" = "出站总数"
 "create" = "创建"
@@ -232,6 +232,7 @@
 
 [pages.inbounds.toasts]
 "obtain" = "获取"
+"xrayOnlineObtain" = "从 Xray 加载在线用户失败"
 
 [pages.inbounds.stream.general]
 "request" = "请求"
@@ -618,8 +619,10 @@
 "dnsLogDesc" = "是否启用 DNS 查询日志"
 "maskAddress" = "隐藏地址"
 "maskAddressDesc" = "IP 地址掩码，启用时会自动替换日志中出现的 IP 地址。"
+"infoDesc" = "此处的所有更改都需要保存。请重启 XRAY 以使更改生效。"
 
 [pages.xray.rules]
+"infoDesc" = "此处的所有更改都需要保存才能生效。"
 "first" = "第一个"
 "last" = "最后"
 "up" = "向上"

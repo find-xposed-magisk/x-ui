@@ -68,48 +68,55 @@
                     <a-card hoverable>
                         <a-row>
                             <a-col :xs="24" :sm="24" :lg="12">
-                                <strong>{{ i18n "pages.inbounds.totalDownUp" }}:</strong>
-                                <a-tag color="blue">[[ sizeFormat(total.up) ]] / [[ sizeFormat(total.down) ]]</a-tag>
-                            </a-col>
-                            <a-col :xs="24" :sm="24" :lg="12">
                                 <strong>{{ i18n "pages.inbounds.totalUsage" }}:</strong>
-                                <a-tag color="blue">[[ sizeFormat(total.up + total.down) ]]</a-tag>
+                                <a-tag color="blue">[[ sizeFormat(total.up + total.down) ]] (↑[[ sizeFormat(total.up) ]] ↓[[ sizeFormat(total.down) ]])</a-tag>
                             </a-col>
                             <a-col :xs="24" :sm="24" :lg="12">
                                 <strong>{{ i18n "pages.inbounds.inboundCount" }}:</strong>
                                 <a-tag color="blue">[[ dbInbounds.length ]]</a-tag>
                             </a-col>
                             <a-col :xs="24" :sm="24" :lg="12">
+                                <strong>{{ i18n "online" }}:</strong>
+                                <template v-if="onlineClients.length">
+                                    <a-popover title='{{ i18n "clients" }}' v-if="onlineClients.length" :overlay-class-name="themeSwitcher.currentTheme">
+                                        <template slot="content">
+                                            <p v-for="user in onlineClients">[[ user.email ]]</p>
+                                        </template>
+                                        <a-tag color="green">[[ onlineClients.length ]]</a-tag>
+                                    </a-popover>
+                                    <a-popover title='{{ i18n "pages.inbounds.onlineIps" }} ' :overlay-class-name="themeSwitcher.currentTheme">
+                                        <template slot="content">
+                                            <p v-for="ipData in onlineClients.map(user => user.ips).flat()">[[ Object.keys(ipData)[0] ]]</p>
+                                        </template>
+                                        <a-tag color="blue">[[ onlineClients.map(user => user.ips).flat().length ]]</a-tag>
+                                    </a-popover>
+                                </template>
+                                <a-tag v-else>0</a-tag>
+                            </a-col>
+                            <a-col :xs="24" :sm="24" :lg="12">
                                 <template>
                                     <div>
-                                        <a-back-top :target="() => document.getElementById('content-layout')" visibility-height="200">
-                                        </a-back-top>
-                                <strong>{{ i18n "clients" }}:</strong>
-                                <a-tag color="blue">[[ total.clients ]]</a-tag>
-                                <a-popover title='{{ i18n "disabled" }}' :overlay-class-name="themeSwitcher.currentTheme">
-                                    <template slot="content">
-                                        <p v-for="clientEmail in total.deactive">[[ clientEmail ]]</p>
-                                    </template>
-                                    <a-tag v-if="total.deactive.length">[[ total.deactive.length ]]</a-tag>
-                                </a-popover>
-                                <a-popover title='{{ i18n "depleted" }}' :overlay-class-name="themeSwitcher.currentTheme">
-                                    <template slot="content">
-                                        <p v-for="clientEmail in total.depleted">[[ clientEmail ]]</p>
-                                    </template>
-                                    <a-tag color="red" v-if="total.depleted.length">[[ total.depleted.length ]]</a-tag>
-                                </a-popover>
-                                <a-popover title='{{ i18n "depletingSoon" }}' :overlay-class-name="themeSwitcher.currentTheme">
-                                    <template slot="content">
-                                        <p v-for="clientEmail in total.expiring">[[ clientEmail ]]</p>
-                                    </template>
-                                    <a-tag color="orange" v-if="total.expiring.length">[[ total.expiring.length ]]</a-tag>
-                                </a-popover>
-                                <a-popover title='{{ i18n "online" }}' :overlay-class-name="themeSwitcher.currentTheme">
-                                    <template slot="content">
-                                        <p v-for="clientEmail in onlineClients">[[ clientEmail ]]</p>
-                                    </template>
-                                    <a-tag color="green" v-if="onlineClients.length">[[ onlineClients.length ]]</a-tag>
-                                </a-popover>
+                                        <a-back-top :target="() => document.getElementById('content-layout')" visibility-height="200"></a-back-top>
+                                        <strong>{{ i18n "clients" }}:</strong>
+                                        <a-tag color="blue">[[ total.clients ]]</a-tag>
+                                        <a-popover title='{{ i18n "disabled" }}' :overlay-class-name="themeSwitcher.currentTheme">
+                                            <template slot="content">
+                                                <p v-for="clientEmail in total.deactive">[[ clientEmail ]]</p>
+                                            </template>
+                                            <a-tag v-if="total.deactive.length">[[ total.deactive.length ]]</a-tag>
+                                        </a-popover>
+                                        <a-popover title='{{ i18n "depleted" }}' :overlay-class-name="themeSwitcher.currentTheme">
+                                            <template slot="content">
+                                                <p v-for="clientEmail in total.depleted">[[ clientEmail ]]</p>
+                                            </template>
+                                            <a-tag color="red" v-if="total.depleted.length">[[ total.depleted.length ]]</a-tag>
+                                        </a-popover>
+                                        <a-popover title='{{ i18n "depletingSoon" }}' :overlay-class-name="themeSwitcher.currentTheme">
+                                            <template slot="content">
+                                                <p v-for="clientEmail in total.expiring">[[ clientEmail ]]</p>
+                                            </template>
+                                            <a-tag color="orange" v-if="total.expiring.length">[[ total.expiring.length ]]</a-tag>
+                                        </a-popover>
                                     </div>
                                 </template>
                             </a-col>
@@ -628,6 +635,7 @@
             showAlert: false,
             pageSize: 0,
             isMobile: window.innerWidth <= 768,
+            iplimitSupported: '{{ .iplimitSupported }}' === 'true',
         },
         methods: {
             loading(spinning = true) {
@@ -649,9 +657,20 @@
             async getOnlineUsers() {
                 const msg = await HttpUtil.post('/xui/inbound/onlines');
                 if (!msg.success) {
+                    this.onlineClients = [];
                     return;
                 }
                 this.onlineClients = msg.obj != null ? msg.obj : [];
+            },
+            getOnlineUserIPs(email) {
+                const user = this.onlineClients.find(u => u.email === email);
+                if (!user || !user.ips) {
+                    return [];
+                }
+                return Object.keys(user.ips).map(ip => ({
+                    ip,
+                    lastSeen: user.ips[ip] ? DateUtil.formatMillis(user.ips[ip] * 1000) : '-',
+                }));
             },
             async getDefaultSettings() {
                 const msg = await HttpUtil.post('/xui/setting/defaultSettings');
@@ -1249,7 +1268,7 @@
                 return clientStats ? clientStats['enable'] : true;
             },
             isClientOnline(email) {
-                return this.onlineClients.includes(email);
+                return this.onlineClients.some(u => u.email === email);
             },
             isRemovable(dbInboundId) {
                 return this.getInboundClients(this.dbInbounds.find(row => row.id === dbInboundId)).length > 1;

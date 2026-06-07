@@ -289,5 +289,5 @@ func (a *InboundController) importInbound(c *gin.Context) {
 }
 
 func (a *InboundController) onlines(c *gin.Context) {
-	jsonObj(c, a.inboundService.GetOnlineClients(), nil)
+	jsonObj(c, a.xrayService.GetOnlineUsers(), nil)
 }

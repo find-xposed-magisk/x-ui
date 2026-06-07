@@ -57,18 +57,18 @@
         </a-input-group>
         <a-input-group compact style="margin-bottom: 10px;">
             <a-tooltip title="{{ i18n "pages.xray.outbound.freedom.fragment" }}">
-                <a-checkbox v-model="row.hasFragment" style="width: 10%; height: 32px;">{{ i18n "pages.xray.outbound.freedom.fragment" }}</a-checkbox>
+                <a-checkbox v-model="row.hasFragment" style="width: 25%;height: 32px;">{{ i18n "pages.xray.outbound.freedom.fragment" }}</a-checkbox>
             </a-tooltip>
             <!-- Fragment -->
             <template v-if="row.fragment !== undefined">
                 <a-tooltip title='{{ i18n "pages.xray.outbound.freedom.packets" }}'>
-                    <a-input v-model.trim="row.fragment.packets" placeholder="tlshello" style="width: 30%; border-radius: 1rem 0 0 1rem;" />
+                    <a-input v-model.trim="row.fragment.packets" placeholder="tlshello" style="width: 25%; border-radius: 1rem 0 0 1rem;" />
                 </a-tooltip>
                 <a-tooltip title='{{ i18n "pages.xray.outbound.freedom.length" }}'>
-                    <a-input v-model.trim="row.fragment.length" placeholder="100-200" style="width: 30%; border-radius: 0;" />
+                    <a-input v-model.trim="row.fragment.length" placeholder="100-200" style="width: 25%; border-radius: 0;" />
                 </a-tooltip>
                 <a-tooltip title='{{ i18n "pages.inbounds.stream.finalmask.delay" }}'>
-                    <a-input v-model.trim="row.fragment.interval" placeholder="10-20" style="width: 30%; border-radius: 0 1rem 1rem 0;" />
+                    <a-input v-model.trim="row.fragment.interval" placeholder="10-20" style="width: 25%; border-radius: 0 1rem 1rem 0;" />
                 </a-tooltip>
             </template>
         </a-input-group>

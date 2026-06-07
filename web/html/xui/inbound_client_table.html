@@ -40,9 +40,25 @@
     <a-switch v-model="client.enable" @change="switchEnableClient(record.id,client)"></a-switch>
 </template>
 <template slot="online" slot-scope="text, client, index">
-    <template v-if="isClientOnline(client.email)">
+    <a-popover v-if="isClientOnline(client.email)"
+        title='{{ i18n "pages.inbounds.onlineIps" }}' :overlay-class-name="themeSwitcher.currentTheme">
+        <template slot="content">
+            <template v-if="getOnlineUserIPs(client.email).length">
+                <table cellpadding="2">
+                    <tr>
+                        <td><strong>IP</strong></td>
+                        <td><strong>{{ i18n "pages.inbounds.lastSeen" }}</strong></td>
+                    </tr>
+                    <tr v-for="item in getOnlineUserIPs(client.email)" :key="item.ip">
+                        <td>[[ item.ip ]]</td>
+                        <td>[[ item.lastSeen ]]</td>
+                    </tr>
+                </table>
+            </template>
+            <p v-else style="margin: 0;">{{ i18n "pages.inbounds.noOnlineIps" }}</p>
+        </template>
         <a-tag color="green">{{ i18n "online" }}</a-tag>
-    </template>
+    </a-popover>
     <template v-else>
         <a-tag>{{ i18n "offline" }}</a-tag>
     </template>
@@ -254,6 +270,23 @@
                                 </a-tag>
                             </a-popover>
                             <a-tag v-else :color="client.enable ? 'purple' : themeSwitcher.isDarkTheme ? '#2c3950' : '#bcbcbc'" class="infinite-tag">&infin;</a-tag>
+                        </template>
+                    </td>
+                </tr>
+                <tr v-if="isClientOnline(client.email)">
+                    <td colspan="3" style="text-align: center;">
+                        <template v-if="getOnlineUserIPs(client.email).length">
+                            <a-divider style="margin: 0; border-collapse: separate;"></a-divider>
+                            <table cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td><strong>IP</strong></td>
+                                    <td><strong>{{ i18n "pages.inbounds.lastSeen" }}</strong></td>
+                                </tr>
+                                <tr v-for="item in getOnlineUserIPs(client.email)" :key="item.ip">
+                                    <td>[[ item.ip ]]</td>
+                                    <td>[[ item.lastSeen ]]</td>
+                                </tr>
+                            </table>
                         </template>
                     </td>
                 </tr>

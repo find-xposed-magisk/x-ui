@@ -472,8 +472,8 @@ func (t *Tgbot) clientInfoMsg(traffic *xray.ClientTraffic) string {
 
 	status := "🔴 " + t.I18nBot("offline")
 	if p.IsRunning() {
-		for _, online := range p.GetOnlineClients() {
-			if online == traffic.Email {
+		for _, online := range GetOnlineUsersCache() {
+			if online.Email == traffic.Email {
 				status = "🟢 " + t.I18nBot("online")
 				break
 			}
@@ -682,13 +682,13 @@ func (t *Tgbot) onlineClients(chatId int64) {
 		return
 	}
 
-	onlines := p.GetOnlineClients()
+	onlines := GetOnlineUsersCache()
 	output := t.I18nBot("tgbot.messages.onlinesCount", "Count=="+fmt.Sprint(len(onlines)))
 	if len(onlines) > 0 {
 		keyboard := tgbotapi.NewInlineKeyboardMarkup()
 		for index, online := range onlines {
 			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf("%d: %s\r\n", index+1, online), "client_"+online)))
+				tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf("%d: %s\r\n", index+1, online), "client_"+online.Email)))
 		}
 		t.SendMsgToTgbot(chatId, output, keyboard)
 	} else {
