@@ -196,7 +196,6 @@ func (s *XrayService) GetXrayConfig() (*xray.Config, error) {
 		outboundConfig := outbound.GenXrayOutboundConfig()
 		xrayConfig.OutboundConfigs = append(xrayConfig.OutboundConfigs, *outboundConfig)
 	}
-
 	mergedRouting, err := s.mergeRoutingRules(xrayConfig.RouterConfig)
 	if err != nil {
 		return nil, err
@@ -211,7 +210,7 @@ func (s *XrayService) mergeRoutingRules(routerConfig json_util.RawMessage) (json
 	if len(routerConfig) > 0 {
 		json.Unmarshal(routerConfig, &routing)
 	}
-	ruleList, err := s.routingRuleService.BuildRulesArray()
+	ruleList, err := s.routingRuleService.BuildDbRulesArray()
 	if err != nil {
 		return nil, err
 	}

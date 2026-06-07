@@ -3,7 +3,6 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/alireza0/x-ui/database"
 	"github.com/alireza0/x-ui/database/model"
@@ -27,161 +26,6 @@ func (s *RoutingRuleService) GetAllRules() ([]*model.RoutingRule, error) {
 		return nil, err
 	}
 	return rules, nil
-}
-
-func (s *RoutingRuleService) GetRule(id int) (*model.RoutingRule, error) {
-	db := database.GetDB()
-	rule := &model.RoutingRule{}
-	err := db.Model(model.RoutingRule{}).First(rule, id).Error
-	if err != nil {
-		return nil, err
-	}
-	return rule, nil
-}
-
-func (s *RoutingRuleService) checkTagExist(tag string, ignoreId int) (bool, error) {
-	db := database.GetDB().Model(model.RoutingRule{}).Where("tag = ?", tag)
-	if ignoreId > 0 {
-		db = db.Where("id != ?", ignoreId)
-	}
-	var count int64
-	err := db.Count(&count).Error
-	if err != nil {
-		return false, err
-	}
-	return count > 0, nil
-}
-
-func (s *RoutingRuleService) ensureTag(rule *model.RoutingRule) {
-	if rule.Tag != "" {
-		return
-	}
-	if rule.Id > 0 {
-		rule.Tag = fmt.Sprintf("rule-%d", rule.Id)
-	} else {
-		rule.Tag = fmt.Sprintf("rule-%d", time.Now().UnixNano()%1000000000)
-	}
-}
-
-func (s *RoutingRuleService) AddRule(rule *model.RoutingRule) (*model.RoutingRule, bool, error) {
-	s.ensureTag(rule)
-	exist, err := s.checkTagExist(rule.Tag, 0)
-	if err != nil {
-		return rule, false, err
-	}
-	if exist {
-		return rule, false, common.NewError("Tag already exists:", rule.Tag)
-	}
-
-	db := database.GetDB()
-	var maxSort int
-	db.Model(model.RoutingRule{}).Select("COALESCE(MAX(sort), -1)").Scan(&maxSort)
-	rule.Sort = maxSort + 1
-
-	err = db.Save(rule).Error
-	if err != nil {
-		return rule, false, err
-	}
-
-	needRestart := false
-	if p != nil && p.IsRunning() {
-		s.xrayApi.Init(p.GetAPIAddr())
-		ruleJSON, err1 := rule.RuleJSON()
-		if err1 != nil {
-			logger.Debug("Unable to marshal routing rule:", err1)
-			needRestart = true
-		} else {
-			err1 = s.xrayApi.AddRule(ruleJSON, true)
-			if err1 == nil {
-				logger.Debug("New routing rule added by api:", rule.Tag)
-			} else {
-				logger.Debug("Unable to add routing rule by api:", err1)
-				needRestart = true
-			}
-		}
-		s.xrayApi.Close()
-	}
-
-	return rule, needRestart, nil
-}
-
-func (s *RoutingRuleService) DelRule(id int) (bool, error) {
-	db := database.GetDB()
-	rule, err := s.GetRule(id)
-	if err != nil {
-		return false, err
-	}
-
-	needRestart := false
-	if p != nil && p.IsRunning() {
-		s.xrayApi.Init(p.GetAPIAddr())
-		err1 := s.xrayApi.DelRule(rule.Tag)
-		if err1 == nil {
-			logger.Debug("Routing rule deleted by api:", rule.Tag)
-		} else {
-			logger.Debug("Unable to delete routing rule by api:", err1)
-			needRestart = true
-		}
-		s.xrayApi.Close()
-	}
-
-	return needRestart, db.Delete(model.RoutingRule{}, id).Error
-}
-
-func (s *RoutingRuleService) UpdateRule(rule *model.RoutingRule) (*model.RoutingRule, bool, error) {
-	exist, err := s.checkTagExist(rule.Tag, rule.Id)
-	if err != nil {
-		return rule, false, err
-	}
-	if exist {
-		return rule, false, common.NewError("Tag already exists:", rule.Tag)
-	}
-
-	oldRule, err := s.GetRule(rule.Id)
-	if err != nil {
-		return rule, false, err
-	}
-
-	oldTag := oldRule.Tag
-	oldRule.Tag = rule.Tag
-	oldRule.RawJson = rule.RawJson
-
-	needRestart := false
-	if p != nil && p.IsRunning() {
-		s.xrayApi.Init(p.GetAPIAddr())
-		if s.xrayApi.DelRule(oldTag) != nil {
-			needRestart = true
-		}
-		ruleJSON, err2 := oldRule.RuleJSON()
-		if err2 != nil {
-			needRestart = true
-		} else {
-			err2 = s.xrayApi.AddRule(ruleJSON, true)
-			if err2 != nil {
-				logger.Debug("Unable to update routing rule by api:", err2)
-				needRestart = true
-			}
-		}
-		s.xrayApi.Close()
-	}
-
-	db := database.GetDB()
-	return oldRule, needRestart, db.Save(oldRule).Error
-}
-
-func (s *RoutingRuleService) ReorderRules(ids []int) error {
-	if len(ids) == 0 {
-		return nil
-	}
-	db := database.GetDB()
-	return db.Transaction(func(tx *gorm.DB) error {
-		for i, id := range ids {
-			if err := tx.Model(model.RoutingRule{}).Where("id = ?", id).Update("sort", i).Error; err != nil {
-				return err
-			}
-		}
-		return nil
-	})
 }
 
 func (s *RoutingRuleService) GetRoutingMeta() (map[string]interface{}, error) {
@@ -210,115 +54,91 @@ func (s *RoutingRuleService) GetRoutingMeta() (map[string]interface{}, error) {
 	return meta, nil
 }
 
-func (s *RoutingRuleService) SaveRoutingMeta(domainStrategy string) error {
-	templateConfig, err := s.settingService.GetXrayConfigTemplate()
-	if err != nil {
-		return err
-	}
-	var cfg map[string]interface{}
-	if err := json.Unmarshal([]byte(templateConfig), &cfg); err != nil {
-		return err
-	}
-	routing, ok := cfg["routing"].(map[string]interface{})
-	if !ok || routing == nil {
-		routing = map[string]interface{}{}
-		cfg["routing"] = routing
-	}
-	routing["domainStrategy"] = domainStrategy
-	routing["rules"] = []interface{}{}
-	newTemplate, err := json.MarshalIndent(cfg, "", "  ")
-	if err != nil {
-		return err
-	}
-	return s.settingService.saveSetting("xrayTemplateConfig", string(newTemplate))
-}
-
-func (s *RoutingRuleService) SyncBasicProperty(outboundTag, property string, data []string) error {
-	rules, err := s.GetAllRules()
-	if err != nil {
-		return err
-	}
-	var target *model.RoutingRule
+// SaveAllRules replaces the whole set of routing rules at once.
+// Rules are first pushed to the running xray-core via API; only if xray accepts
+// them are they persisted to the database. The slice order defines the priority.
+func (s *RoutingRuleService) SaveAllRules(rules []*model.RoutingRule) (bool, error) {
+	used := make(map[string]bool)
 	for _, r := range rules {
-		var raw map[string]interface{}
-		if json.Unmarshal([]byte(r.RawJson), &raw) != nil {
+		if r.Tag == "" {
 			continue
 		}
-		ot, _ := raw["outboundTag"].(string)
-		if ot != outboundTag {
-			continue
+		if used[r.Tag] {
+			return false, common.NewError("Tag already exists:", r.Tag)
 		}
-		if _, has := raw[property]; has {
-			target = r
-			break
-		}
+		used[r.Tag] = true
 	}
-	if target == nil {
-		if len(data) == 0 {
-			return nil
-		}
-		ruleObj := map[string]interface{}{
-			"type":        "field",
-			"outboundTag": outboundTag,
-			property:      data,
-		}
-		raw, _ := json.Marshal(ruleObj)
-		newRule := &model.RoutingRule{RawJson: string(raw)}
-		_, needRestart, err := s.AddRule(newRule)
-		if needRestart {
-			isNeedXrayRestart.Store(true)
-		}
-		return err
-	}
-	if len(data) == 0 {
-		needRestart, err := s.DelRule(target.Id)
-		if needRestart {
-			isNeedXrayRestart.Store(true)
-		}
-		return err
-	}
-	var raw map[string]interface{}
-	json.Unmarshal([]byte(target.RawJson), &raw)
-	raw[property] = data
-	newRaw, _ := json.Marshal(raw)
-	target.RawJson = string(newRaw)
-	_, needRestart, err := s.UpdateRule(target)
-	if needRestart {
-		isNeedXrayRestart.Store(true)
-	}
-	return err
-}
 
-func (s *RoutingRuleService) GetBasicProperty(outboundTag, property string) ([]string, error) {
-	rules, err := s.GetAllRules()
-	if err != nil {
-		return nil, err
-	}
-	for _, r := range rules {
-		var raw map[string]interface{}
-		if json.Unmarshal([]byte(r.RawJson), &raw) != nil {
-			continue
-		}
-		ot, _ := raw["outboundTag"].(string)
-		if ot != outboundTag {
-			continue
-		}
-		if val, ok := raw[property]; ok {
-			switch v := val.(type) {
-			case []interface{}:
-				result := make([]string, 0, len(v))
-				for _, item := range v {
-					if s, ok := item.(string); ok {
-						result = append(result, s)
-					}
+	counter := 1
+	for i, r := range rules {
+		r.Id = 0
+		r.Sort = i
+		if r.Tag == "" {
+			for {
+				candidate := fmt.Sprintf("rule-%d", counter)
+				counter++
+				if !used[candidate] {
+					r.Tag = candidate
+					used[candidate] = true
+					break
 				}
-				return result, nil
-			case []string:
-				return v, nil
 			}
 		}
 	}
-	return []string{}, nil
+
+	// Validate every rule can be serialized before touching xray or the database.
+	ruleJSONs := make([][]byte, 0, len(rules))
+	for _, r := range rules {
+		ruleJSON, err := r.RuleJSON()
+		if err != nil {
+			return false, err
+		}
+		ruleJSONs = append(ruleJSONs, ruleJSON)
+	}
+
+	needRestart := false
+	if p != nil && p.IsRunning() {
+		if err := s.xrayApi.Init(p.GetAPIAddr()); err != nil {
+			return true, err
+		}
+		defer s.xrayApi.Close()
+
+		oldTags, err := s.loadDbRuleTags()
+		if err != nil {
+			return true, err
+		}
+		for _, tag := range oldTags {
+			if err := s.xrayApi.DelRule(tag); err != nil {
+				logger.Debug("Unable to delete routing rule by api:", err)
+				needRestart = true
+			}
+		}
+		for _, ruleJSON := range ruleJSONs {
+			if err := s.xrayApi.AddRule(ruleJSON, true); err != nil {
+				// xray rejected the rule: keep the database untouched and ask for a
+				// restart so the previous (still stored) rules get restored.
+				isNeedXrayRestart.Store(true)
+				return true, err
+			}
+		}
+	}
+
+	db := database.GetDB()
+	err := db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("1 = 1").Delete(&model.RoutingRule{}).Error; err != nil {
+			return err
+		}
+		for _, r := range rules {
+			if err := tx.Create(r).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return true, err
+	}
+	return needRestart, nil
 }
 
 func (s *RoutingRuleService) ReplaceBalancerTag(oldTag, newTag string) error {
@@ -326,7 +146,8 @@ func (s *RoutingRuleService) ReplaceBalancerTag(oldTag, newTag string) error {
 	if err != nil {
 		return err
 	}
-	needRestart := false
+	db := database.GetDB()
+	changed := false
 	for _, r := range rules {
 		var raw map[string]interface{}
 		if json.Unmarshal([]byte(r.RawJson), &raw) != nil {
@@ -339,13 +160,17 @@ func (s *RoutingRuleService) ReplaceBalancerTag(oldTag, newTag string) error {
 		raw["balancerTag"] = newTag
 		newRaw, _ := json.Marshal(raw)
 		r.RawJson = string(newRaw)
-		_, nr, err := s.UpdateRule(r)
-		if err != nil {
+		if err := db.Save(r).Error; err != nil {
 			return err
 		}
-		if nr {
-			needRestart = true
-		}
+		changed = true
+	}
+	if !changed {
+		return nil
+	}
+	needRestart, err := s.ReloadRoutingRules()
+	if err != nil {
+		return err
 	}
 	if needRestart {
 		isNeedXrayRestart.Store(true)
@@ -353,7 +178,7 @@ func (s *RoutingRuleService) ReplaceBalancerTag(oldTag, newTag string) error {
 	return nil
 }
 
-func (s *RoutingRuleService) BuildRulesArray() ([]interface{}, error) {
+func (s *RoutingRuleService) BuildDbRulesArray() ([]interface{}, error) {
 	rules, err := s.GetAllRules()
 	if err != nil {
 		return nil, err
@@ -370,4 +195,69 @@ func (s *RoutingRuleService) BuildRulesArray() ([]interface{}, error) {
 		}
 	}
 	return result, nil
+}
+
+func (s *RoutingRuleService) loadDbRuleTags() ([]string, error) {
+	rules, err := s.GetAllRules()
+	if err != nil {
+		return nil, err
+	}
+	tags := make([]string, 0, len(rules))
+	for _, r := range rules {
+		tags = append(tags, routingRuleTag(r))
+	}
+	return tags, nil
+}
+
+func routingRuleTag(rule *model.RoutingRule) string {
+	if rule.Tag != "" {
+		return rule.Tag
+	}
+	return fmt.Sprintf("rule-%d", rule.Id)
+}
+
+func (s *RoutingRuleService) applyMergedRulesViaApi(rules []interface{}) (bool, error) {
+	needRestart := false
+	tags, err := s.loadDbRuleTags()
+	if err != nil {
+		return true, err
+	}
+	for _, tag := range tags {
+		if err := s.xrayApi.DelRule(tag); err != nil {
+			logger.Debug("Unable to delete routing rule by api:", err)
+			needRestart = true
+		}
+	}
+	for _, ruleObj := range rules {
+		ruleJSON, err := json.Marshal(ruleObj)
+		if err != nil {
+			needRestart = true
+			continue
+		}
+		if err := s.xrayApi.AddRule(ruleJSON, true); err != nil {
+			logger.Debug("Unable to apply routing rule by api:", err)
+			return true, err
+		}
+	}
+	return needRestart, nil
+}
+
+func (s *RoutingRuleService) ReloadRoutingRules() (bool, error) {
+	rules, err := s.BuildDbRulesArray()
+	if err != nil {
+		return true, err
+	}
+
+	if p == nil || !p.IsRunning() {
+		return false, nil
+	}
+
+	s.xrayApi.Init(p.GetAPIAddr())
+	defer s.xrayApi.Close()
+
+	needRestart, err := s.applyMergedRulesViaApi(rules)
+	if err != nil {
+		return true, err
+	}
+	return needRestart, nil
 }

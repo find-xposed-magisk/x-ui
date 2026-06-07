@@ -96,7 +96,7 @@
                                         <a-back-top :target="() => document.getElementById('content-layout')" visibility-height="200">
                                         </a-back-top>
                                         <a-alert type="warning" style="float: right; width: fit-content"
-                                        message='{{ i18n "pages.settings.infoDesc" }}'
+                                        message='{{ i18n "pages.xray.infoDesc" }}'
                                         show-icon
                                         >
                                     </div>
@@ -426,10 +426,6 @@
                         </a-tab-pane>
                         <a-tab-pane key="tpl-advanced" tab='{{ i18n "pages.xray.advancedTemplate"}}' style="padding-top: 20px;" force-render="true">
                             <a-list-item-meta title='{{ i18n "pages.xray.Template"}}' description='{{ i18n "pages.xray.TemplateDesc"}}'></a-list-item-meta>
-                            <a-radio-group v-model="advSettings" @change="changeCode" button-style="solid" style="margin: 10px 0;" :size="isMobile ? 'small' : ''">
-                                <a-radio-button value="xraySetting">{{ i18n "pages.xray.completeTemplate"}}</a-radio-button>
-                                <a-radio-button value="inboundSettings">{{ i18n "pages.xray.Inbounds" }}</a-radio-button>
-                            </a-radio-group>
                             <textarea style="position:absolute; left: -800px;" id="xraySetting"></textarea>
                         </a-tab-pane>
                     </a-tabs>
@@ -499,7 +495,6 @@
             restartResult: '',
             showAlert: false,
             isMobile: window.innerWidth <= 768,
-            advSettings: 'xraySetting',
             obsSettings: '',
             cm: null,
             cmOptions: {
@@ -661,12 +656,12 @@
                     this.cm.toTextArea();
                 }
                 textAreaObj = document.getElementById('xraySetting');
-                textAreaObj.value = this[this.advSettings];
+                textAreaObj.value = this.xraySetting;
                 this.cm = CodeMirror.fromTextArea(textAreaObj, this.cmOptions);
                 this.cm.on('change',editor => {
                     value = editor.getValue();
                     if(this.isJsonString(value)){
-                        this[this.advSettings] = value;
+                        this.xraySetting = value;
                     }
                 });
             },

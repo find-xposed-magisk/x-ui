@@ -50,11 +50,19 @@
         <a-layout-content>
             <a-spin :spinning="spinning" :delay="500" tip='{{ i18n "loading"}}'>
                 <a-card hoverable style="margin-bottom: 12px;">
-                    <strong>{{ i18n "pages.routingRules.ruleCount" }}:</strong>
-                    <a-tag color="blue">[[ dbRules.length ]]</a-tag>
-                </a-card>
-
-                <a-card hoverable style="margin-bottom: 12px;">
+                    <a-row>
+                        <a-col :xs="24" :sm="12" style="padding: 4px;">
+                            <a-space direction="horizontal">
+                                <a-button type="primary" icon="plus" @click="addRule">{{ i18n "pages.xray.rules.add" }}</a-button>
+                                <a-button type="primary" :disabled="saveBtnDisable" @click="saveAll">{{ i18n "pages.xray.save" }}</a-button>
+                            </a-space>
+                        </a-col>
+                        <a-col :xs="24" :sm="12">
+                            <a-alert type="warning" style="float: right; width: fit-content;"
+                                message='{{ i18n "pages.xray.rules.infoDesc" }}' show-icon></a-alert>
+                        </a-col>
+                    </a-row>
+                    <a-divider></a-divider>
                     <a-collapse>
                         <a-collapse-panel header='{{ i18n "pages.xray.basicRouting"}}'>
                             <a-row :xs="24" :sm="24" :lg="12">
@@ -69,7 +77,7 @@
                                 <a-row style="padding: 0 20px">
                                     <a-col :lg="24" :xl="4"><a-list-item-meta title='{{ i18n "pages.xray.blockips" }}'/></a-col>
                                     <a-col :lg="24" :xl="20">
-                                        <a-select mode="tags" v-model="blockedIPs" @change="v => syncBasic('blocked','ip',v)"
+                                        <a-select mode="tags" v-model="blockedIPs"
                                             style="width: 100%" :dropdown-class-name="themeSwitcher.currentTheme">
                                             <a-select-option v-for="p in settingsData.IPsOptions" :value="p.value" :label="p.label">[[ p.label ]]</a-select-option>
                                         </a-select>
@@ -80,7 +88,7 @@
                                 <a-row style="padding: 0 20px">
                                     <a-col :lg="24" :xl="4"><a-list-item-meta title='{{ i18n "pages.xray.blockdomains" }}'/></a-col>
                                     <a-col :lg="24" :xl="20">
-                                        <a-select mode="tags" v-model="blockedDomains" @change="v => syncBasic('blocked','domain',v)"
+                                        <a-select mode="tags" v-model="blockedDomains"
                                             style="width: 100%" :dropdown-class-name="themeSwitcher.currentTheme">
                                             <a-select-option v-for="p in settingsData.DomainsOptions" :value="p.value" :label="p.label">[[ p.label ]]</a-select-option>
                                         </a-select>
@@ -106,7 +114,7 @@
                                 <a-row style="padding: 0 20px">
                                     <a-col :lg="24" :xl="4"><a-list-item-meta title='{{ i18n "pages.xray.directips" }}'/></a-col>
                                     <a-col :lg="24" :xl="20">
-                                        <a-select mode="tags" v-model="directIPs" @change="v => syncBasic('direct','ip',v)"
+                                        <a-select mode="tags" v-model="directIPs"
                                             style="width: 100%" :dropdown-class-name="themeSwitcher.currentTheme">
                                             <a-select-option v-for="p in settingsData.IPsOptions" :value="p.value" :label="p.label">[[ p.label ]]</a-select-option>
                                         </a-select>
@@ -117,7 +125,7 @@
                                 <a-row style="padding: 0 20px">
                                     <a-col :lg="24" :xl="4"><a-list-item-meta title='{{ i18n "pages.xray.directdomains" }}'/></a-col>
                                     <a-col :lg="24" :xl="20">
-                                        <a-select mode="tags" v-model="directDomains" @change="v => syncBasic('direct','domain',v)"
+                                        <a-select mode="tags" v-model="directDomains"
                                             style="width: 100%" :dropdown-class-name="themeSwitcher.currentTheme">
                                             <a-select-option v-for="p in settingsData.DomainsOptions" :value="p.value" :label="p.label">[[ p.label ]]</a-select-option>
                                         </a-select>
@@ -133,7 +141,7 @@
                                 <a-row style="padding: 0 20px">
                                     <a-col :lg="24" :xl="4"><a-list-item-meta title='{{ i18n "pages.xray.ipv4Routing" }}'/></a-col>
                                     <a-col :lg="24" :xl="20">
-                                        <a-select mode="tags" v-model="ipv4Domains" @change="v => syncBasic('IPv4','domain',v)"
+                                        <a-select mode="tags" v-model="ipv4Domains"
                                             style="width: 100%" :dropdown-class-name="themeSwitcher.currentTheme">
                                             <a-select-option v-for="p in settingsData.ServicesOptions" :value="p.value" :label="p.label">[[ p.label ]]</a-select-option>
                                         </a-select>
@@ -150,7 +158,7 @@
                                     <a-row style="padding: 0 20px">
                                         <a-col :lg="24" :xl="4"><a-list-item-meta title='{{ i18n "pages.xray.warpRouting" }}'/></a-col>
                                         <a-col :lg="24" :xl="20">
-                                            <a-select mode="tags" v-model="warpDomains" @change="v => syncBasic('warp','domain',v)"
+                                            <a-select mode="tags" v-model="warpDomains"
                                                 style="width: 100%" :dropdown-class-name="themeSwitcher.currentTheme">
                                                 <a-select-option v-for="p in settingsData.ServicesOptions" :value="p.value" :label="p.label">[[ p.label ]]</a-select-option>
                                             </a-select>
@@ -164,11 +172,6 @@
                 </a-card>
 
                 <a-card hoverable>
-                    <div slot="title">
-                        <a-button type="primary" icon="plus" @click="addRule">
-                            <template v-if="!isMobile">{{ i18n "pages.xray.rules.add" }}</template>
-                        </a-button>
-                    </div>
                     <a-alert type="warning" show-icon style="margin-bottom: 12px; text-align: center;"
                         :message='`{{ i18n "pages.xray.RoutingsDesc" }}`'></a-alert>
                     <a-table class="routing-rules-table" :columns="isMobile ? rulesMobileColumns : rulesColumns" bordered
@@ -269,22 +272,16 @@
             spinning: false,
             isMobile: window.innerWidth <= 768,
             dbRules: [],
-            tableRules: [],
-            blockedProtocolsList: [],
             inboundTags: [],
             clientReverseTags: [],
             outboundTags: [],
             outboundReverseTags: [],
             routingMeta: {},
-            blockedIPs: [],
-            blockedDomains: [],
-            directIPs: [],
-            directDomains: [],
-            ipv4Domains: [],
-            warpDomains: [],
             dragRuleId: null,
             dragOverId: null,
-            reordering: false,
+            nextTempId: -1,
+            saveBtnDisable: true,
+            oldRulesSnapshot: '',
             settingsData: {
                 protocols: {
                     bittorrent: ["bittorrent"],
@@ -314,12 +311,18 @@
             },
         },
         computed: {
+            tableRules() {
+                return this.dbRules.map(r => r.toTableRow());
+            },
             WarpExist() {
                 return this.outboundTags.includes('warp');
             },
             balancerTags() {
                 const balancers = this.routingMeta.balancers || [];
                 return balancers.filter(b => b.tag).map(b => b.tag);
+            },
+            blockedProtocolsList() {
+                return this.getBasicLocal('blocked', 'protocol');
             },
             torrentSettings: {
                 get() {
@@ -332,12 +335,39 @@
                     } else {
                         data = data.filter(d => !this.settingsData.protocols.bittorrent.includes(d));
                     }
-                    this.syncBlockedProtocols(data);
+                    this.setBasicLocal('blocked', 'protocol', data);
                 },
+            },
+            blockedIPs: {
+                get() { return this.getBasicLocal('blocked', 'ip'); },
+                set(v) { this.setBasicLocal('blocked', 'ip', v); },
+            },
+            blockedDomains: {
+                get() { return this.getBasicLocal('blocked', 'domain'); },
+                set(v) { this.setBasicLocal('blocked', 'domain', v); },
+            },
+            directIPs: {
+                get() { return this.getBasicLocal('direct', 'ip'); },
+                set(v) { this.setBasicLocal('direct', 'ip', v); },
+            },
+            directDomains: {
+                get() { return this.getBasicLocal('direct', 'domain'); },
+                set(v) { this.setBasicLocal('direct', 'domain', v); },
+            },
+            ipv4Domains: {
+                get() { return this.getBasicLocal('IPv4', 'domain'); },
+                set(v) { this.setBasicLocal('IPv4', 'domain', v); },
+            },
+            warpDomains: {
+                get() { return this.getBasicLocal('warp', 'domain'); },
+                set(v) { this.setBasicLocal('warp', 'domain', v); },
             },
         },
         methods: {
             loading(spinning = true) { this.spinning = spinning; },
+            currentSnapshot() {
+                return JSON.stringify(this.dbRules.map(r => ({ tag: r.tag || '', rawJson: r.rawJson || '' })));
+            },
             async loadAll() {
                 this.loading(true);
                 const [listMsg, refsMsg] = await Promise.all([
@@ -346,8 +376,7 @@
                 ]);
                 this.loading(false);
                 if (listMsg.success) {
-                    this.dbRules = listMsg.obj.map(r => new DBRoutingRule(r));
-                    this.tableRules = this.dbRules.map(r => r.toTableRow());
+                    this.dbRules = (listMsg.obj || []).map(r => new DBRoutingRule(r));
                 }
                 if (refsMsg.success) {
                     this.inboundTags = refsMsg.obj.inboundTags || [];
@@ -356,55 +385,49 @@
                     this.outboundReverseTags = refsMsg.obj.outboundReverseTags || [];
                     this.routingMeta = refsMsg.obj.routingMeta || {};
                 }
-                await this.loadBasicFields();
+                this.oldRulesSnapshot = this.currentSnapshot();
+                this.saveBtnDisable = true;
             },
-            async loadBasicFields() {
-                const protoMsg = await HttpUtil.post('/xui/routing/getBasic', { outboundTag: 'blocked', property: 'protocol' });
-                if (protoMsg.success) {
-                    this.blockedProtocolsList = protoMsg.obj || [];
+            getBasicLocal(outboundTag, property) {
+                for (const r of this.dbRules) {
+                    let raw;
+                    try { raw = r.rawJson ? JSON.parse(r.rawJson) : {}; } catch (e) { continue; }
+                    if (raw.outboundTag !== outboundTag || raw[property] === undefined) continue;
+                    const v = raw[property];
+                    return Array.isArray(v) ? v : (v != null ? [v] : []);
                 }
-                const fields = [
-                    ['blocked', 'ip', 'blockedIPs'],
-                    ['blocked', 'domain', 'blockedDomains'],
-                    ['direct', 'ip', 'directIPs'],
-                    ['direct', 'domain', 'directDomains'],
-                    ['IPv4', 'domain', 'ipv4Domains'],
-                    ['warp', 'domain', 'warpDomains'],
-                ];
-                for (const [ot, prop, key] of fields) {
-                    const msg = await HttpUtil.post('/xui/routing/getBasic', { outboundTag: ot, property: prop });
-                    if (msg.success) {
-                        this[key] = msg.obj || [];
-                    }
-                }
+                return [];
             },
-            async syncBasic(outboundTag, property, data) {
-                await HttpUtil.post('/xui/routing/syncBasic', { outboundTag, property, data: data || [] });
-                await this.loadAll();
-            },
-            async syncBlockedProtocols(data) {
-                await HttpUtil.post('/xui/routing/syncBasic', { outboundTag: 'blocked', property: 'protocol', data: data || [] });
-                const msg = await HttpUtil.post('/xui/routing/getBasic', { outboundTag: 'blocked', property: 'protocol' });
-                if (msg.success) {
-                    this.blockedProtocolsList = msg.obj || [];
+            setBasicLocal(outboundTag, property, data) {
+                data = data || [];
+                const idx = this.dbRules.findIndex(r => {
+                    let raw;
+                    try { raw = r.rawJson ? JSON.parse(r.rawJson) : {}; } catch (e) { return false; }
+                    return raw.outboundTag === outboundTag && raw[property] !== undefined;
+                });
+                if (idx === -1) {
+                    if (data.length === 0) return;
+                    const raw = { type: 'field', outboundTag };
+                    raw[property] = data;
+                    this.dbRules.push(new DBRoutingRule({ id: this.nextTempId--, tag: '', sort: this.dbRules.length, rawJson: JSON.stringify(raw) }));
+                    return;
                 }
-            },
-            async submit(url, data, modal) {
-                const msg = await HttpUtil.postWithModal(url, data, modal);
-                if (msg.success) {
-                    await this.loadAll();
+                if (data.length === 0) {
+                    this.dbRules.splice(idx, 1);
+                    return;
                 }
-                return msg;
+                const raw = JSON.parse(this.dbRules[idx].rawJson);
+                raw[property] = data;
+                this.dbRules[idx].rawJson = JSON.stringify(raw);
             },
             addRule() {
                 ruleModal.show({
                     title: '{{ i18n "pages.xray.rules.add"}}',
                     okText: '{{ i18n "pages.xray.rules.add" }}',
-                    confirm: async (rule, tag) => {
-                        ruleModal.loading();
-                        const db = new DBRoutingRule();
-                        const data = DBRoutingRule.payloadFromRule(rule, { ...db, tag: tag || '' });
-                        await this.submit('/xui/routing/add', data, ruleModal);
+                    confirm: (rule, tag) => {
+                        const data = DBRoutingRule.payloadFromRule(rule, { id: 0, tag: tag || '' });
+                        this.dbRules.push(new DBRoutingRule({ id: this.nextTempId--, tag: data.tag, sort: this.dbRules.length, rawJson: data.rawJson }));
+                        ruleModal.close();
                     },
                     isEdit: false,
                 });
@@ -415,16 +438,27 @@
                     title: '{{ i18n "pages.xray.rules.edit"}} ' + db.tag,
                     rule: db.toRule(),
                     tag: db.tag,
-                    confirm: async (rule, tag) => {
-                        ruleModal.loading();
-                        const data = DBRoutingRule.payloadFromRule(rule, { ...db, tag: tag || db.tag });
-                        await this.submit(`/xui/routing/update/${db.id}`, data, ruleModal);
+                    confirm: (rule, tag) => {
+                        const data = DBRoutingRule.payloadFromRule(rule, { id: db.id, tag: tag || db.tag });
+                        db.tag = data.tag;
+                        db.rawJson = data.rawJson;
+                        ruleModal.close();
                     },
                     isEdit: true,
                 });
             },
-            async deleteRule(id) {
-                await this.submit(`/xui/routing/del/${id}`, {});
+            deleteRule(id) {
+                const idx = this.dbRules.findIndex(r => r.id === id);
+                if (idx !== -1) this.dbRules.splice(idx, 1);
+            },
+            async saveAll() {
+                const payload = this.dbRules.map(r => ({ tag: r.tag || '', rawJson: r.rawJson || '' }));
+                this.loading(true);
+                const msg = await HttpUtil.post('/xui/routing/save', { rules: JSON.stringify(payload) });
+                this.loading(false);
+                if (msg.success) {
+                    await this.loadAll();
+                }
             },
             ruleCustomRow(record) {
                 const self = this;
@@ -484,18 +518,7 @@
                 }
                 const [moved] = rules.splice(fromIdx, 1);
                 rules.splice(toIdx, 0, moved);
-                this.reorderRules(rules.map(r => r.id));
-            },
-            async reorderRules(orderedIds) {
-                if (this.reordering) {
-                    return;
-                }
-                this.reordering = true;
-                const msg = await HttpUtil.post('/xui/routing/reorder', { ids: orderedIds });
-                this.reordering = false;
-                if (msg.success) {
-                    await this.loadAll();
-                }
+                this.dbRules = rules;
             },
             showWarp() {
                 warpModal.show();
@@ -503,11 +526,18 @@
             onResize() {
                 this.isMobile = window.innerWidth <= 768;
             },
+            async startDirtyWatch() {
+                while (true) {
+                    await PromiseUtil.sleep(1000);
+                    this.saveBtnDisable = this.oldRulesSnapshot === this.currentSnapshot();
+                }
+            },
         },
-        mounted() {
+        async mounted() {
             window.addEventListener('resize', this.onResize);
             this.onResize();
-            this.loadAll();
+            await this.loadAll();
+            this.startDirtyWatch();
         },
     });
     const app = routingRulesApp;
