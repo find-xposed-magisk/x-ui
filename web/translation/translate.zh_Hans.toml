@@ -208,6 +208,12 @@
 "deleteConfirm" = "确定要删除此出站吗？"
 "resetTraffic" = "重置流量"
 "resetAllTraffic" = "重置所有出站流量"
+"test" = "测试出站"
+"testAll" = "测试所有出站"
+"testTooltip" = "测试连接和延迟"
+"testing" = "测试中..."
+"testSuccess" = "可达"
+"testFailed" = "不可达"
 
 [pages.outbounds.toasts]
 "obtain" = "获取出站失败"
@@ -529,6 +535,8 @@
 "tgNotifyCpuDesc" = "如果 CPU 使用率超过此百分比（单位：%），此 talegram bot 将向您发送通知"
 "timeZone" = "时区"
 "timeZoneDesc" = "定时任务按照该时区的时间运行"
+"outboundTestUrl" = "出站测试网址"
+"outboundTestUrlDesc" = "用于测试出站连接和延迟的网址。建议使用返回 204 的轻量级端点。"
 "subSettings" = "订阅"
 "subEnable" = "启用服务"
 "subEnableDesc" = "具有单独配置的订阅功能"

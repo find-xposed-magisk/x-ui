@@ -1,0 +1,17 @@
+{
+  "log": {
+    "loglevel": "none"
+  },
+  "inbounds": [
+    {
+      "tag": "http-test-in",
+      "listen": "127.0.0.1",
+      "port": __INBOUND_PORT__,
+      "protocol": "http",
+      "settings": {}
+    }
+  ],
+  "outbounds": [
+    __OUTBOUND__
+  ]
+}

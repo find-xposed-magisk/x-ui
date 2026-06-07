@@ -90,6 +90,10 @@
                                             <template v-if="!isMobile">{{ i18n "pages.inbounds.generalActions" }}</template>
                                         </a-button>
                                         <a-menu slot="overlay" @click="a => generalActions(a)" :theme="themeSwitcher.currentTheme">
+                                            <a-menu-item key="testAll">
+                                                <a-icon type="thunderbolt"></a-icon>
+                                                {{ i18n "pages.outbounds.testAll" }}
+                                            </a-menu-item>
                                             <a-menu-item key="resetTraffics">
                                                 <a-icon type="reload"></a-icon>
                                                 {{ i18n "pages.outbounds.resetAllTraffic" }}
@@ -167,6 +171,29 @@
                                     </a-popconfirm>
                                 </a-tooltip>
                             </template>
+                            <template slot="actionMenu" slot-scope="text, row, index">
+                                <a-dropdown :trigger="['click']">
+                                    <a-icon @click="e => e.preventDefault()" type="ellipsis" style="font-size: 20px;"></a-icon>
+                                    <a-menu slot="overlay" :theme="themeSwitcher.currentTheme">
+                                        <a-menu-item v-if="index > 0" @click="setFirstOutbound(row.id)">
+                                            <a-icon style="font-size: 14px;" type="vertical-align-top"></a-icon>
+                                            {{ i18n "pages.xray.rules.first" }}
+                                        </a-menu-item>
+                                        <a-menu-item @click="editOutbound(row)">
+                                            <a-icon style="font-size: 14px;" type="edit"></a-icon>
+                                            {{ i18n "pages.outbounds.edit" }}
+                                        </a-menu-item>
+                                        <a-menu-item @click="resetTraffic(row.id)">
+                                            <a-icon style="font-size: 14px;" type="retweet"></a-icon>
+                                            {{ i18n "pages.outbounds.resetTraffic" }}
+                                        </a-menu-item>
+                                        <a-menu-item @click="deleteOutbound(row.id)">
+                                            <a-icon style="font-size: 14px;" type="delete"></a-icon>
+                                            <span style="color: #FF4D4F"> {{ i18n "delete" }}</span>
+                                        </a-menu-item>
+                                    </a-menu>
+                                </a-dropdown>
+                            </template>
                             <template slot="online" slot-scope="text, row">
                                 <a-tag v-if="isOutboundOnline(row.tag)" color="green">{{ i18n "online" }}</a-tag>
                                 <a-tag v-else>{{ i18n "offline" }}</a-tag>
@@ -198,6 +225,65 @@
                             <template slot="traffic" slot-scope="text, row">
                                 <a-tag color="blue">↑[[ sizeFormat(row.up) ]] / ↓[[ sizeFormat(row.down) ]]</a-tag>
                             </template>
+                            <template slot="test" slot-scope="text, row">
+                                <span style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                                    <a-tooltip>
+                                        <template slot="title">{{ i18n "pages.outbounds.testTooltip" }}</template>
+                                        <a-icon style="font-size: 22px; cursor: pointer;" class="normal-icon"
+                                            :type="(testResults[row.id] && testResults[row.id].testing) ? 'loading' : 'thunderbolt'"
+                                            @click="testOutbound(row.id)"></a-icon>
+                                    </a-tooltip>
+                                    <template v-if="testResults[row.id] && !testResults[row.id].testing">
+                                        <a-tooltip v-if="testResults[row.id].success">
+                                            <template slot="title">{{ i18n "pages.outbounds.testSuccess" }}</template>
+                                            <a-tag color="green" style="margin: 0;">[[ testResults[row.id].delay ]] ms</a-tag>
+                                        </a-tooltip>
+                                        <a-tooltip v-else>
+                                            <template slot="title">[[ testResults[row.id].message || '{{ i18n "pages.outbounds.testFailed" }}' ]]</template>
+                                            <a-tag color="red" style="margin: 0;">{{ i18n "pages.outbounds.testFailed" }}</a-tag>
+                                        </a-tooltip>
+                                    </template>
+                                </span>
+                            </template>
+                            <template slot="info" slot-scope="text, row">
+                                <a-popover placement="bottomRight" :overlay-class-name="themeSwitcher.currentTheme" trigger="click">
+                                    <template slot="content">
+                                        <table cellpadding="2">
+                                            <tr>
+                                                <td>{{ i18n "online" }}</td>
+                                                <td>
+                                                    <a-tag style="margin:0;" v-if="isOutboundOnline(row.tag)" color="green">{{ i18n "online" }}</a-tag>
+                                                    <a-tag style="margin:0;" v-else>{{ i18n "offline" }}</a-tag>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>{{ i18n "protocol" }}</td>
+                                                <td>
+                                                    <a-tag style="margin:0;" color="purple">[[ row.protocol ]]</a-tag>
+                                                    <template v-if="[Protocols.VMess, Protocols.VLESS, Protocols.Trojan, Protocols.Shadowsocks].includes(row.protocol)">
+                                                        <a-tag style="margin:0;" color="blue">[[ row.toOutbound().stream.network ]]</a-tag>
+                                                        <a-tag style="margin:0;" v-if="row.toOutbound().stream.isTls" color="green">tls</a-tag>
+                                                        <a-tag style="margin:0;" v-if="row.toOutbound().stream.isReality" color="green">reality</a-tag>
+                                                    </template>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>{{ i18n "pages.xray.outbound.address" }}</td>
+                                                <td>
+                                                    <p style="margin: 0;" v-for="addr in findOutboundAddress(row.toOutbound().toJson())">[[ addr ]]</p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>{{ i18n "pages.inbounds.traffic" }}</td>
+                                                <td><a-tag style="margin:0;" color="blue">↑[[ sizeFormat(row.up) ]] / ↓[[ sizeFormat(row.down) ]]</a-tag></td>
+                                            </tr>
+                                        </table>
+                                    </template>
+                                    <a-button shape="round" size="small" style="font-size: 14px; padding: 0 10px;">
+                                        <a-icon type="info"></a-icon>
+                                    </a-button>
+                                </a-popover>
+                            </template>
                         </a-table>
                     </a-card>
                 </transition>
@@ -218,12 +304,13 @@
         { title: '{{ i18n "protocol"}}', align: 'center', width: 120, scopedSlots: { customRender: 'protocol' } },
         { title: '{{ i18n "pages.xray.outbound.address"}}', width: 150, align: 'center', scopedSlots: { customRender: 'address' } },
         { title: '{{ i18n "pages.inbounds.traffic" }}', align: 'center', width: 140, scopedSlots: { customRender: 'traffic' } },
+        { title: '{{ i18n "pages.outbounds.test" }}', align: 'center', width: 120, scopedSlots: { customRender: 'test' } },
     ];
     const mobileColumns = [
-        { title: "ID", align: 'center', width: 30, dataIndex: 'id' },
-        { title: '{{ i18n "pages.inbounds.operate" }}', align: 'center', width: 110, scopedSlots: { customRender: 'actions' } },
+        { title: '', align: 'center', width: 10, scopedSlots: { customRender: 'actionMenu' } },
         { title: '{{ i18n "pages.xray.outbound.tag"}}', align: 'center', scopedSlots: { customRender: 'tag' } },
-        { title: '{{ i18n "pages.inbounds.traffic" }}', align: 'center', scopedSlots: { customRender: 'traffic' } },
+        { title: '{{ i18n "pages.outbounds.test" }}', align: 'center', scopedSlots: { customRender: 'test' } },
+        { title: '{{ i18n "pages.inbounds.info" }}', align: 'center', width: 10, scopedSlots: { customRender: 'info' } },
     ];
 
     const app = new Vue({
@@ -245,6 +332,8 @@
             refreshInterval: Number(localStorage.getItem("refreshInterval")) || 5000,
             showAlert: false,
             pageSize: 0,
+            testResults: {},
+            testingAll: false,
         },
         methods: {
             loading(spinning = true) { this.spinning = spinning; },
@@ -394,6 +483,9 @@
             },
             generalActions({ key }) {
                 switch (key) {
+                    case 'testAll':
+                        this.testAllOutbounds();
+                        break;
                     case 'resetTraffics':
                         this.resetAllTraffics();
                         break;
@@ -401,6 +493,24 @@
                         warpModal.show();
                         break;
                 }
+            },
+            async testOutbound(id) {
+                this.$set(this.testResults, id, { testing: true });
+                const msg = await HttpUtil.post('/xui/outbound/test', { id });
+                if (!msg.success || !msg.obj) {
+                    this.$set(this.testResults, id, { testing: false, success: false, message: msg.msg });
+                    return;
+                }
+                const r = msg.obj;
+                this.$set(this.testResults, r.id, { testing: false, success: r.success, delay: r.delay, message: r.message });
+            },
+            async testAllOutbounds() {
+                if (this.testingAll) {
+                    return;
+                }
+                this.testingAll = true;
+                await Promise.all(this.dbOutbounds.map(o => this.testOutbound(o.id)));
+                this.testingAll = false;
             },
             async submit(url, data, modal) {
                 const msg = await HttpUtil.postWithModal(url, data, modal);

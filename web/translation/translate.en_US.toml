@@ -208,6 +208,12 @@
 "deleteConfirm" = "Are you sure you want to delete this outbound?"
 "resetTraffic" = "Reset Traffic"
 "resetAllTraffic" = "Reset All Outbound Traffic"
+"test" = "Test Outbound"
+"testAll" = "Test All Outbounds"
+"testTooltip" = "Test connection and latency"
+"testing" = "Testing..."
+"testSuccess" = "Reachable"
+"testFailed" = "Unreachable"
 
 [pages.outbounds.toasts]
 "obtain" = "Failed to load outbounds"
@@ -529,6 +535,8 @@
 "tgNotifyCpuDesc" = "Get notified if CPU load exceeds the set threshold. (Unit: %)"
 "timeZone" = "Time Zone"
 "timeZoneDesc" = "Scheduled tasks will run based on this time zone."
+"outboundTestUrl" = "Outbound Test URL"
+"outboundTestUrlDesc" = "URL used to test outbound connectivity and latency. A lightweight endpoint that returns 204 is recommended."
 "subSettings" = "Subscription"
 "subEnable" = "Enable Subscription Service"
 "subEnableDesc" = "Enables the subscription service."

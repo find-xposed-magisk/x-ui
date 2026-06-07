@@ -208,6 +208,12 @@
 "deleteConfirm" = "Bạn có chắc muốn xóa outbound này?"
 "resetTraffic" = "Đặt lại lưu lượng"
 "resetAllTraffic" = "Đặt lại tất cả lưu lượng outbound"
+"test" = "Kiểm tra outbound"
+"testAll" = "Kiểm tra tất cả outbound"
+"testTooltip" = "Kiểm tra kết nối và độ trễ"
+"testing" = "Đang kiểm tra..."
+"testSuccess" = "Có thể kết nối"
+"testFailed" = "Không thể kết nối"
 
 [pages.outbounds.toasts]
 "obtain" = "Không thể tải outbounds"
@@ -529,6 +535,8 @@
 "tgNotifyCpuDesc" = "Nhận thông báo nếu tỷ lệ sử dụng CPU vượt quá ngưỡng này (đơn vị: %)"
 "timeZone" = "Múi giờ"
 "timeZoneDesc" = "Các tác vụ được lên lịch chạy theo thời gian trong múi giờ này."
+"outboundTestUrl" = "URL kiểm tra outbound"
+"outboundTestUrlDesc" = "URL dùng để kiểm tra kết nối và độ trễ outbound. Nên dùng endpoint nhẹ trả về 204."
 "subSettings" = "Đăng ký"
 "subEnable" = "Bật dịch vụ"
 "subEnableDesc" = "Tính năng đăng ký với cấu hình riêng"

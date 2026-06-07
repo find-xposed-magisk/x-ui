@@ -30,6 +30,7 @@ func (a *OutboundController) initRouter(g *gin.RouterGroup) {
 	g.POST("/:id/resetTraffic", a.resetTraffic)
 	g.POST("/resetAllTraffics", a.resetAllTraffics)
 	g.POST("/onlines", a.onlines)
+	g.POST("/test", a.test)
 }
 
 func (a *OutboundController) getOutbounds(c *gin.Context) {
@@ -115,4 +116,14 @@ func (a *OutboundController) resetAllTraffics(c *gin.Context) {
 
 func (a *OutboundController) onlines(c *gin.Context) {
 	jsonObj(c, a.outboundService.GetOnlineOutbounds(), nil)
+}
+
+func (a *OutboundController) test(c *gin.Context) {
+	id, err := strconv.Atoi(c.PostForm("id"))
+	if err != nil {
+		jsonMsg(c, I18nWeb(c, "pages.outbounds.test"), err)
+		return
+	}
+	result, err := a.outboundService.TestOutbound(id)
+	jsonObj(c, result, err)
 }

@@ -12,6 +12,7 @@ class AllSetting {
         this.expireDiff = "";
         this.trafficDiff = "";
         this.remarkModel = "-ieo";
+        this.outboundTestUrl = "https://www.gstatic.com/generate_204";
         this.tgBotEnable = false;
         this.tgBotToken = "";
         this.tgBotChatId = "";

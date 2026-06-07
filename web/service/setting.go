@@ -33,6 +33,7 @@ var defaultValueMap = map[string]string{
 	"expireDiff":         "0",
 	"trafficDiff":        "0",
 	"remarkModel":        "-ieo",
+	"outboundTestUrl":    "https://www.gstatic.com/generate_204",
 	"timeLocation":       "Asia/Tehran",
 	"tgBotEnable":        "false",
 	"tgBotToken":         "",
@@ -310,6 +311,10 @@ func (s *SettingService) GetSessionMaxAge() (int, error) {
 
 func (s *SettingService) GetRemarkModel() (string, error) {
 	return s.getString("remarkModel")
+}
+
+func (s *SettingService) GetOutboundTestUrl() (string, error) {
+	return s.getString("outboundTestUrl")
 }
 
 func (s *SettingService) GetSecret() ([]byte, error) {
