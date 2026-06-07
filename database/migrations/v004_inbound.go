@@ -81,9 +81,11 @@ func migrationInboundRequirements(db *gorm.DB) error {
 			}
 		}
 	}
-	if saveErr := tx.Save(inbounds).Error; saveErr != nil {
-		err = saveErr
-		return err
+	if len(inbounds) > 0 {
+		if saveErr := tx.Save(inbounds).Error; saveErr != nil {
+			err = saveErr
+			return err
+		}
 	}
 
 	tx.Where("inbound_id = 0").Delete(xray.ClientTraffic{})

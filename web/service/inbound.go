@@ -1043,9 +1043,11 @@ func (s *InboundService) autoRenewClients(tx *gorm.DB) (bool, int64, error) {
 		}
 		inbounds[inbound_index].Settings = string(newSettings)
 	}
+	if len(inbounds) > 0 {
 	err = tx.Save(inbounds).Error
 	if err != nil {
 		return false, 0, err
+		}
 	}
 	err = tx.Save(traffics).Error
 	if err != nil {
