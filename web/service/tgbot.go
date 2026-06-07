@@ -408,9 +408,10 @@ func (t *Tgbot) UserLoginNotify(username string, ip string, time string, status 
 	}
 
 	msg := ""
-	if status == LoginSuccess {
+	switch status {
+	case LoginSuccess:
 		msg += t.I18nBot("tgbot.messages.loginSuccess")
-	} else if status == LoginFail {
+	case LoginFail:
 		msg += t.I18nBot("tgbot.messages.loginFailed")
 	}
 	msg += t.I18nBot("tgbot.messages.hostname", "Hostname=="+hostname)
