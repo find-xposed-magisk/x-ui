@@ -283,6 +283,23 @@ func (x *XrayAPI) RemoveUser(inboundTag string, email string) error {
 	return err
 }
 
+func (x *XrayAPI) GetUserOnlineIpList(email string) (map[string]int64, error) {
+	if x.StatsServiceClient == nil {
+		return nil, common.NewError("xray api is not initialized")
+	}
+	client := *x.StatsServiceClient
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	resp, err := client.GetStatsOnlineIpList(ctx, &statsService.GetStatsRequest{
+		Name: "user>>>" + email + ">>>online",
+	})
+	if err != nil {
+		return nil, err
+	}
+	return resp.GetIps(), nil
+}
+
 type OnlineUserInfo struct {
 	Email string           `json:"email"`
 	IPs   map[string]int64 `json:"ips"`

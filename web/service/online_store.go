@@ -200,6 +200,17 @@ func (s *InboundService) syncIpLimitStore(updates []IpLimitClientUpdate, removeE
 	applyIpLimitMemoryChanges(updates, removeEmails)
 }
 
+func blockIPsForPort(ips []string, port uint16) {
+	if len(ips) == 0 || ipLimitFw == nil || !ipLimitFw.Supported() {
+		return
+	}
+	for _, ip := range ips {
+		if err := ipLimitFw.Block(iplimit.BlockKey{IP: ip, Port: port}); err != nil {
+			logger.Debug("block ip failed:", err)
+		}
+	}
+}
+
 func isClientStatEnabled(inbound *model.Inbound, email string) bool {
 	for _, stat := range inbound.ClientStats {
 		if stat.Email == email {

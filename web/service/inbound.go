@@ -613,9 +613,11 @@ func (s *InboundService) DelInboundClient(inboundId int, clientId string) (bool,
 		}
 		if needApiDel && notDepleted {
 			s.xrayApi.Init(p.GetAPIAddr())
+			onlineIPs := s.collectClientOnlineIPs(email)
 			err1 := s.xrayApi.RemoveUser(oldInbound.Tag, email)
 			if err1 == nil {
 				logger.Debug("Client deleted by api:", email)
+				blockIPsForPort(onlineIPs, uint16(oldInbound.Port))
 				needRestart = false
 			} else {
 				if strings.Contains(err1.Error(), fmt.Sprintf("User %s not found.", email)) {
@@ -745,9 +747,14 @@ func (s *InboundService) UpdateInboundClient(data *model.Inbound, clientId strin
 	if len(oldEmail) > 0 {
 		s.xrayApi.Init(p.GetAPIAddr())
 		if oldClients[clientIndex].Enable {
+			var onlineIPs []string
+			if !clients[0].Enable {
+				onlineIPs = s.collectClientOnlineIPs(oldEmail)
+			}
 			err1 := s.xrayApi.RemoveUser(oldInbound.Tag, oldEmail)
 			if err1 == nil {
 				logger.Debug("Old client deleted by api:", oldEmail)
+				blockIPsForPort(onlineIPs, uint16(oldInbound.Port))
 			} else {
 				if strings.Contains(err1.Error(), fmt.Sprintf("User %s not found.", oldEmail)) {
 					logger.Debug("User is already deleted. Nothing to do more...")
@@ -1137,6 +1144,22 @@ func (s *InboundService) disableInvalidInbounds(tx *gorm.DB) (bool, int64, error
 	return needRestart, count, err
 }
 
+func (s *InboundService) collectClientOnlineIPs(email string) []string {
+	if ipLimitFw == nil || !ipLimitFw.Supported() {
+		return nil
+	}
+	ipMap, err := s.xrayApi.GetUserOnlineIpList(email)
+	if err != nil {
+		logger.Debug("get online ip list failed for ", email, ": ", err)
+		return nil
+	}
+	ips := make([]string, 0, len(ipMap))
+	for ip := range ipMap {
+		ips = append(ips, ip)
+	}
+	return ips
+}
+
 func (s *InboundService) disableInvalidClients(tx *gorm.DB) (bool, int64, error) {
 	now := time.Now().Unix() * 1000
 	needRestart := false
@@ -1144,11 +1167,12 @@ func (s *InboundService) disableInvalidClients(tx *gorm.DB) (bool, int64, error)
 	if p != nil {
 		var results []struct {
 			Tag   string
+			Port  int
 			Email string
 		}
 
 		err := tx.Table("inbounds").
-			Select("inbounds.tag, client_traffics.email").
+			Select("inbounds.tag, inbounds.port, client_traffics.email").
 			Joins("JOIN client_traffics ON inbounds.id = client_traffics.inbound_id").
 			Where("((client_traffics.total > 0 AND client_traffics.up + client_traffics.down >= client_traffics.total) OR (client_traffics.expiry_time > 0 AND client_traffics.expiry_time <= ?)) AND client_traffics.enable = ?", now, true).
 			Scan(&results).Error
@@ -1157,9 +1181,11 @@ func (s *InboundService) disableInvalidClients(tx *gorm.DB) (bool, int64, error)
 		}
 		s.xrayApi.Init(p.GetAPIAddr())
 		for _, result := range results {
+			onlineIPs := s.collectClientOnlineIPs(result.Email)
 			err1 := s.xrayApi.RemoveUser(result.Tag, result.Email)
 			if err1 == nil {
 				logger.Debug("Client disabled by api:", result.Email)
+				blockIPsForPort(onlineIPs, uint16(result.Port))
 			} else {
 				if strings.Contains(err1.Error(), fmt.Sprintf("User %s not found.", result.Email)) {
 					logger.Debug("User is already disabled. Nothing to do more...")
