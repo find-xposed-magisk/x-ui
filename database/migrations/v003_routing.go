@@ -205,6 +205,7 @@ func migrateLegacyApiConfig(cfg map[string]interface{}) bool {
 	}
 
 	api["listen"] = listenAddr
+	api["services"] = []string{"HandlerService", "LoggerService", "StatsService", "RoutingService"}
 	cfg["api"] = api
 	return true
 }

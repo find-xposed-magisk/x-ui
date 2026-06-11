@@ -16,6 +16,6 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates tzdata libcap nftables
 
 COPY --from=builder /app/build/ /app/
-RUN setcap 'cap_net_admin=+ep' /app/x-ui
+
 VOLUME [ "/etc/x-ui" ]
 CMD [ "./x-ui" ]
