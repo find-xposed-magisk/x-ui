@@ -170,7 +170,7 @@
                 <a-col :sx="24" :md="22">SUB: <a :href="[[ infoModal.subLink ]]" target="_blank">[[ infoModal.subLink ]]</a></a-col>
                 <a-col :sx="24" :md="2" style="text-align: right;">
                     <a-tooltip title='{{ i18n "copy" }}'>
-                        <button class="ant-btn ant-btn-primary" id="copy-sub-link" @click="copyToClipboard('copy-sub-link', infoModal.subLink)">
+                        <button class="ant-btn ant-btn-primary" @click="copyToClipboard(infoModal.subLink)">
                             <a-icon type="snippets"></a-icon>
                         </button>
                     </a-tooltip>
@@ -180,7 +180,7 @@
                 <a-col :sx="24" :md="22">JSON: <a :href="[[ infoModal.subJsonLink ]]" target="_blank">[[ infoModal.subJsonLink ]]</a></a-col>
                 <a-col :sx="24" :md="2" style="text-align: right;">
                     <a-tooltip title='{{ i18n "copy" }}'>
-                        <button class="ant-btn ant-btn-primary" id="copy-subJson-link" @click="copyToClipboard('copy-subJson-link', infoModal.subJsonLink)">
+                        <button class="ant-btn ant-btn-primary" @click="copyToClipboard(infoModal.subJsonLink)">
                             <a-icon type="snippets"></a-icon>
                         </button>
                     </a-tooltip>
@@ -193,7 +193,7 @@
                 <a-col :sx="24" :md="22"><a :href="[[ infoModal.tgLink ]]" target="_blank">@[[ infoModal.clientSettings.tgId ]]</a></a-col>
                 <a-col :sx="24" :md="2" style="text-align: right;">
                     <a-tooltip title='{{ i18n "copy" }}'>
-                        <button class="ant-btn ant-btn-primary" id="copy-tg-link" @click="copyToClipboard('copy-tg-link', '@' + infoModal.clientSettings.tgId)">
+                        <button class="ant-btn ant-btn-primary" @click="copyToClipboard('@' + infoModal.clientSettings.tgId)">
                             <a-icon type="snippets"></a-icon>
                         </button>
                     </a-tooltip>
@@ -206,7 +206,7 @@
                 <a-col :sx="24" :md="22"><a-tag color="blue">[[ link.remark ]]</a-tag><br />[[ link.link ]]</a-col>
                 <a-col :sx="24" :md="2" style="text-align: right;">
                     <a-tooltip title='{{ i18n "pages.inbounds.copyLink" }}'>
-                        <button class="ant-btn ant-btn-primary" :id="'copy-url-link-'+index" @click="copyToClipboard('copy-url-link-'+index, link.link)">
+                        <button class="ant-btn ant-btn-primary" @click="copyToClipboard(link.link)">
                             <a-icon type="snippets"></a-icon>
                         </button>
                     </a-tooltip>
@@ -221,7 +221,7 @@
                 <a-col :span="22"><a-tag color="blue">[[ link.remark ]]</a-tag><br />[[ link.link ]]</a-col>
                 <a-col :span="2" style="text-align: right;">
                     <a-tooltip title='{{ i18n "pages.inbounds.copyLink" }}'>
-                        <button class="ant-btn ant-btn-primary" :id="'copy-url-link-'+index" @click="copyToClipboard('copy-url-link-'+index, link.link)">
+                        <button class="ant-btn ant-btn-primary" @click="copyToClipboard(link.link)">
                             <a-icon type="snippets"></a-icon>
                         </button>
                     </a-tooltip>
@@ -329,8 +329,7 @@
                         <a-col :span="2" style="text-align: right;">
                             <a-tooltip title='{{ i18n "pages.inbounds.copyLink" }}'>
                                 <button class="ant-btn ant-btn-primary"
-                                    :id="'copy-url-link-'+index"
-                                    @click="copyToClipboard('copy-url-link-'+index, infoModal.links[index])">
+                                    @click="copyToClipboard(infoModal.links[index])">
                                     <a-icon type="snippets"></a-icon>
                                 </button>
                             </a-tooltip>
@@ -417,15 +416,12 @@
             },
         },
         methods: {
-            copyToClipboard(elementId,content) {
-                this.infoModal.clipboard = new ClipboardJS('#' + elementId, {
-                        text: () => content,
-                    });
-                this.infoModal.clipboard.on('success', () => { 
-                    app.$message.success('{{ i18n "copied" }}')
-                    this.infoModal.clipboard.destroy();
+            copyToClipboard(content) {
+                navigator.clipboard.writeText(content).then(() => {
+                    app.$message.success('{{ i18n "copied" }}');
                 });
             },
+
             statsColor(stats) {
                 return usageColor(stats.up + stats.down, app.trafficDiff, stats.total);
             },
