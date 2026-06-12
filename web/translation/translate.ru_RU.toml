@@ -537,6 +537,8 @@
 "timeZoneDesc" = "Запланированные задания выполняются в соответствии со временем в данном часовом поясе."
 "outboundTestUrl" = "URL для теста исходящих"
 "outboundTestUrlDesc" = "URL для проверки соединения и задержки исходящих. Рекомендуется лёгкий эндпоинт, возвращающий 204."
+"ipBlockAfterRemove" = "Block IPs after Client Removal"
+"ipBlockAfterRemoveDesc" = "Immediately block connected IPs when a client is removed, disabled, or depleted. Requires app restart to take effect."
 "subSettings" = "Подписка"
 "subEnable" = "Включить службу"
 "subEnableDesc" = "Функция подписки с отдельной конфигурацией"

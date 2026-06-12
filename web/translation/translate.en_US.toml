@@ -537,6 +537,8 @@
 "timeZoneDesc" = "Scheduled tasks will run based on this time zone."
 "outboundTestUrl" = "Outbound Test URL"
 "outboundTestUrlDesc" = "URL used to test outbound connectivity and latency. A lightweight endpoint that returns 204 is recommended."
+"ipBlockAfterRemove" = "Block IPs after Client Removal"
+"ipBlockAfterRemoveDesc" = "Immediately block connected IPs when a client is removed, disabled, or depleted. Requires app restart to take effect."
 "subSettings" = "Subscription"
 "subEnable" = "Enable Subscription Service"
 "subEnableDesc" = "Enables the subscription service."

@@ -38,6 +38,7 @@ class AllSetting {
         this.subJsonNoises = "";
         this.subJsonMux = "";
         this.subJsonRules = "";
+        this.ipBlockAfterRemove = false;
 
         this.timeLocation = "Asia/Tehran";
 

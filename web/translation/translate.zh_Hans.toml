@@ -537,6 +537,8 @@
 "timeZoneDesc" = "定时任务按照该时区的时间运行"
 "outboundTestUrl" = "出站测试网址"
 "outboundTestUrlDesc" = "用于测试出站连接和延迟的网址。建议使用返回 204 的轻量级端点。"
+"ipBlockAfterRemove" = "Block IPs after Client Removal"
+"ipBlockAfterRemoveDesc" = "Immediately block connected IPs when a client is removed, disabled, or depleted. Requires app restart to take effect."
 "subSettings" = "订阅"
 "subEnable" = "启用服务"
 "subEnableDesc" = "具有单独配置的订阅功能"

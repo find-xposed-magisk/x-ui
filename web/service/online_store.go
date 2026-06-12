@@ -12,12 +12,13 @@ import (
 )
 
 var (
-	onlineUsersMu  sync.RWMutex
-	onlineUsers    []xray.OnlineUserInfo
-	ipLimitMu      sync.RWMutex
-	ipLimitClients map[string]*IpLimitClientState
-	blockedIPs     map[blockedKey]int64
-	ipLimitFw      iplimit.Firewall
+	onlineUsersMu      sync.RWMutex
+	onlineUsers        []xray.OnlineUserInfo
+	ipLimitMu          sync.RWMutex
+	ipLimitClients     map[string]*IpLimitClientState
+	blockedIPs         map[blockedKey]int64
+	ipLimitFw          iplimit.Firewall
+	ipBlockAfterRemove bool
 )
 
 type blockedKey struct {
@@ -73,8 +74,9 @@ func ClearOnlineUsersCache() {
 	SetOnlineUsersCache(nil)
 }
 
-func InitOnlineStore(fw iplimit.Firewall) error {
+func InitOnlineStore(fw iplimit.Firewall, blockAfterRemove bool) error {
 	ipLimitFw = fw
+	ipBlockAfterRemove = blockAfterRemove
 	ipLimitClients = make(map[string]*IpLimitClientState)
 	blockedIPs = make(map[blockedKey]int64)
 
@@ -201,7 +203,7 @@ func (s *InboundService) syncIpLimitStore(updates []IpLimitClientUpdate, removeE
 }
 
 func blockIPsForPort(ips []string, port uint16) {
-	if len(ips) == 0 || ipLimitFw == nil || !ipLimitFw.Supported() {
+	if len(ips) == 0 || !ipBlockAfterRemove || ipLimitFw == nil || !ipLimitFw.Supported() {
 		return
 	}
 	for _, ip := range ips {

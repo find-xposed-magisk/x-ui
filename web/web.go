@@ -325,7 +325,8 @@ func (s *Server) Start() (err error) {
 		}
 	}
 
-	if err := service.InitOnlineStore(s.ipLimitFw); err != nil {
+	ipBlockAfterRemove, _ := s.settingService.GetIpBlockAfterRemove()
+	if err := service.InitOnlineStore(s.ipLimitFw, ipBlockAfterRemove); err != nil {
 		logger.Warning("init online store failed:", err)
 	}
 

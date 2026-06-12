@@ -53,7 +53,8 @@ type AllSetting struct {
 	SubJsonFragment  string `json:"subJsonFragment" form:"subJsonFragment"`
 	SubJsonNoises    string `json:"subJsonNoises" form:"subJsonNoises"`
 	SubJsonMux       string `json:"subJsonMux" form:"subJsonMux"`
-	SubJsonRules     string `json:"subJsonRules" form:"subJsonRules"`
+	SubJsonRules       string `json:"subJsonRules" form:"subJsonRules"`
+	IpBlockAfterRemove bool   `json:"ipBlockAfterRemove" form:"ipBlockAfterRemove"`
 }
 
 func (s *AllSetting) CheckValid() error {

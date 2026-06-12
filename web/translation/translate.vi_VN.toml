@@ -537,6 +537,8 @@
 "timeZoneDesc" = "Các tác vụ được lên lịch chạy theo thời gian trong múi giờ này."
 "outboundTestUrl" = "URL kiểm tra outbound"
 "outboundTestUrlDesc" = "URL dùng để kiểm tra kết nối và độ trễ outbound. Nên dùng endpoint nhẹ trả về 204."
+"ipBlockAfterRemove" = "Block IPs after Client Removal"
+"ipBlockAfterRemoveDesc" = "Immediately block connected IPs when a client is removed, disabled, or depleted. Requires app restart to take effect."
 "subSettings" = "Đăng ký"
 "subEnable" = "Bật dịch vụ"
 "subEnableDesc" = "Tính năng đăng ký với cấu hình riêng"

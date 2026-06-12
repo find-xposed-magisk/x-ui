@@ -61,6 +61,7 @@ var defaultValueMap = map[string]string{
 	"subJsonMux":         "",
 	"subJsonRules":       "",
 	"warp":               "",
+	"ipBlockAfterRemove": "false",
 }
 
 type SettingService struct{}
@@ -375,6 +376,14 @@ func (s *SettingService) GetSubEnable() (bool, error) {
 	return s.getBool("subEnable")
 }
 
+func (s *SettingService) GetIpBlockAfterRemove() (bool, error) {
+	return s.getBool("ipBlockAfterRemove")
+}
+
+func (s *SettingService) SetIpBlockAfterRemove(value bool) error {
+	return s.setBool("ipBlockAfterRemove", value)
+}
+
 func (s *SettingService) GetSubListen() (string, error) {
 	return s.getString("subListen")
 }
@@ -493,7 +502,8 @@ func (s *SettingService) GetDefaultSettings(host string) (interface{}, error) {
 		"subEnable":   func() (interface{}, error) { return s.GetSubEnable() },
 		"subURI":      func() (interface{}, error) { return s.GetSubURI() },
 		"subJsonURI":  func() (interface{}, error) { return s.GetSubJsonURI() },
-		"remarkModel": func() (interface{}, error) { return s.GetRemarkModel() },
+		"remarkModel":        func() (interface{}, error) { return s.GetRemarkModel() },
+		"ipBlockAfterRemove": func() (interface{}, error) { return s.GetIpBlockAfterRemove() },
 	}
 
 	result := make(map[string]interface{})
