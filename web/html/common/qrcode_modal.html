@@ -1,28 +1,72 @@
 {{define "qrcodeModal"}}
+<style>
+#qrcode-modal .ant-modal {
+    max-width: 95vw;
+}
+#qrcode-modal .ant-collapse {
+    background: transparent;
+}
+#qrcode-modal .ant-collapse-content-box {
+    padding: 10px 14px 14px;
+}
+.qr-panel-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+}
+.qr-panel-canvas {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.qr-panel-canvas canvas {
+    max-width: 100%;
+    display: block;
+    margin: 0 auto;
+    border-radius: 0px;
+    cursor: pointer;
+}
+</style>
 <a-modal id="qrcode-modal" v-model="qrModal.visible" :title="qrModal.title"
          :closable="true"
          :footer="null"
-         width="300px" :class="themeSwitcher.currentTheme">
-    <a-tag color="green" style="margin-bottom: 10px;display: block;text-align: center;" >{{ i18n "pages.inbounds.clickOnQRcode" }}</a-tag>
-    <template v-if="app.subSettings.enable && qrModal.subId">
-        <a-divider>{{ i18n "pages.settings.subSettings"}}</a-divider>
-        <canvas @click="copyToClipboard('qrCode-sub',genSubLink(qrModal.client.subId))"
-            id="qrCode-sub"
-            style="width: 100%; height: 100%; display: flex; border-radius: 1rem;">
-        </canvas>
-        <a-divider>{{ i18n "pages.settings.subSettings"}} Json</a-divider>
-        <canvas @click="copyToClipboard('qrCode-subJson',genSubJsonLink(qrModal.client.subId))"
-            id="qrCode-subJson"
-            style="width: 100%; height: 100%; display: flex; border-radius: 1rem;">
-        </canvas>
-    </template>
-    <a-divider>{{ i18n "pages.inbounds.client" }}</a-divider>
-    <template v-for="(row, index) in qrModal.qrcodes">
-        <a-tag color="blue" style="margin: 10px 0; display: block; text-align: center;">[[ row.remark ]]</a-tag>
-        <canvas @click="copyToClipboard('qrCode-'+index, row.link)"
-            :id="'qrCode-'+index"
-            style="width: 100%; height: 100%; display: flex; border-radius: 1rem;"></canvas>
-    </template>
+         width="560px" :class="themeSwitcher.currentTheme">
+    <a-collapse v-model="qrModal.activeKey">
+        <template v-if="app.subSettings.enable && qrModal.subId">
+            <a-collapse-panel key="sub" :force-render="true">
+                <span slot="header">{{ i18n "pages.settings.subSettings" }}</span>
+                <div class="qr-panel-actions">
+                    <a-button size="small" icon="copy" @click.stop="copyToClipboard(genSubLink(qrModal.subId))"></a-button>
+                    <a-button size="small" icon="download" @click.stop="downloadQrCode('qrCode-sub', 'sub')"></a-button>
+                </div>
+                <div class="qr-panel-canvas">
+                    <canvas id="qrCode-sub" @click="copyToClipboard(genSubLink(qrModal.subId))"></canvas>
+                </div>
+            </a-collapse-panel>
+            <a-collapse-panel key="subJson" :force-render="true">
+                <span slot="header">{{ i18n "pages.settings.subSettings" }} JSON</span>
+                <div class="qr-panel-actions">
+                    <a-button size="small" icon="copy" @click.stop="copyToClipboard(genSubJsonLink(qrModal.subId))"></a-button>
+                    <a-button size="small" icon="download" @click.stop="downloadQrCode('qrCode-subJson', 'sub-json')"></a-button>
+                </div>
+                <div class="qr-panel-canvas">
+                    <canvas id="qrCode-subJson" @click="copyToClipboard(genSubJsonLink(qrModal.subId))"></canvas>
+                </div>
+            </a-collapse-panel>
+        </template>
+        <a-collapse-panel v-for="(row, index) in qrModal.qrcodes" :key="'qr-' + index" :force-render="true">
+            <span slot="header">[[ row.remark ]]</span>
+            <div class="qr-panel-actions">
+                <a-button size="small" icon="copy" @click.stop="copyToClipboard(row.link)"></a-button>
+                <a-button v-if="row.conf" size="small" icon="download" @click.stop="downloadConfFile(row.link, row.conf)"></a-button>
+                <a-button v-else size="small" icon="download" @click.stop="downloadQrCode('qrCode-' + index, row.remark)"></a-button>
+            </div>
+            <div class="qr-panel-canvas">
+                <canvas @click="copyToClipboard(row.link)" :id="'qrCode-' + index"></canvas>
+            </div>
+        </a-collapse-panel>
+    </a-collapse>
 </a-modal>
 
 <script>
@@ -35,6 +79,7 @@
         clipboard: null,
         visible: false,
         subId: '',
+        activeKey: [],
         show: function (title = '', dbInbound, client) {
             this.title = title;
             this.dbInbound = dbInbound;
@@ -42,11 +87,13 @@
             this.client = client;
             this.subId = '';
             this.qrcodes = [];
+            this.activeKey = [];
             if (this.inbound.protocol == Protocols.WIREGUARD){
                 this.inbound.genInboundLinks(dbInbound.remark).split('\r\n').forEach((l,index) =>{
                     this.qrcodes.push({
                         remark: "Peer " + (index+1),
-                        link: l
+                        link: l,
+                        conf: (dbInbound.remark || dbInbound.tag) + '_peer' + (index+1) + '.conf',
                     });
                 });
             } else {
@@ -56,6 +103,9 @@
                         link: l.link
                     });
                 });
+            }
+            if (this.qrcodes.length > 0) {
+                this.activeKey = [];
             }
             this.visible = true;
         },
@@ -71,20 +121,37 @@
             qrModal: qrModal,
         },
         methods: {
-            copyToClipboard(elementId, content) {
-                this.qrModal.clipboard = new ClipboardJS('#' + elementId, {
-                    text: () => content,
-                });
-                this.qrModal.clipboard.on('success', () => {
-                    app.$message.success('{{ i18n "copied" }}')
-                    this.qrModal.clipboard.destroy();
+            copyToClipboard(content) {
+                navigator.clipboard.writeText(content).then(() => {
+                    app.$message.success('{{ i18n "copied" }}');
                 });
             },
+            downloadConfFile(content, filename) {
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = url;
+                link.click();
+                URL.revokeObjectURL(url);
+            },
+            downloadQrCode(elementId, name) {
+                const canvas = document.querySelector('#' + elementId);
+                if (!canvas) return;
+                const link = document.createElement('a');
+                link.download = (name || 'qrcode') + '.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            },
             setQrCode(elementId, content) {
+                const canvas = document.querySelector('#' + elementId);
+                if (!canvas) return;
                 new QRious({
-                    element: document.querySelector('#' + elementId),
-                    size: 260,
+                    element: canvas,
+                    size: 510,
                     value: content,
+                    padding: 0,
+                    
                 });
             },
             genSubLink(subID) {
