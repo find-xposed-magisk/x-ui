@@ -25,6 +25,7 @@ type XrayService struct {
 	outboundService    OutboundService
 	routingRuleService RoutingRuleService
 	settingService     SettingService
+	xraySettingService XraySettingService
 	xrayAPI            xray.XrayAPI
 }
 
@@ -92,6 +93,11 @@ func (s *XrayService) GetXrayConfig() (*xray.Config, error) {
 
 	xrayConfig := &xray.Config{}
 	err = json.Unmarshal([]byte(templateConfig), xrayConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.xraySettingService.ensureLocalLogFile(xrayConfig, false)
 	if err != nil {
 		return nil, err
 	}

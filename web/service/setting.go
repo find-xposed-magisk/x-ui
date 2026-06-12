@@ -493,15 +493,15 @@ func (s *SettingService) GetDefaultXrayConfig() (interface{}, error) {
 func (s *SettingService) GetDefaultSettings(host string) (interface{}, error) {
 	type settingFunc func() (interface{}, error)
 	settings := map[string]settingFunc{
-		"expireDiff":  func() (interface{}, error) { return s.GetExpireDiff() },
-		"trafficDiff": func() (interface{}, error) { return s.GetTrafficDiff() },
-		"pageSize":    func() (interface{}, error) { return s.GetPageSize() },
-		"defaultCert": func() (interface{}, error) { return s.GetCertFile() },
-		"defaultKey":  func() (interface{}, error) { return s.GetKeyFile() },
-		"tgBotEnable": func() (interface{}, error) { return s.GetTgbotenabled() },
-		"subEnable":   func() (interface{}, error) { return s.GetSubEnable() },
-		"subURI":      func() (interface{}, error) { return s.GetSubURI() },
-		"subJsonURI":  func() (interface{}, error) { return s.GetSubJsonURI() },
+		"expireDiff":         func() (interface{}, error) { return s.GetExpireDiff() },
+		"trafficDiff":        func() (interface{}, error) { return s.GetTrafficDiff() },
+		"pageSize":           func() (interface{}, error) { return s.GetPageSize() },
+		"defaultCert":        func() (interface{}, error) { return s.GetCertFile() },
+		"defaultKey":         func() (interface{}, error) { return s.GetKeyFile() },
+		"tgBotEnable":        func() (interface{}, error) { return s.GetTgbotenabled() },
+		"subEnable":          func() (interface{}, error) { return s.GetSubEnable() },
+		"subURI":             func() (interface{}, error) { return s.GetSubURI() },
+		"subJsonURI":         func() (interface{}, error) { return s.GetSubJsonURI() },
 		"remarkModel":        func() (interface{}, error) { return s.GetRemarkModel() },
 		"ipBlockAfterRemove": func() (interface{}, error) { return s.GetIpBlockAfterRemove() },
 	}
