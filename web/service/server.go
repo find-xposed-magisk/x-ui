@@ -246,7 +246,7 @@ func (s *ServerService) GetXrayVersions() ([]string, error) {
 	}
 	var versions []string
 	for _, release := range releases {
-		if release.TagName >= "v26.1.23" {
+		if release.TagName >= "v26.4.25" {
 			versions = append(versions, release.TagName)
 		}
 	}
