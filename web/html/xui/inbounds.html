@@ -86,9 +86,9 @@
                                     </a-popover>
                                     <a-popover title='{{ i18n "pages.inbounds.onlineIps" }} ' :overlay-class-name="themeSwitcher.currentTheme">
                                         <template slot="content">
-                                            <p v-for="ipData in onlineClients.map(user => user.ips).flat()">[[ Object.keys(ipData)[0] ]]</p>
+                                            <p v-for="ip in onlineClients.map(user => Object.keys(user.ips)).flat()">[[ ip ]]</p>
                                         </template>
-                                        <a-tag color="blue">[[ onlineClients.map(user => user.ips).flat().length ]]</a-tag>
+                                        <a-tag color="blue">[[ onlineClients.map(user => Object.keys(user.ips)).flat().length ]]</a-tag>
                                     </a-popover>
                                 </template>
                                 <a-tag v-else>0</a-tag>

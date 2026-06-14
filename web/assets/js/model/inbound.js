@@ -2362,7 +2362,7 @@ class Inbound extends XrayCommonClass {
             case Protocols.TROJAN:
                 return this.genTrojanLink(address, port, extProxy, remark, client.password);
             case Protocols.HYSTERIA:
-                return this.genHysteriaLink(address, port, remark, extProxy, client.auth.length > 0 ? client.auth : this.stream.hysteria.auth);
+                return this.genHysteriaLink(address, port, extProxy, remark, client.auth.length > 0 ? client.auth : this.stream.hysteria.auth);
             default: return '';
         }
     }

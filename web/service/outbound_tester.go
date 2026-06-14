@@ -56,7 +56,7 @@ func (s *OutboundService) testSingleOutbound(outbound *model.Outbound, testURL s
 
 	outboundConfig := outbound.GenXrayOutboundConfig()
 	outboundConfig.Tag = "proxy"
-	outboundJson, err := json.Marshal(outboundConfig)
+	outboundJson, err := json.MarshalIndent(outboundConfig, "    ", "  ")
 	if err != nil {
 		result.Message = err.Error()
 		return result

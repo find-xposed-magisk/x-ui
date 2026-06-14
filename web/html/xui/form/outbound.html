@@ -1007,7 +1007,7 @@
 <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
 <!-- tls settings -->
 <template v-if="outbound.canEnableTls()">
-        <a-form-item label='{{ i18n "security" }}'>
+        <a-form-item label='{{ i18n "security" }}' v-if="outbound.protocol !== Protocols.Hysteria">
             <a-radio-group v-model="outbound.stream.security" button-style="solid">
                 <a-radio-button value="none">{{ i18n "none" }}</a-radio-button>
                 <a-radio-button value="tls">TLS</a-radio-button>

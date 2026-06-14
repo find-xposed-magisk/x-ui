@@ -405,6 +405,7 @@
                     case Protocols.Trojan:
                         serverObj = o.settings?.servers;
                         break;
+                    case Protocols.Hysteria:
                     case Protocols.DNS:
                         return [o.settings?.address + ':' + o.settings?.port];
                     case Protocols.Wireguard:

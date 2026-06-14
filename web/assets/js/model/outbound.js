@@ -1124,7 +1124,11 @@ class Outbound extends CommonClass {
     set protocol(protocol) {
         this._protocol = protocol;
         this.settings = Outbound.Settings.getSettings(protocol);
-        this.stream = new StreamSettings(protocol === Protocols.Hysteria ? 'hysteria' : 'tcp');
+        this.stream = new StreamSettings();
+        if (protocol === Protocols.Hysteria) {
+            this.stream.network = 'hysteria';
+            this.stream.security = 'tls';
+        }
     }
 
     canEnableTls() {
