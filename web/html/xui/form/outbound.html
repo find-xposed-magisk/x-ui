@@ -1,7 +1,7 @@
 {{define "form/outbound"}}
 <a-tabs :animated="false" class="outbound-detail-tabs" :active-key="outModal.activeKey" style="padding: 1rem;"
     @change="(activeKey) => outModal.onTabChange(activeKey)">
-<a-tab-pane key="ob-settings" tab="{{ i18n "pages.xray.outbound.settings" }}">
+<a-tab-pane key="ob-settings" tab="{{ i18n "basic" }}">
 <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
         <a-form-item label='{{ i18n "protocol" }}'>
             <a-select v-model="outbound.protocol" :dropdown-class-name="themeSwitcher.currentTheme">
@@ -93,7 +93,7 @@
 
 <!-- dns settings -->
 <template v-if="outbound.protocol === Protocols.DNS">
-    <a-form-item label='{{ i18n "pages.inbounds.network" }}'>
+    <a-form-item label='{{ i18n "network" }}'>
         <a-select v-model="outbound.settings.network" :dropdown-class-name="themeSwitcher.currentTheme">
             <a-select-option v-for="s in ['udp','tcp']" :value="s">[[ s ]]</a-select-option>
         </a-select>
@@ -116,7 +116,7 @@
                 <template slot="title">
                     <span>{{ i18n "pages.xray.rules.useComma" }}</span>
                 </template>
-                {{ i18n "pages.xray.outbound.address" }} <a-icon type="question-circle"></a-icon>
+                {{ i18n "address" }} <a-icon type="question-circle"></a-icon>
             </a-tooltip>
         </template>
         <a-input v-model.trim="outbound.settings.address"></a-input>
@@ -143,7 +143,7 @@
             <a-select-option v-for="wds in ['', ...WireguardDomainStrategy]" :value="wds">[[ wds ]]</a-select-option>
         </a-select>
     </a-form-item>
-    <a-form-item label='{{ i18n "pages.inbounds.protocols.mtu" }}'>
+    <a-form-item label='{{ i18n "mtu" }}'>
         <a-input-number v-model.number="outbound.settings.mtu"></a-input-number>
     </a-form-item>
     <a-form-item label='{{ i18n "pages.inbounds.protocols.workers" }}'>
@@ -200,7 +200,7 @@
 
 <!-- Address + Port -->
 <template v-if="outbound.hasAddressPort()">
-        <a-form-item label='{{ i18n "pages.inbounds.address" }}'>
+        <a-form-item label='{{ i18n "address" }}'>
             <a-input v-model.trim="outbound.settings.address"></a-input>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.port" }}'>
@@ -225,7 +225,7 @@
 
     <!-- vless settings -->
     <template v-if="outbound.protocol === Protocols.VLESS">
-        <a-form-item label='{{ i18n "pages.inbounds.protocols.encryption" }}'>
+        <a-form-item label='{{ i18n "encryption" }}'>
             <a-input v-model.trim="outbound.settings.encryption"></a-input>
         </a-form-item>
         <a-form-item>
@@ -376,7 +376,7 @@
     
     <!-- kcp -->
     <template v-if="outbound.stream.network === 'kcp'">
-        <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.mtu" }}'>
+        <a-form-item label='{{ i18n "mtu" }}'>
             <a-input-number v-model.number="outbound.stream.kcp.mtu"></a-input-number>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.tti" }}'>
@@ -1026,7 +1026,7 @@
                     <a-select-option v-for="key in UTLS_FINGERPRINT" :value="key">[[ key ]]</a-select-option>
                 </a-select>
             </a-form-item>
-            <a-form-item label='{{ i18n "pages.inbounds.stream.tls.alpn" }}'>
+            <a-form-item label='{{ i18n "alpn" }}'>
                 <a-select
                     mode="multiple"
                    

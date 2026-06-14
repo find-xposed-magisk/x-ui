@@ -11,7 +11,7 @@
         <a-col :xs="24" :md="12">
             <table>
                 <tr><td>{{ i18n "protocol" }}</td><td><a-tag color="purple">[[ dbInbound.protocol ]]</a-tag></td></tr>
-                <tr><td>{{ i18n "pages.inbounds.address" }}</td><td>
+                <tr><td>{{ i18n "address" }}</td><td>
                     <a-tooltip :title="[[ dbInbound.address ]]">
                         <a-tag class="info-large-tag">[[ dbInbound.address ]]</a-tag>
                     </a-tooltip>
@@ -92,7 +92,7 @@
                 </a-tooltip>
             </td>
         </tr><tr>
-            <td>{{ i18n "pages.inbounds.network" }}</td>
+            <td>{{ i18n "network" }}</td>
             <td><a-tag color="blue">[[ inbound.settings.network ]]</a-tag></td>
         </tr>
     </table>
@@ -232,7 +232,7 @@
             <tr>
                 <th>{{ i18n "pages.inbounds.targetAddress" }}</th>
                 <th>{{ i18n "pages.inbounds.destinationPort" }}</th>
-                <th>{{ i18n "pages.inbounds.network" }}</th>
+                <th>{{ i18n "network" }}</th>
                 <th>FollowRedirect</th>
             </tr><tr>
                 <td><a-tag color="blue">[[ inbound.settings.address ]]</a-tag></td>
@@ -244,7 +244,7 @@
         <table v-if="dbInbound.isSocks" style="margin-bottom: 10px; width: 100%;">
             <tr>
                 <th>{{ i18n "password" }} Auth</th>
-                <th>{{ i18n "pages.inbounds.enable" }} udp</th>
+                <th>{{ i18n "enable" }} udp</th>
                 <th>IP</th>
             </tr>
             <tr>

@@ -265,7 +265,7 @@
                                         </a-menu-item>
                                         <a-menu-item v-if="isMobile">
                                             <a-switch size="small" v-model="dbInbound.enable" @change="switchEnable(dbInbound.id,dbInbound.enable)"></a-switch>
-                                            {{ i18n "pages.inbounds.enable" }}
+                                            {{ i18n "enable" }}
                                         </a-menu-item>
                                     </a-menu>
                                 </a-dropdown>
@@ -349,7 +349,7 @@
                                     <template slot="content">
                                         <table cellpadding="2">
                                             <tr>
-                                                <td>{{ i18n "pages.inbounds.protocol" }}</td>
+                                                <td>{{ i18n "protocol" }}</td>
                                                 <td>
                                                     <a-tag style="margin:0;" color="purple">[[ dbInbound.protocol ]]</a-tag>
                                                     <template v-if="dbInbound.isVMess || dbInbound.isVLess || dbInbound.isTrojan || dbInbound.isSS">
@@ -475,12 +475,12 @@
         width: 30,
         scopedSlots: { customRender: 'action' },
     }, {
-        title: '{{ i18n "pages.inbounds.enable" }}',
+        title: '{{ i18n "enable" }}',
         align: 'center',
         width: 30,
         scopedSlots: { customRender: 'enable' },
     }, {
-        title: '{{ i18n "pages.inbounds.remark" }}',
+        title: '{{ i18n "remark" }}',
         align: 'center',
         width: 50,
         dataIndex: "remark",
@@ -490,7 +490,7 @@
         dataIndex: "port",
         width: 40,
     }, {
-        title: '{{ i18n "pages.inbounds.protocol" }}',
+        title: '{{ i18n "protocol" }}',
         align: 'left',
         width: 70,
         scopedSlots: { customRender: 'protocol' },
@@ -523,7 +523,7 @@
         width: 25,
         scopedSlots: { customRender: 'action' },
     }, {
-        title: '{{ i18n "pages.inbounds.remark" }}',
+        title: '{{ i18n "remark" }}',
         align: 'left',
         width: 70,
         dataIndex: "remark",
@@ -541,7 +541,7 @@
                 scopedSlots: { customRender: 'actions' },
             },
             {
-                title: '{{ i18n "pages.inbounds.enable" }}',
+                title: '{{ i18n "enable" }}',
                 width: 20,
                 scopedSlots: { customRender: 'enable' },
             },
@@ -677,20 +677,19 @@
                 if (!msg.success) {
                     return;
                 }
-                with(msg.obj){
-                    this.expireDiff = expireDiff * 86400000;
-                    this.trafficDiff = trafficDiff * 1073741824;
-                    this.defaultCert = defaultCert;
-                    this.defaultKey = defaultKey;
-                    this.tgBotEnable = tgBotEnable;
-                    this.subSettings = {
-                        enable : subEnable,
-                        subURI: subURI,
-                        subJsonURI: subJsonURI
-                    };
-                    this.pageSize = pageSize;
-                    this.remarkModel = remarkModel;
-                }
+                const { expireDiff, trafficDiff, defaultCert, defaultKey, tgBotEnable, subEnable, subURI, subJsonURI, pageSize, remarkModel } = msg.obj;
+                this.expireDiff = expireDiff * 86400000;
+                this.trafficDiff = trafficDiff * 1073741824;
+                this.defaultCert = defaultCert;
+                this.defaultKey = defaultKey;
+                this.tgBotEnable = tgBotEnable;
+                this.subSettings = {
+                    enable : subEnable,
+                    subURI: subURI,
+                    subJsonURI: subJsonURI
+                };
+                this.pageSize = pageSize;
+                this.remarkModel = remarkModel;
             },
             setInbounds(dbInbounds) {
                 this.inbounds.splice(0);

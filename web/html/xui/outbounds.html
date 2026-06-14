@@ -268,7 +268,7 @@
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td>{{ i18n "pages.xray.outbound.address" }}</td>
+                                                <td>{{ i18n "address" }}</td>
                                                 <td>
                                                     <p style="margin: 0;" v-for="addr in findOutboundAddress(row.toOutbound().toJson())">[[ addr ]]</p>
                                                 </td>
@@ -302,7 +302,7 @@
         { title: '{{ i18n "online" }}', align: 'center', width: 60, scopedSlots: { customRender: 'online' } },
         { title: '{{ i18n "pages.xray.outbound.tag"}}', align: 'left', width: 100, scopedSlots: { customRender: 'tag' } },
         { title: '{{ i18n "protocol"}}', align: 'center', width: 120, scopedSlots: { customRender: 'protocol' } },
-        { title: '{{ i18n "pages.xray.outbound.address"}}', width: 150, align: 'center', scopedSlots: { customRender: 'address' } },
+        { title: '{{ i18n "address"}}', width: 150, align: 'center', scopedSlots: { customRender: 'address' } },
         { title: '{{ i18n "pages.inbounds.traffic" }}', align: 'center', width: 140, scopedSlots: { customRender: 'traffic' } },
         { title: '{{ i18n "pages.outbounds.test" }}', align: 'center', width: 120, scopedSlots: { customRender: 'test' } },
     ];

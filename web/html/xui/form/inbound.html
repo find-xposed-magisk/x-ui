@@ -1,6 +1,6 @@
 {{define "form/inbound"}}
 <a-tabs class="inbound-detail-tabs" :animated="false" style="padding: 1rem;">
-    <a-tab-pane key="in-basic" tab="{{ i18n "pages.inbounds.info" }}">
+    <a-tab-pane key="in-basic" tab='{{ i18n "basic" }}'>
         <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
             <a-form-item label='{{ i18n "enable" }}'>
                 <a-switch v-model="dbInbound.enable"></a-switch>
@@ -63,7 +63,7 @@
         {{template "form/sniffing"}}
     </a-tab-pane>
 
-    <a-tab-pane key="in-protocol" tab="{{ i18n "protocol" }}">
+    <a-tab-pane key="in-protocol" tab='{{ i18n "protocol" }}'>
         <template v-if="inbound.protocol === Protocols.VMESS">
             {{template "form/vmess"}}
         </template>
@@ -105,15 +105,15 @@
         </template>
     </a-tab-pane>
 
-    <a-tab-pane v-if="inbound.canEnableStream()" key="in-transmission" tab="{{ i18n "pages.inbounds.transportConfig" }}">
+    <a-tab-pane v-if="inbound.canEnableStream()" key="in-transmission" tab='{{ i18n "pages.inbounds.transportConfig" }}'>
         {{template "form/streamSettings"}}
     </a-tab-pane>
 
-    <a-tab-pane v-if="inbound.canEnableTls()" key="in-security" tab="{{ i18n "security" }}">
+    <a-tab-pane v-if="inbound.canEnableTls()" key="in-security" tab='{{ i18n "security" }}'>
         {{template "form/tlsSettings"}}
     </a-tab-pane>
 
-    <a-tab-pane v-if="inbound.canEnableStream()" key="in-external-proxy" tab="{{ i18n "pages.inbounds.stream.common.externalProxy" }}">
+    <a-tab-pane v-if="inbound.canEnableStream()" key="in-external-proxy" tab='{{ i18n "pages.inbounds.stream.common.externalProxy" }}'>
         {{template "form/externalProxy" }}
     </a-tab-pane>
 </a-tabs>

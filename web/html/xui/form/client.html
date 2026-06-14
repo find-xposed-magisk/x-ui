@@ -1,6 +1,6 @@
 {{define "form/client"}}
 <a-form layout="horizontal" v-if="client" :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
-    <a-form-item label='{{ i18n "pages.inbounds.enable" }}'>
+    <a-form-item label='{{ i18n "enable" }}'>
         <a-switch v-model="client.enable"></a-switch>
     </a-form-item>
     <a-form-item>

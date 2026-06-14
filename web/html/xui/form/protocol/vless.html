@@ -10,7 +10,7 @@
     <a-form-item label='{{ i18n "pages.inbounds.protocols.decryption" }}'>
       <a-input v-model.trim="inbound.settings.decryption"></a-input>
     </a-form-item>
-    <a-form-item label='{{ i18n "pages.inbounds.protocols.encryption" }}'>
+    <a-form-item label='{{ i18n "encryption" }}'>
       <a-input v-model="inbound.settings.encryption"></a-input>
     </a-form-item>
     <a-form-item label=" ">
@@ -39,13 +39,13 @@
         <a-form-item label='{{ i18n "pages.inbounds.stream.tls.sni" }}'>
             <a-input v-model="fallback.name"></a-input>
         </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.protocols.alpn" }}'>
+        <a-form-item label='{{ i18n "alpn" }}'>
             <a-input v-model="fallback.alpn"></a-input>
         </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.protocols.path" }}'>
+        <a-form-item label='{{ i18n "path" }}'>
             <a-input v-model="fallback.path"></a-input>
         </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.protocols.dest" }}'>
+        <a-form-item label='{{ i18n "dest" }}'>
             <a-input v-model="fallback.dest"></a-input>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.protocols.xVer" }}'>

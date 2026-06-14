@@ -33,12 +33,12 @@
             </template>
             <a-input v-model.trim="ruleModal.rule.sourcePort"></a-input>
         </a-form-item>
-        <a-form-item label='{{ i18n "pages.xray.rule.network" }}'>
+        <a-form-item label='{{ i18n "network" }}'>
             <a-select v-model="ruleModal.rule.network" :dropdown-class-name="themeSwitcher.currentTheme">
                 <a-select-option v-for="x in ['','tcp','udp','tcp,udp']" :value="x">[[ x ]]</a-select-option>
             </a-select>
         </a-form-item>
-        <a-form-item label='{{ i18n "pages.xray.rule.protocol" }}'>
+        <a-form-item label='{{ i18n "protocol" }}'>
             <a-select v-model="ruleModal.rule.protocol" mode="multiple" :dropdown-class-name="themeSwitcher.currentTheme">
                 <a-select-option v-for="x in ['http','tls','bittorrent']" :value="x">[[ x ]]</a-select-option>
             </a-select>

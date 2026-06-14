@@ -22,7 +22,7 @@
         <a-input v-model.trim="inbound.stream.tcp.request.method"></a-input>
     </a-form-item>
     <a-form-item>
-        <template slot="label">{{ i18n "pages.inbounds.stream.tcp.path" }}
+        <template slot="label">{{ i18n "path" }}
             <a-button size="small" @click="inbound.stream.tcp.request.addPath('/')">+</a-button>
         </template>
         <template v-for="(path, index) in inbound.stream.tcp.request.path">
@@ -54,7 +54,7 @@
     <a-form-item label='{{ i18n "pages.inbounds.stream.tcp.version" }}'>
         <a-input v-model.trim="inbound.stream.tcp.response.version"></a-input>
     </a-form-item>
-    <a-form-item label='{{ i18n "pages.inbounds.stream.tcp.status" }}'>
+    <a-form-item label='{{ i18n "status" }}'>
         <a-input v-model.trim="inbound.stream.tcp.response.status"></a-input>
     </a-form-item>
     <a-form-item label='{{ i18n "pages.inbounds.stream.tcp.statusDescription" }}'>

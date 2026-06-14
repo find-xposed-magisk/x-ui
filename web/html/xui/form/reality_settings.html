@@ -12,7 +12,7 @@
             <a-select-option v-for="key in UTLS_FINGERPRINT" :value="key">[[ key ]]</a-select-option>
         </a-select>
     </a-form-item>
-    <a-form-item label='{{ i18n "pages.inbounds.stream.reality.dest" }}'>
+    <a-form-item label='{{ i18n "dest" }}'>
         <a-input v-model.trim="inbound.stream.reality.dest"></a-input>
     </a-form-item>
     <a-form-item label='{{ i18n "pages.inbounds.stream.tls.sni" }}'>
@@ -28,10 +28,10 @@
                 <a-icon @click="inbound.stream.reality.shortIds = RandomUtil.randomShortId().join(',')" type="sync">
                 </a-icon>
         </template>
-        <a-input v-model.trim="inbound.stream.reality.shortIds" style="width:250px"></a-input>
+        <a-input v-model.trim="inbound.stream.reality.shortIds"></a-input>
     </a-form-item>
     <a-form-item label='{{ i18n "pages.inbounds.stream.reality.spiderX" }}'>
-        <a-input v-model.trim="inbound.stream.reality.settings.spiderX" style="width:250px"></a-input>
+        <a-input v-model.trim="inbound.stream.reality.settings.spiderX"></a-input>
     </a-form-item>
     <a-form-item label='{{ i18n "pages.inbounds.stream.reality.privateKey" }}'>
         <a-input v-model.trim="inbound.stream.reality.privateKey"></a-input>

@@ -25,8 +25,8 @@
             <a-tooltip title="{{ i18n "pages.inbounds.port" }}">
                 <a-input-number v-model.number="row.port" style="width: 15%;" min="1" max="65535"></a-input-number>
             </a-tooltip>
-            <a-tooltip title="{{ i18n "pages.inbounds.remark" }}">
-                <a-input v-model.trim="row.remark" style="width: 30%;" placeholder='{{ i18n "pages.inbounds.remark" }}'></a-input>
+            <a-tooltip title="{{ i18n "remark" }}">
+                <a-input v-model.trim="row.remark" style="width: 30%;" placeholder='{{ i18n "remark" }}'></a-input>
             </a-tooltip>
         </a-input-group>
         <a-input-group compact v-if="row.forceTls === 'tls' || (row.forceTls === 'same' && inbound.stream.isTls)" style="margin-bottom: 10px;">
@@ -41,7 +41,7 @@
             <a-tooltip title='{{ i18n "pages.inbounds.stream.tls.sniDesc" }}'>
                 <a-input v-model.trim="row.sni" style="width: 35%; border-radius: 0;" placeholder='{{ i18n "pages.inbounds.stream.tls.sni" }}'></a-input>
             </a-tooltip>
-            <a-tooltip title='{{ i18n "pages.inbounds.stream.tls.alpn" }}'>
+            <a-tooltip title='{{ i18n "alpn" }}'>
                 <a-select mode="multiple" :dropdown-class-name="themeSwitcher.currentTheme"
                     v-model="row.alpn" style="width: 30%;">
                     <a-select-option v-for="alpn in ALPN_OPTION" :value="alpn">[[ alpn ]]</a-select-option>
