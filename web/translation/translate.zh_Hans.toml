@@ -316,6 +316,12 @@
 "publicKey" = "公钥"
 "mldsa65Seed" = "mldsa65 种子"
 "mldsa65Verify" = "mldsa65 验证"
+"limitFallback" = "回落限速"
+"limitFallbackUpload" = "回落上传限速"
+"limitFallbackDownload" = "回落下载限速"
+"afterBytes" = "起始字节"
+"bytesPerSec" = "每秒字节"
+"burstBytesPerSec" = "突发每秒字节"
 
 [pages.inbounds.stream.sockopt]
 "sockopt" = "Sockopt"

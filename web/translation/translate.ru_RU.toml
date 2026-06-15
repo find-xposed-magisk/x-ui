@@ -316,6 +316,12 @@
 "publicKey" = "Открытый ключ"
 "mldsa65Seed" = "mldsa65 Seed"
 "mldsa65Verify" = "mldsa65 Verify"
+"limitFallback" = "Ограничение Fallback"
+"limitFallbackUpload" = "Ограничение Fallback (отдача)"
+"limitFallbackDownload" = "Ограничение Fallback (приём)"
+"afterBytes" = "После байт"
+"bytesPerSec" = "Байт в секунду"
+"burstBytesPerSec" = "Пиковых байт в секунду"
 
 [pages.inbounds.stream.sockopt]
 "sockopt" = "Sockopt"

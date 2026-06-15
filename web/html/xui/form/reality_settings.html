@@ -57,5 +57,29 @@
             <a-button danger @click="clearMldsa65">Clear</a-button>
         </a-space>
     </a-form-item>
+    <a-collapse style="margin-bottom: 14px;">
+        <a-collapse-panel header='{{ i18n "pages.inbounds.stream.reality.limitFallback" }}'>
+            <a-divider style="margin:0 0 14px 0;">{{ i18n "pages.inbounds.stream.reality.limitFallbackUpload" }}</a-divider>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.reality.afterBytes" }}'>
+                <a-input-number v-model.number="inbound.stream.reality.limitFallbackUpload.afterBytes" :min="0" style="width: 100%;"></a-input-number>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.reality.bytesPerSec" }}'>
+                <a-input-number v-model.number="inbound.stream.reality.limitFallbackUpload.bytesPerSec" :min="0" style="width: 100%;"></a-input-number>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.reality.burstBytesPerSec" }}'>
+                <a-input-number v-model.number="inbound.stream.reality.limitFallbackUpload.burstBytesPerSec" :min="0" style="width: 100%;"></a-input-number>
+            </a-form-item>
+            <a-divider style="margin:0 0 14px 0;">{{ i18n "pages.inbounds.stream.reality.limitFallbackDownload" }}</a-divider>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.reality.afterBytes" }}'>
+                <a-input-number v-model.number="inbound.stream.reality.limitFallbackDownload.afterBytes" :min="0" style="width: 100%;"></a-input-number>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.reality.bytesPerSec" }}'>
+                <a-input-number v-model.number="inbound.stream.reality.limitFallbackDownload.bytesPerSec" :min="0" style="width: 100%;"></a-input-number>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.reality.burstBytesPerSec" }}'>
+                <a-input-number v-model.number="inbound.stream.reality.limitFallbackDownload.burstBytesPerSec" :min="0" style="width: 100%;"></a-input-number>
+            </a-form-item>
+        </a-collapse-panel>
+    </a-collapse>
 </template>
 {{end}}

@@ -316,6 +316,12 @@
 "publicKey" = "کلید عمومی"
 "mldsa65Seed" = "Seed mldsa65"
 "mldsa65Verify" = "Verify mldsa65"
+"limitFallback" = "محدودیت فالبک"
+"limitFallbackUpload" = "محدودیت فالبک آپلود"
+"limitFallbackDownload" = "محدودیت فالبک دانلود"
+"afterBytes" = "پس از (بایت)"
+"bytesPerSec" = "بایت بر ثانیه"
+"burstBytesPerSec" = "بایت انفجاری بر ثانیه"
 
 [pages.inbounds.stream.sockopt]
 "sockopt" = "Sockopt"

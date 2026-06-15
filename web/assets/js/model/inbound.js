@@ -1002,7 +1002,9 @@ class RealityStreamSettings extends XrayCommonClass {
         maxTimediff = 0,
         shortIds = RandomUtil.randomShortId(),
         mldsa65Seed = '',
-        settings = new RealityStreamSettings.Settings()
+        settings = new RealityStreamSettings.Settings(),
+        limitFallbackUpload = new RealityStreamSettings.LimitFallback(),
+        limitFallbackDownload = new RealityStreamSettings.LimitFallback()
     ) {
         super();
         this.show = show;
@@ -1016,6 +1018,8 @@ class RealityStreamSettings extends XrayCommonClass {
         this.shortIds = shortIds instanceof Array ? shortIds.join(",") : shortIds;
         this.mldsa65Seed = mldsa65Seed;
         this.settings = settings;
+        this.limitFallbackUpload = limitFallbackUpload;
+        this.limitFallbackDownload = limitFallbackDownload;
     }
 
     static fromJson(json = {}) {
@@ -1041,6 +1045,8 @@ class RealityStreamSettings extends XrayCommonClass {
             json.shortIds,
             json.mldsa65Seed,
             settings,
+            RealityStreamSettings.LimitFallback.fromJson(json.limitFallbackUpload),
+            RealityStreamSettings.LimitFallback.fromJson(json.limitFallbackDownload),
         );
     }
 
@@ -1057,9 +1063,45 @@ class RealityStreamSettings extends XrayCommonClass {
             shortIds: this.shortIds.split(","),
             mldsa65Seed: this.mldsa65Seed,
             settings: this.settings,
+            limitFallbackUpload: this.limitFallbackUpload && !this.limitFallbackUpload.isEmpty() ? this.limitFallbackUpload.toJson() : undefined,
+            limitFallbackDownload: this.limitFallbackDownload && !this.limitFallbackDownload.isEmpty() ? this.limitFallbackDownload.toJson() : undefined,
         };
     }
 }
+
+RealityStreamSettings.LimitFallback = class extends XrayCommonClass {
+    constructor(
+        afterBytes = 0,
+        bytesPerSec = 0,
+        burstBytesPerSec = 0
+    ) {
+        super();
+        this.afterBytes = afterBytes;
+        this.bytesPerSec = bytesPerSec;
+        this.burstBytesPerSec = burstBytesPerSec;
+    }
+
+    isEmpty() {
+        return !this.afterBytes && !this.bytesPerSec && !this.burstBytesPerSec;
+    }
+
+    static fromJson(json = {}) {
+        if (ObjectUtil.isEmpty(json)) return new RealityStreamSettings.LimitFallback();
+        return new RealityStreamSettings.LimitFallback(
+            json.afterBytes,
+            json.bytesPerSec,
+            json.burstBytesPerSec,
+        );
+    }
+
+    toJson() {
+        return {
+            afterBytes: this.afterBytes,
+            bytesPerSec: this.bytesPerSec,
+            burstBytesPerSec: this.burstBytesPerSec,
+        };
+    }
+};
 
 RealityStreamSettings.Settings = class extends XrayCommonClass {
     constructor(

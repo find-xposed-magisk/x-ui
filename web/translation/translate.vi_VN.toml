@@ -316,6 +316,12 @@
 "publicKey" = "Public Key"
 "mldsa65Seed" = "mldsa65 Seed"
 "mldsa65Verify" = "mldsa65 Verify"
+"limitFallback" = "Giới hạn Fallback"
+"limitFallbackUpload" = "Giới hạn Fallback tải lên"
+"limitFallbackDownload" = "Giới hạn Fallback tải xuống"
+"afterBytes" = "Sau số byte"
+"bytesPerSec" = "Byte mỗi giây"
+"burstBytesPerSec" = "Byte bùng phát mỗi giây"
 
 [pages.inbounds.stream.sockopt]
 "sockopt" = "Sockopt"
