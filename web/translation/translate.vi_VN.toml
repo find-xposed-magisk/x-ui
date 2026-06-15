@@ -693,6 +693,14 @@
 "userLevel" = "Mức Người Dùng"
 "userLevelDesc" = "Tất cả các kết nối được thực hiện thông qua inbound này sẽ sử dụng mức người dùng này. Giá trị mặc định là 0"
 
+[pages.xray.metrics]
+"title" = "Số liệu"
+"desc" = "Cung cấp thống kê lõi để Prometheus/Grafana thu thập."
+"enableDesc" = "Bật điểm cuối số liệu."
+"listenDesc" = "Địa chỉ:cổng của điểm cuối số liệu (ví dụ 127.0.0.1:11111)."
+"tag" = "Thẻ Outbound"
+"tagDesc" = "Thẻ outbound duy nhất cho điểm cuối số liệu."
+
 [pages.xray.dns]
 "enable" = "Kích hoạt DNS"
 "enableDesc" = "Kích hoạt máy chủ DNS tích hợp"

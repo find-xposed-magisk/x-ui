@@ -693,6 +693,14 @@
 "userLevel" = "用户级别"
 "userLevelDesc" = "通过此入站的所有连接都将使用此用户级别。默认值为 0"
 
+[pages.xray.metrics]
+"title" = "指标"
+"desc" = "提供核心统计信息，供 Prometheus/Grafana 抓取。"
+"enableDesc" = "启用指标端点。"
+"listenDesc" = "指标端点的 地址:端口（例如 127.0.0.1:11111）。"
+"tag" = "出站标签"
+"tagDesc" = "指标端点的唯一出站标签。"
+
 [pages.xray.dns]
 "enable" = "启用 DNS"
 "enableDesc" = "启用内置 DNS 服务器"

@@ -693,6 +693,14 @@
 "userLevel" = "User Level"
 "userLevelDesc" = "All connections made through this inbound will use this user level. Default is 0"
 
+[pages.xray.metrics]
+"title" = "Metrics"
+"desc" = "Exposes core statistics for Prometheus/Grafana scraping."
+"enableDesc" = "Enables the metrics endpoint."
+"listenDesc" = "Address:port for the metrics endpoint (e.g. 127.0.0.1:11111)."
+"tag" = "Outbound Tag"
+"tagDesc" = "Unique outbound tag for the metrics endpoint."
+
 [pages.xray.dns]
 "enable" = "Enable DNS"
 "enableDesc" = "Enables built-in DNS server."
