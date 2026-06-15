@@ -713,6 +713,9 @@
 "domains" = "دامنه‌ها"
 "expectIPs" = "آی‌پی‌های مورد انتظار"
 "skipFallback" = "نادیده گرفتن Fallback"
+"hosts" = "هاست‌ها"
+"hostsDesc" = "نگاشت دامنه به IP ثابت یا دامنهٔ دیگر (با کاما جدا کنید)"
+"addHost" = "افزودن هاست"
 
 [pages.xray.fakedns]
 "add" = "افزودن دی‌ان‌اس جعلی"

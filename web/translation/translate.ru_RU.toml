@@ -713,6 +713,9 @@
 "domains" = "Домены"
 "expectIPs" = "Ожидаемые IP"
 "skipFallback" = "Пропустить Fallback"
+"hosts" = "Хосты"
+"hostsDesc" = "Сопоставление домена со статическими IP или другим доменом (через запятую)."
+"addHost" = "Добавить хост"
 
 [pages.xray.fakedns]
 "add" = "Добавить поддельный DNS"

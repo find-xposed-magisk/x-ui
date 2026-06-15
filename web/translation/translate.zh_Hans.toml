@@ -713,6 +713,9 @@
 "domains" = "域"
 "expectIPs" = "预期 IP"
 "skipFallback" = "跳过 Fallback"
+"hosts" = "Hosts"
+"hostsDesc" = "将域名映射到静态 IP 或另一个域名（用逗号分隔）。"
+"addHost" = "添加 Host"
 
 [pages.xray.fakedns]
 "add" = "添加假 DNS"

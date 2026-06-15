@@ -713,6 +713,9 @@
 "domains" = "Tên miền"
 "expectIPs" = "Các IP Dự Kiến"
 "skipFallback" = "Bỏ qua Fallback"
+"hosts" = "Hosts"
+"hostsDesc" = "Ánh xạ tên miền tới IP tĩnh hoặc tên miền khác (phân tách bằng dấu phẩy)."
+"addHost" = "Thêm Host"
 
 [pages.xray.fakedns]
 "add" = "Thêm DNS giả"

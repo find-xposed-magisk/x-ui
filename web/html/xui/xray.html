@@ -364,6 +364,18 @@
                                         <span v-if="typeof dns == 'object'">[[ dns.expectIPs.join(",") ]]</span>
                                     </template>
                                 </a-table>
+                                <a-divider>{{ i18n "pages.xray.dns.hosts" }}</a-divider>
+                                <a-row :xs="24" :sm="24" :lg="12">
+                                    <a-alert type="info" style="text-align: center; margin-bottom: 10px;">
+                                        <template slot="message">{{ i18n "pages.xray.dns.hostsDesc" }}</template>
+                                    </a-alert>
+                                </a-row>
+                                <a-button type="primary" icon="plus" @click="addDnsHost()" style="margin-bottom: 10px;">{{ i18n "pages.xray.dns.addHost" }}</a-button>
+                                <a-input-group compact v-for="(host, index) in dnsHostsArray" :key="index" style="margin-bottom: 8px; display: flex; max-width: 500px;">
+                                    <a-input style="width: 45%;" v-model.trim="host.domain" @change="applyDnsHosts" placeholder="domain:example.com"></a-input>
+                                    <a-input style="width: 45%; border-radius: 0;" v-model.trim="host.value" @change="applyDnsHosts" placeholder="1.1.1.1, 2.2.2.2"></a-input>
+                                    <a-button type="danger" icon="minus" @click="deleteDnsHost(index)" style="width: 10%;"></a-button>
+                                </a-input-group>
                                 <a-divider>Fake DNS</a-divider>
                                 <a-button type="primary" icon="plus" @click="addFakedns()" style="margin-bottom: 10px;">{{ i18n "pages.xray.fakedns.add" }}</a-button>
                                 <a-table :columns="fakednsColumns" bordered v-if="fakeDns && fakeDns.length>0"
@@ -506,6 +518,7 @@
             outboundTags: [],
             outboundReverseTags: [],
             loadedOutbounds: [],
+            dnsHostsArray: [],
             saveBtnDisable: true,
             restartResult: '',
             showAlert: false,
@@ -621,6 +634,7 @@
                     xs = JSON.stringify(result.xraySetting, null, 2);
                     this.oldXraySetting = xs;
                     this.xraySetting = xs;
+                    this.dnsHostsArray = this.parseDnsHosts(result.xraySetting ? result.xraySetting.dns : null);
                     this.inboundTags = result.inboundTags;
                     this.clientReverseTags = result.clientReverseTags;
                     this.outboundTags = result.outboundTags || [];
@@ -895,6 +909,38 @@
                 newDnsServers.splice(index,1);
                 this.dnsServers = newDnsServers;
             },
+            parseDnsHosts(dns) {
+                if (!dns || !dns.hosts) return [];
+                return Object.entries(dns.hosts).map(([domain, value]) => ({
+                    domain: domain,
+                    value: Array.isArray(value) ? value.join(", ") : value,
+                }));
+            },
+            addDnsHost() {
+                this.dnsHostsArray.push({ domain: '', value: '' });
+            },
+            deleteDnsHost(index) {
+                this.dnsHostsArray.splice(index, 1);
+                this.applyDnsHosts();
+            },
+            applyDnsHosts() {
+                if (!this.enableDNS) return;
+                newTemplateSettings = this.templateSettings;
+                const hosts = {};
+                this.dnsHostsArray.forEach(h => {
+                    const domain = (h.domain || '').trim();
+                    if (!domain) return;
+                    const values = (h.value || '').split(",").map(s => s.trim()).filter(s => s.length > 0);
+                    if (values.length === 0) return;
+                    hosts[domain] = values.length === 1 ? values[0] : values;
+                });
+                if (Object.keys(hosts).length > 0) {
+                    newTemplateSettings.dns.hosts = hosts;
+                } else {
+                    delete newTemplateSettings.dns.hosts;
+                }
+                this.templateSettings = newTemplateSettings;
+            },
             addFakedns() {
                 fakednsModal.show({
                     title: '{{ i18n "pages.xray.fakedns.add" }}',
@@ -1168,11 +1214,12 @@
                     newTemplateSettings = this.templateSettings;
                     if (newValue) {
                         newTemplateSettings.dns = { servers: [], queryStrategy: "UseIP", tag: "dns_inbound" };
-                        newTemplateSettings.fakedns = null; 
+                        newTemplateSettings.fakedns = null;
                     } else {
                         delete newTemplateSettings.dns;
                         delete newTemplateSettings.fakedns;
                     }
+                    this.dnsHostsArray = [];
                     this.templateSettings = newTemplateSettings;
                 }
             },

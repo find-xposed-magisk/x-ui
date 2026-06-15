@@ -713,6 +713,9 @@
 "domains" = "Domains"
 "expectIPs" = "Expect IPs"
 "skipFallback" = "Skip Fallback"
+"hosts" = "Hosts"
+"hostsDesc" = "Map a domain to static IPs or another domain (comma-separated)."
+"addHost" = "Add Host"
 
 [pages.xray.fakedns]
 "add" = "Add Fake DNS"
