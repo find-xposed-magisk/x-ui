@@ -681,19 +681,23 @@ class SockoptStreamSettings extends CommonClass {
     constructor(
         dialerProxy = "",
         tcpFastOpen = false,
+        tcpNoDelay = false,
         tcpKeepAliveInterval = 0,
         tcpMptcp = false,
         penetrate = false,
         addressPortStrategy = Address_Port_Strategy.NONE,
+        happyEyeballs = new SockoptStreamSettings.HappyEyeballs(),
         trustedXForwardedFor = [],
     ) {
         super();
         this.dialerProxy = dialerProxy;
         this.tcpFastOpen = tcpFastOpen;
+        this.tcpNoDelay = tcpNoDelay;
         this.tcpKeepAliveInterval = tcpKeepAliveInterval;
         this.tcpMptcp = tcpMptcp;
         this.penetrate = penetrate;
         this.addressPortStrategy = addressPortStrategy;
+        this.happyEyeballs = happyEyeballs;
         this.trustedXForwardedFor = trustedXForwardedFor;
     }
 
@@ -702,10 +706,12 @@ class SockoptStreamSettings extends CommonClass {
         return new SockoptStreamSettings(
             json.dialerProxy,
             json.tcpFastOpen,
+            json.tcpNoDelay,
             json.tcpKeepAliveInterval,
             json.tcpMptcp,
             json.penetrate,
             json.addressPortStrategy,
+            SockoptStreamSettings.HappyEyeballs.fromJson(json.happyEyeballs),
             json.trustedXForwardedFor || []
         );
     }
@@ -714,10 +720,12 @@ class SockoptStreamSettings extends CommonClass {
         const result = {
             dialerProxy: this.dialerProxy,
             tcpFastOpen: this.tcpFastOpen,
+            tcpNoDelay: this.tcpNoDelay,
             tcpKeepAliveInterval: this.tcpKeepAliveInterval,
             tcpMptcp: this.tcpMptcp,
             penetrate: this.penetrate,
-            addressPortStrategy: this.addressPortStrategy
+            addressPortStrategy: this.addressPortStrategy,
+            happyEyeballs: this.happyEyeballs && this.happyEyeballs.enabled ? this.happyEyeballs.toJson() : undefined,
         };
         if (this.trustedXForwardedFor && this.trustedXForwardedFor.length > 0) {
             result.trustedXForwardedFor = this.trustedXForwardedFor;
@@ -725,6 +733,43 @@ class SockoptStreamSettings extends CommonClass {
         return result;
     }
 }
+
+SockoptStreamSettings.HappyEyeballs = class extends CommonClass {
+    constructor(
+        enabled = false,
+        prioritizeIPv6 = false,
+        interleave = 1,
+        tryDelayMs = 250,
+        maxConcurrentTry = 4,
+    ) {
+        super();
+        this.enabled = enabled;
+        this.prioritizeIPv6 = prioritizeIPv6;
+        this.interleave = interleave;
+        this.tryDelayMs = tryDelayMs;
+        this.maxConcurrentTry = maxConcurrentTry;
+    }
+
+    static fromJson(json = {}) {
+        if (!json || Object.keys(json).length === 0) return new SockoptStreamSettings.HappyEyeballs();
+        return new SockoptStreamSettings.HappyEyeballs(
+            true,
+            json.prioritizeIPv6,
+            json.interleave,
+            json.tryDelayMs,
+            json.maxConcurrentTry,
+        );
+    }
+
+    toJson() {
+        return {
+            prioritizeIPv6: this.prioritizeIPv6,
+            interleave: this.interleave,
+            tryDelayMs: this.tryDelayMs,
+            maxConcurrentTry: this.maxConcurrentTry,
+        };
+    }
+};
 
 class UdpMask extends CommonClass {
     constructor(type = 'salamander', settings = {}) {
