@@ -438,6 +438,9 @@
 "nonIPQueries" = "Truy vấn không phải IP"
 "blockTypes" = "Loại chặn"
 
+[pages.xray.outbound.loopback]
+"inboundTag" = "Thẻ Inbound"
+
 [pages.xray.outbound.socks]
 "version" = "Phiên bản"
 

@@ -438,6 +438,9 @@
 "nonIPQueries" = "非 IP 查询"
 "blockTypes" = "阻止类型"
 
+[pages.xray.outbound.loopback]
+"inboundTag" = "入站标签"
+
 [pages.xray.outbound.socks]
 "version" = "版本"
 

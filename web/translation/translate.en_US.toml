@@ -438,6 +438,9 @@
 "nonIPQueries" = "non-IP queries"
 "blockTypes" = "Block Types"
 
+[pages.xray.outbound.loopback]
+"inboundTag" = "Inbound Tag"
+
 [pages.xray.outbound.socks]
 "version" = "Version"
 

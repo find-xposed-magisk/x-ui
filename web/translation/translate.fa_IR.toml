@@ -438,6 +438,9 @@
 "nonIPQueries" = "کوئری‌های غیر IP"
 "blockTypes" = "نوع‌های مسدودشده"
 
+[pages.xray.outbound.loopback]
+"inboundTag" = "برچسب ورودی"
+
 [pages.xray.outbound.socks]
 "version" = "نسخه"
 

@@ -91,6 +91,13 @@
     </a-form-item>
 </template>
 
+<!-- loopback settings -->
+<template v-if="outbound.protocol === Protocols.Loopback">
+    <a-form-item label='{{ i18n "pages.xray.outbound.loopback.inboundTag" }}'>
+        <a-input v-model.trim="outbound.settings.inboundTag"></a-input>
+    </a-form-item>
+</template>
+
 <!-- dns settings -->
 <template v-if="outbound.protocol === Protocols.DNS">
     <a-form-item label='{{ i18n "network" }}'>
