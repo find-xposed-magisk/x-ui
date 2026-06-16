@@ -41,22 +41,22 @@ echo "arch: $(arch)"
 install_dependencies() {
     case "${release}" in
     ubuntu | debian | armbian)
-        apt-get update && apt-get install -y -q wget curl tar tzdata cron
+        apt-get update && apt-get install -y -q wget curl tar tzdata cron ca-certificates nftables
         ;;
     centos | almalinux | rocky | ol)
-        yum -y update && yum install -y -q wget curl tar tzdata cronie
+        yum -y update && yum install -y -q wget curl tar tzdata cronie ca-certificates nftables
         ;;
     fedora | amzn)
-        dnf -y update && dnf install -y -q wget curl tar tzdata cronie
+        dnf -y update && dnf install -y -q wget curl tar tzdata cronie ca-certificates nftables
         ;;
     arch | manjaro | parch)
-        pacman -Syu && pacman -Syu --noconfirm wget curl tar tzdata cronie
+        pacman -Syu && pacman -Syu --noconfirm wget curl tar tzdata cronie ca-certificates nftables
         ;;
     opensuse-tumbleweed)
-        zypper refresh && zypper -q install -y wget curl tar timezone cron
+        zypper refresh && zypper -q install -y wget curl tar timezone cron ca-certificates nftables
         ;;
     *)
-        apt-get update && apt install -y -q wget curl tar tzdata cron
+        apt-get update && apt install -y -q wget curl tar tzdata cron ca-certificates nftables
         ;;
     esac
 }

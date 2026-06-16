@@ -8,9 +8,11 @@ import (
 
 type APIController struct {
 	BaseController
-	inboundController *InboundController
-	serverController  *ServerController
-	Tgbot             service.Tgbot
+	inboundController     *InboundController
+	outboundController    *OutboundController
+	routingRuleController *RoutingRuleController
+	serverController      *ServerController
+	Tgbot                 service.Tgbot
 }
 
 func NewAPIController(g *gin.RouterGroup, s *ServerController) *APIController {
@@ -26,6 +28,8 @@ func (a *APIController) initRouter(g *gin.RouterGroup) {
 	api.Use(a.checkLogin)
 
 	a.inboundApi(api)
+	a.outboundApi(api)
+	a.routingApi(api)
 	a.serverApi(api)
 }
 
@@ -53,11 +57,59 @@ func (a *APIController) inboundApi(api *gin.RouterGroup) {
 		{"POST", "/resetAllTraffics", a.inboundController.resetAllTraffics},
 		{"POST", "/resetAllClientTraffics/:id", a.inboundController.resetAllClientTraffics},
 		{"POST", "/delDepletedClients/:id", a.inboundController.delDepletedClients},
+		{"POST", "/import", a.inboundController.importInbound},
 		{"POST", "/onlines", a.inboundController.onlines},
 	}
 
 	for _, route := range inboundRoutes {
 		inboundsApi.Handle(route.Method, route.Path, route.Handler)
+	}
+}
+
+func (a *APIController) outboundApi(api *gin.RouterGroup) {
+	outboundsApi := api.Group("/outbounds")
+
+	a.outboundController = &OutboundController{}
+
+	outboundRoutes := []struct {
+		Method  string
+		Path    string
+		Handler gin.HandlerFunc
+	}{
+		{"GET", "/", a.outboundController.getOutbounds},
+		{"POST", "/add", a.outboundController.addOutbound},
+		{"POST", "/del/:id", a.outboundController.delOutbound},
+		{"POST", "/update/:id", a.outboundController.updateOutbound},
+		{"POST", "/setFirst/:id", a.outboundController.setFirstOutbound},
+		{"POST", "/:id/resetTraffic", a.outboundController.resetTraffic},
+		{"POST", "/resetAllTraffics", a.outboundController.resetAllTraffics},
+		{"POST", "/onlines", a.outboundController.onlines},
+		{"POST", "/test", a.outboundController.test},
+	}
+
+	for _, route := range outboundRoutes {
+		outboundsApi.Handle(route.Method, route.Path, route.Handler)
+	}
+}
+
+func (a *APIController) routingApi(api *gin.RouterGroup) {
+	routingApi := api.Group("/routing")
+
+	a.routingRuleController = &RoutingRuleController{}
+
+	routingRoutes := []struct {
+		Method  string
+		Path    string
+		Handler gin.HandlerFunc
+	}{
+		{"GET", "/", a.routingRuleController.getRules},
+		{"GET", "/refs", a.routingRuleController.getRefs},
+		{"POST", "/save", a.routingRuleController.saveRules},
+		{"POST", "/replaceBalancerTag", a.routingRuleController.replaceBalancerTag},
+	}
+
+	for _, route := range routingRoutes {
+		routingApi.Handle(route.Method, route.Path, route.Handler)
 	}
 }
 

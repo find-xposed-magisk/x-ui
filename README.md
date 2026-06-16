@@ -31,7 +31,7 @@
 | Subscription Service (link + info)     | :heavy_check_mark: |
 | Search in Deep                         | :heavy_check_mark: |
 | Dark/Light Theme                       | :heavy_check_mark: |
-
+| IP Limit per client (Linux Only)       | :heavy_check_mark:* |
   
 ## Install & Upgrade to Latest Version
 
@@ -54,7 +54,20 @@ VERSION=1.8.0 && bash <(curl -Ls "https://raw.githubusercontent.com/alireza0/x-u
   
 ### Usage
 
-1. To download the latest version of the compressed package directly to your server, run the following command:
+1. Make sure the required packages are installed (the install script does this automatically, so this step is only needed for manual installs):
+
+```sh
+# Debian/Ubuntu
+apt-get update && apt-get install -y wget curl tar tzdata cron ca-certificates nftables
+# CentOS/Alma/Rocky/Fedora
+# yum install -y wget curl tar tzdata cronie ca-certificates nftables
+# Arch/Manjaro
+# pacman -Syu --noconfirm wget curl tar tzdata cronie ca-certificates nftables
+```
+
+> `ca-certificates` is needed for HTTPS/TLS connections, and `nftables` is required by the per-client IP limit feature.
+
+2. To download the latest version of the compressed package directly to your server, run the following command:
 
 ```sh
 ARCH=$(uname -m)
@@ -69,7 +82,7 @@ esac
 wget https://github.com/alireza0/x-ui/releases/latest/download/x-ui-linux-${XUI_ARCH}.tar.gz
 ```
 
-2. Once the compressed package is downloaded, execute the following commands to install or upgrade x-ui:
+3. Once the compressed package is downloaded, execute the following commands to install or upgrade x-ui:
 
 ```sh
 ARCH=$(uname -m)
@@ -176,6 +189,7 @@ docker build -t x-ui .
 - An interactive JSON interface for Xray template configuration
 - An advanced interface for inbound and outbound configuration
 - Clients’ traffic cap and expiration date based on first use
+- Per-client IP limit that blocks connections beyond an allowed number of concurrent IPs (powered by nftables)
 - Displays online clients, traffic statistics, and system status monitoring
 - Deep database search
 - Displays depleted clients with expired dates or exceeded traffic cap
@@ -220,14 +234,39 @@ docker build -t x-ui .
 | `POST` | `"/resetAllTraffics"`              | Reset traffics of all inbounds            |
 | `POST` | `"/resetAllClientTraffics/:id"`    | Reset inbound clients traffics (-1: all)  |
 | `POST` | `"/delDepletedClients/:id"`        | Delete inbound depleted clients (-1: all) |
+| `POST` | `"/import"`                        | Import an inbound from exported data      |
 | `POST` | `"/onlines"`                       | Get online users ( list of emails )       |
 
 
-\*- The field `clientId` should be filled by:
-
+- The field `clientId` should be filled by:
   - `client.id` for VMess and VLESS
   - `client.password` for Trojan
   - `client.email` for Shadowsocks
+
+
+- `/xui/API/outbounds` base for following actions:
+
+| Method | Path                               | Action                                    |
+| :----: | ---------------------------------  | ----------------------------------------- |
+| `GET`  | `"/"`                              | Get all outbounds                         |
+| `POST` | `"/add"`                           | Add outbound                              |
+| `POST` | `"/del/:id"`                       | Delete outbound                           |
+| `POST` | `"/update/:id"`                    | Update outbound                           |
+| `POST` | `"/setFirst/:id"`                  | Move outbound to the top of the list      |
+| `POST` | `"/:id/resetTraffic"`              | Reset outbound's traffic                  |
+| `POST` | `"/resetAllTraffics"`             | Reset traffics of all outbounds           |
+| `POST` | `"/onlines"`                       | Get online outbound tags                  |
+| `POST` | `"/test"`                          | Test outbound connectivity                |
+
+
+- `/xui/API/routing` base for following actions:
+
+| Method | Path                               | Action                                    |
+| :----: | ---------------------------------  | ----------------------------------------- |
+| `GET`  | `"/"`                              | Get all routing rules                     |
+| `GET`  | `"/refs"`                          | Get routing references (tags & metadata)  |
+| `POST` | `"/save"`                          | Save routing rules                        |
+| `POST` | `"/replaceBalancerTag"`            | Replace a balancer tag in routing rules   |
 
 
 - `/xui/API/server` base for following actions:
