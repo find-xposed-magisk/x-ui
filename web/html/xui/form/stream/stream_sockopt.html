@@ -5,67 +5,73 @@
         <a-switch v-model="inbound.stream.sockoptSwitch"></a-switch>
     </a-form-item>
     <template v-if="inbound.stream.sockoptSwitch">
+        {{template "form/sockoptFields" "inbound.stream.sockopt"}}
+    </template>
+</a-form>
+{{end}}
+
+{{define "form/sockoptFields"}}
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.routeMark" }}'>
-            <a-input-number v-model.number="inbound.stream.sockopt.mark" :min="0"></a-input-number>
+            <a-input-number v-model.number="{{.}}.mark" :min="0"></a-input-number>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpKeepAliveInterval" }}'>
-            <a-input-number v-model.number="inbound.stream.sockopt.tcpKeepAliveInterval" :min="0"></a-input-number>
+            <a-input-number v-model.number="{{.}}.tcpKeepAliveInterval" :min="0"></a-input-number>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpKeepAliveIdle" }}'>
-            <a-input-number v-model.number="inbound.stream.sockopt.tcpKeepAliveIdle" :min="0"></a-input-number>
+            <a-input-number v-model.number="{{.}}.tcpKeepAliveIdle" :min="0"></a-input-number>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpMaxSeg" }}'>
-            <a-input-number v-model.number="inbound.stream.sockopt.tcpMaxSeg" :min="0"></a-input-number>
+            <a-input-number v-model.number="{{.}}.tcpMaxSeg" :min="0"></a-input-number>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpUserTimeout" }}'>
-            <a-input-number v-model.number="inbound.stream.sockopt.tcpUserTimeout" :min="0"></a-input-number>
+            <a-input-number v-model.number="{{.}}.tcpUserTimeout" :min="0"></a-input-number>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpWindowClamp" }}'>
-            <a-input-number v-model.number="inbound.stream.sockopt.tcpWindowClamp" :min="0"></a-input-number>
+            <a-input-number v-model.number="{{.}}.tcpWindowClamp" :min="0"></a-input-number>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.proxyProtocol" }}'>
-            <a-switch v-model="inbound.stream.sockopt.acceptProxyProtocol"></a-switch>
+            <a-switch v-model="{{.}}.acceptProxyProtocol"></a-switch>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpFastOpen" }}'>
-            <a-switch v-model.trim="inbound.stream.sockopt.tcpFastOpen"></a-switch>
+            <a-switch v-model.trim="{{.}}.tcpFastOpen"></a-switch>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpNoDelay" }}'>
-            <a-switch v-model.trim="inbound.stream.sockopt.tcpNoDelay"></a-switch>
+            <a-switch v-model.trim="{{.}}.tcpNoDelay"></a-switch>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.multipathTCP" }}'>
-            <a-switch v-model.trim="inbound.stream.sockopt.tcpMptcp"></a-switch>
+            <a-switch v-model.trim="{{.}}.tcpMptcp"></a-switch>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.penetrate" }}'>
-            <a-switch v-model.trim="inbound.stream.sockopt.penetrate"></a-switch>
+            <a-switch v-model.trim="{{.}}.penetrate"></a-switch>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.v6Only" }}'>
-            <a-switch v-model.trim="inbound.stream.sockopt.V6Only"></a-switch>
+            <a-switch v-model.trim="{{.}}.V6Only"></a-switch>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.domainStrategy" }}'>
-            <a-select v-model="inbound.stream.sockopt.domainStrategy" :style="{ width: '50%' }" :dropdown-class-name="themeSwitcher.currentTheme">
+            <a-select v-model="{{.}}.domainStrategy" :style="{ width: '50%' }" :dropdown-class-name="themeSwitcher.currentTheme">
               <a-select-option v-for="key in DOMAIN_STRATEGY_OPTION" :value="key">[[ key ]]</a-select-option>
             </a-select>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpCongestion" }}'>
-            <a-select v-model="inbound.stream.sockopt.tcpcongestion" :style="{ width: '50%' }" :dropdown-class-name="themeSwitcher.currentTheme">
+            <a-select v-model="{{.}}.tcpcongestion" :style="{ width: '50%' }" :dropdown-class-name="themeSwitcher.currentTheme">
               <a-select-option v-for="key in TCP_CONGESTION_OPTION" :value="key">[[ key ]]</a-select-option>
             </a-select>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tproxy" }}'>
-            <a-select v-model="inbound.stream.sockopt.tproxy" :style="{ width: '50%' }" :dropdown-class-name="themeSwitcher.currentTheme">
+            <a-select v-model="{{.}}.tproxy" :style="{ width: '50%' }" :dropdown-class-name="themeSwitcher.currentTheme">
                 <a-select-option value="off">Off</a-select-option>
                 <a-select-option value="redirect">Redirect</a-select-option>
                 <a-select-option value="tproxy">TProxy</a-select-option>
             </a-select>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.dialerProxy" }}'>
-            <a-input v-model="inbound.stream.sockopt.dialerProxy"></a-input>
+            <a-input v-model="{{.}}.dialerProxy"></a-input>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.interfaceName" }}'>
-            <a-input v-model="inbound.stream.sockopt.interfaceName"></a-input>
+            <a-input v-model="{{.}}.interfaceName"></a-input>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.trustedXForwardedFor" }}'>
-            <a-select mode="tags" v-model="inbound.stream.sockopt.trustedXForwardedFor" :style="{ width: '100%' }"
+            <a-select mode="tags" v-model="{{.}}.trustedXForwardedFor" :style="{ width: '100%' }"
                 :dropdown-class-name="themeSwitcher.currentTheme">
                 <a-select-option value="CF-Connecting-IP">CF-Connecting-IP</a-select-option>
                 <a-select-option value="X-Real-IP">X-Real-IP</a-select-option>
@@ -73,6 +79,4 @@
                 <a-select-option value="X-Client-IP">X-Client-IP</a-select-option>
             </a-select>
         </a-form-item>
-    </template>
-</a-form>
 {{end}}

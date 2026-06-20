@@ -307,6 +307,9 @@
 "echKey" = "ECH key"
 "echConfig" = "ECH config"
 "echForceQuery" = "ECH force query"
+"curvePreferences" = "Ưu tiên đường cong"
+"masterKeyLog" = "Nhật ký Master Key"
+"echSockopt" = "ECH Sockopt"
 
 [pages.inbounds.stream.reality]
 "show" = "Hiển thị"

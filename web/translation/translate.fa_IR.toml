@@ -307,6 +307,9 @@
 "echKey" = "کلید ECH"
 "echConfig" = "تنظیمات ECH"
 "echForceQuery" = "اجبار به Query در ECH"
+"curvePreferences" = "ترجیح منحنی‌ها"
+"masterKeyLog" = "لاگ کلید اصلی (Master Key)"
+"echSockopt" = "Sockopt مربوط به ECH"
 
 [pages.inbounds.stream.reality]
 "show" = "نمایش"

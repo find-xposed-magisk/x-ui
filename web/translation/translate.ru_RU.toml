@@ -307,6 +307,9 @@
 "echKey" = "ECH-ключ"
 "echConfig" = "ECH-конфигурация"
 "echForceQuery" = "ECH принудительный запрос"
+"curvePreferences" = "Предпочтения кривых"
+"masterKeyLog" = "Лог мастер-ключа"
+"echSockopt" = "ECH Sockopt"
 
 [pages.inbounds.stream.reality]
 "show" = "Показать"

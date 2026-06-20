@@ -194,6 +194,22 @@
                 this.inbound.stream.tls.echServerKeys = '';
                 this.inbound.stream.tls.settings.echConfigList = '';
             },
+            async getCertHash() {
+                const cert = inModal.inbound.stream.tls.certs[0];
+                if (!cert) return;
+                inModal.loading(true);
+                const msg = await HttpUtil.post('/server/getCertHash', {
+                    certFile: cert.useFile ? cert.certFile : '',
+                    certContent: cert.useFile ? '' : cert.cert,
+                });
+                inModal.loading(false);
+                if (!msg.success) {
+                    return;
+                }
+                const arr = inModal.inbound.stream.tls.settings.pinnedPeerCertSha256 || [];
+                (msg.obj || []).forEach(h => { if (h && !arr.includes(h)) arr.push(h); });
+                inModal.inbound.stream.tls.settings.pinnedPeerCertSha256 = [...arr];
+            },
             async getNewVlessEnc() {
                 inModal.loading(true);
                 const msg = await HttpUtil.get('/server/getNewVlessEnc');

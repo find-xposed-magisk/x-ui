@@ -261,9 +261,10 @@ func (s *SubJsonService) streamData(stream string) map[string]interface{} {
 	var streamSettings map[string]interface{}
 	json.Unmarshal([]byte(stream), &streamSettings)
 	security, _ := streamSettings["security"].(string)
-	if security == "tls" {
+	switch security {
+	case "tls":
 		streamSettings["tlsSettings"] = s.tlsData(streamSettings["tlsSettings"].(map[string]interface{}))
-	} else if security == "reality" {
+	case "reality":
 		streamSettings["realitySettings"] = s.realityData(streamSettings["realitySettings"].(map[string]interface{}))
 	}
 	delete(streamSettings, "sockopt")
@@ -304,6 +305,9 @@ func (s *SubJsonService) tlsData(tData map[string]interface{}) map[string]interf
 	}
 	if fingerprint, ok := tlsClientSettings["fingerprint"].(string); ok {
 		tlsData["fingerprint"] = fingerprint
+	}
+	if pcs := pinnedPeerCertSha256ToString(tlsClientSettings); pcs != "" {
+		tlsData["pinnedPeerCertSha256"] = pcs
 	}
 	return tlsData
 }

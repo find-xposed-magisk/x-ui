@@ -307,6 +307,9 @@
 "echKey" = "ECH 密钥"
 "echConfig" = "ECH 配置"
 "echForceQuery" = "ECH 强制查询"
+"curvePreferences" = "曲线偏好"
+"masterKeyLog" = "主密钥日志"
+"echSockopt" = "ECH Sockopt"
 
 [pages.inbounds.stream.reality]
 "show" = "显示"

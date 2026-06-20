@@ -307,6 +307,9 @@
 "echKey" = "ECH key"
 "echConfig" = "ECH config"
 "echForceQuery" = "ECH force query"
+"curvePreferences" = "Curve Preferences"
+"masterKeyLog" = "Master Key Log"
+"echSockopt" = "ECH Sockopt"
 
 [pages.inbounds.stream.reality]
 "show" = "Show"

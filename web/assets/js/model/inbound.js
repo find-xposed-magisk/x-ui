@@ -822,6 +822,9 @@ class TlsStreamSettings extends XrayCommonClass {
         alpn = [ALPN_OPTION.H3, ALPN_OPTION.H2, ALPN_OPTION.HTTP1],
         echServerKeys = '',
         echForceQuery = 'none',
+        curvePreferences = [],
+        masterKeyLog = '',
+        echSockopt = undefined,
         settings = new TlsStreamSettings.Settings()
     ) {
         super();
@@ -836,7 +839,20 @@ class TlsStreamSettings extends XrayCommonClass {
         this.alpn = alpn;
         this.echServerKeys = echServerKeys;
         this.echForceQuery = echForceQuery;
+        this.curvePreferences = Array.isArray(curvePreferences)
+            ? curvePreferences
+            : (curvePreferences ? curvePreferences.split(",").map(c => c.trim()).filter(c => c.length > 0) : []);
+        this.masterKeyLog = masterKeyLog;
+        this.echSockopt = echSockopt;
         this.settings = settings;
+    }
+
+    get echSockoptSwitch() {
+        return !ObjectUtil.isEmpty(this.echSockopt);
+    }
+
+    set echSockoptSwitch(value) {
+        this.echSockopt = value ? new SockoptStreamSettings() : undefined;
     }
 
     addCert() {
@@ -855,7 +871,7 @@ class TlsStreamSettings extends XrayCommonClass {
         }
 
         if (!ObjectUtil.isEmpty(json.settings)) {
-            settings = new TlsStreamSettings.Settings(json.settings.allowInsecure, json.settings.fingerprint, json.settings.echConfigList);
+            settings = new TlsStreamSettings.Settings(json.settings.allowInsecure, json.settings.fingerprint, json.settings.echConfigList, json.settings.pinnedPeerCertSha256);
         }
         return new TlsStreamSettings(
             json.serverName,
@@ -869,6 +885,9 @@ class TlsStreamSettings extends XrayCommonClass {
             json.alpn,
             json.echServerKeys,
             json.echForceQuery,
+            json.curvePreferences,
+            json.masterKeyLog,
+            ObjectUtil.isEmpty(json.echSockopt) ? undefined : SockoptStreamSettings.fromJson(json.echSockopt),
             settings,
         );
     }
@@ -886,6 +905,9 @@ class TlsStreamSettings extends XrayCommonClass {
             alpn: this.alpn,
             echServerKeys: this.echServerKeys,
             echForceQuery: this.echForceQuery,
+            curvePreferences: this.curvePreferences && this.curvePreferences.length > 0 ? this.curvePreferences : undefined,
+            masterKeyLog: this.masterKeyLog ? this.masterKeyLog : undefined,
+            echSockopt: this.echSockopt ? this.echSockopt.toJson() : undefined,
             settings: this.settings,
         };
     }
@@ -967,17 +989,22 @@ TlsStreamSettings.Settings = class extends XrayCommonClass {
         allowInsecure = false,
         fingerprint = UTLS_FINGERPRINT.UTLS_CHROME,
         echConfigList = '',
+        pinnedPeerCertSha256 = [],
     ) {
         super();
         this.allowInsecure = allowInsecure;
         this.fingerprint = fingerprint;
         this.echConfigList = echConfigList;
+        this.pinnedPeerCertSha256 = Array.isArray(pinnedPeerCertSha256)
+            ? pinnedPeerCertSha256
+            : (pinnedPeerCertSha256 ? pinnedPeerCertSha256.split(",").map(h => h.trim()).filter(h => h.length > 0) : []);
     }
     static fromJson(json = {}) {
         return new TlsStreamSettings.Settings(
             json.allowInsecure,
             json.fingerprint,
             json.echConfigList,
+            json.pinnedPeerCertSha256,
         );
     }
     toJson() {
@@ -985,6 +1012,7 @@ TlsStreamSettings.Settings = class extends XrayCommonClass {
             allowInsecure: this.allowInsecure,
             fingerprint: this.fingerprint,
             echConfigList: this.echConfigList,
+            pinnedPeerCertSha256: this.pinnedPeerCertSha256 && this.pinnedPeerCertSha256.length > 0 ? this.pinnedPeerCertSha256 : undefined,
         };
     }
 };
@@ -1965,6 +1993,9 @@ class Inbound extends XrayCommonClass {
             if (this.stream.tls.settings.allowInsecure) {
                 obj.allowInsecure = this.stream.tls.settings.allowInsecure;
             }
+            if (this.stream.tls.settings.pinnedPeerCertSha256?.length > 0) {
+                obj.pcs = this.stream.tls.settings.pinnedPeerCertSha256.join(",");
+            }
         }
 
         if (extProxy) {
@@ -2055,6 +2086,9 @@ class Inbound extends XrayCommonClass {
                 }
                 if (this.stream.tls.settings.echConfigList?.length > 0) {
                     params.set("ech", this.stream.tls.settings.echConfigList);
+                }
+                if (this.stream.tls.settings.pinnedPeerCertSha256?.length > 0) {
+                    params.set("pcs", this.stream.tls.settings.pinnedPeerCertSha256.join(","));
                 }
                 if (type == "tcp" && !ObjectUtil.isEmpty(flow)) {
                     params.set("flow", flow);
@@ -2178,6 +2212,9 @@ class Inbound extends XrayCommonClass {
                 if (this.stream.tls.settings.echConfigList?.length > 0) {
                     params.set("ech", this.stream.tls.settings.echConfigList);
                 }
+                if (this.stream.tls.settings.pinnedPeerCertSha256?.length > 0) {
+                    params.set("pcs", this.stream.tls.settings.pinnedPeerCertSha256.join(","));
+                }
                 if (!ObjectUtil.isEmpty(this.stream.tls.sni)) {
                     params.set("sni", this.stream.tls.sni);
                 }
@@ -2279,6 +2316,9 @@ class Inbound extends XrayCommonClass {
                 if (this.stream.tls.settings.echConfigList?.length > 0) {
                     params.set("ech", this.stream.tls.settings.echConfigList);
                 }
+                if (this.stream.tls.settings.pinnedPeerCertSha256?.length > 0) {
+                    params.set("pcs", this.stream.tls.settings.pinnedPeerCertSha256.join(","));
+                }
                 if (!ObjectUtil.isEmpty(this.stream.tls.sni)) {
                     params.set("sni", this.stream.tls.sni);
                 }
@@ -2345,6 +2385,7 @@ class Inbound extends XrayCommonClass {
         if (this.stream.tls.alpn?.length > 0) params.set("alpn", this.stream.tls.alpn);
         if (this.stream.tls.settings.allowInsecure) params.set("insecure", "1");
         if (this.stream.tls.settings.echConfigList?.length > 0) params.set("ech", this.stream.tls.settings.echConfigList);
+        if (this.stream.tls.settings.pinnedPeerCertSha256?.length > 0) params.set("pcs", this.stream.tls.settings.pinnedPeerCertSha256.join(","));
         if (this.stream.tls.sni?.length > 0) params.set("sni", this.stream.tls.sni);
 
         if (extProxy) {

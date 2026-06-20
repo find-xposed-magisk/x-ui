@@ -48,6 +48,7 @@ func (a *ServerController) initRouter(g *gin.RouterGroup) {
 	g.GET("/getNewX25519Cert", a.getNewX25519Cert)
 
 	g.POST("/getNewEchCert", a.getNewEchCert)
+	g.POST("/getCertHash", a.getCertHash)
 	g.POST("/stopXrayService", a.stopXrayService)
 	g.POST("/restartXrayService", a.restartXrayService)
 	g.POST("/installXray/:version", a.installXray)
@@ -208,6 +209,17 @@ func (a *ServerController) getNewEchCert(c *gin.Context) {
 		return
 	}
 	jsonObj(c, cert, nil)
+}
+
+func (a *ServerController) getCertHash(c *gin.Context) {
+	certFile := c.PostForm("certFile")
+	certContent := c.PostForm("certContent")
+	hashes, err := a.serverService.GetCertHash(certFile, certContent)
+	if err != nil {
+		jsonMsg(c, "get certificate hash", err)
+		return
+	}
+	jsonObj(c, hashes, nil)
 }
 
 func (a *ServerController) getNewVlessEnc(c *gin.Context) {

@@ -262,6 +262,9 @@ func (s *SubService) genVmessLink(inbound *model.Inbound, email string) string {
 			if insecure, ok := searchKey(tlsSettings, "allowInsecure"); ok {
 				obj["allowInsecure"], _ = insecure.(bool)
 			}
+			if pcs := pinnedPeerCertSha256ToString(tlsSettings); pcs != "" {
+				obj["pcs"] = pcs
+			}
 		}
 	}
 
@@ -447,6 +450,9 @@ func (s *SubService) genVlessLink(inbound *model.Inbound, email string) string {
 				if insecure.(bool) {
 					params["allowInsecure"] = "1"
 				}
+			}
+			if pcs := pinnedPeerCertSha256ToString(tlsSettings); pcs != "" {
+				params["pcs"] = pcs
 			}
 		}
 
@@ -678,6 +684,9 @@ func (s *SubService) genTrojanLink(inbound *model.Inbound, email string) string 
 					params["allowInsecure"] = "1"
 				}
 			}
+			if pcs := pinnedPeerCertSha256ToString(tlsSettings); pcs != "" {
+				params["pcs"] = pcs
+			}
 		}
 	}
 
@@ -904,6 +913,9 @@ func (s *SubService) genShadowsocksLink(inbound *model.Inbound, email string) st
 				if insecure.(bool) {
 					params["allowInsecure"] = "1"
 				}
+			}
+			if pcs := pinnedPeerCertSha256ToString(tlsSettings); pcs != "" {
+				params["pcs"] = pcs
 			}
 		}
 	}
@@ -1284,6 +1296,26 @@ func searchKey(data interface{}, key string) (interface{}, bool) {
 		}
 	}
 	return nil, false
+}
+
+func pinnedPeerCertSha256ToString(tlsSettings interface{}) string {
+	pcsValue, ok := searchKey(tlsSettings, "pinnedPeerCertSha256")
+	if !ok {
+		return ""
+	}
+	switch v := pcsValue.(type) {
+	case []interface{}:
+		var pcs []string
+		for _, h := range v {
+			if hs, ok := h.(string); ok && len(hs) > 0 {
+				pcs = append(pcs, hs)
+			}
+		}
+		return strings.Join(pcs, ",")
+	case string:
+		return v
+	}
+	return ""
 }
 
 func searchHost(headers interface{}) string {

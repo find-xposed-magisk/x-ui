@@ -508,6 +508,9 @@ class TlsStreamSettings extends CommonClass {
         echConfigList = '',
         verifyPeerCertByName = '',
         pinnedPeerCertSha256 = '',
+        curvePreferences = [],
+        masterKeyLog = '',
+        echSockopt = undefined,
     ) {
         super();
         this.serverName = serverName;
@@ -517,6 +520,19 @@ class TlsStreamSettings extends CommonClass {
         this.echConfigList = echConfigList;
         this.verifyPeerCertByName = verifyPeerCertByName;
         this.pinnedPeerCertSha256 = pinnedPeerCertSha256;
+        this.curvePreferences = Array.isArray(curvePreferences)
+            ? curvePreferences
+            : (curvePreferences ? curvePreferences.split(",").map(c => c.trim()).filter(c => c.length > 0) : []);
+        this.masterKeyLog = masterKeyLog;
+        this.echSockopt = echSockopt;
+    }
+
+    get echSockoptSwitch() {
+        return !ObjectUtil.isEmpty(this.echSockopt);
+    }
+
+    set echSockoptSwitch(value) {
+        this.echSockopt = value ? new SockoptStreamSettings() : undefined;
     }
 
     static fromJson(json = {}) {
@@ -528,6 +544,9 @@ class TlsStreamSettings extends CommonClass {
             json.echConfigList,
             json.verifyPeerCertByName,
             json.pinnedPeerCertSha256,
+            json.curvePreferences,
+            json.masterKeyLog,
+            ObjectUtil.isEmpty(json.echSockopt) ? undefined : SockoptStreamSettings.fromJson(json.echSockopt),
         );
     }
 
@@ -539,7 +558,10 @@ class TlsStreamSettings extends CommonClass {
             allowInsecure: this.allowInsecure,
             echConfigList: this.echConfigList,
             verifyPeerCertByName: this.verifyPeerCertByName,
-            pinnedPeerCertSha256: this.pinnedPeerCertSha256
+            pinnedPeerCertSha256: this.pinnedPeerCertSha256,
+            curvePreferences: this.curvePreferences && this.curvePreferences.length > 0 ? this.curvePreferences : undefined,
+            masterKeyLog: this.masterKeyLog ? this.masterKeyLog : undefined,
+            echSockopt: this.echSockopt ? this.echSockopt.toJson() : undefined,
         };
     }
 }
