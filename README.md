@@ -9,10 +9,11 @@
 
 > **Disclaimer:** This project is only for personal learning and communication, please do not use it for illegal purposes, please do not use it in a production environment
 
-**If you think this project is helpful to you, you may wish to give a**:star2:
+**If you think this project is helpful to you, you may wish to give a**:star2: **or donate me a coffee:**
+
+**Official Donation Page:** [https://donate.alireza0.dev/](https://donate.alireza0.dev/)
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/alireza7)
-
 <a href="https://nowpayments.io/donation/alireza7" target="_blank" rel="noreferrer noopener">
    <img src="https://nowpayments.io/images/embeds/donation-button-black.svg" alt="Crypto donation button by NOWPayments">
 </a>
