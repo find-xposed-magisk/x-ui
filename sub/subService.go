@@ -265,6 +265,11 @@ func (s *SubService) genVmessLink(inbound *model.Inbound, email string) string {
 			if pcs := pinnedPeerCertSha256ToString(tlsSettings); pcs != "" {
 				obj["pcs"] = pcs
 			}
+			if vcn, ok := searchKey(tlsSettings, "verifyPeerCertByName"); ok {
+				if vcnStr, _ := vcn.(string); vcnStr != "" {
+					obj["vcn"] = vcnStr
+				}
+			}
 		}
 	}
 
@@ -453,6 +458,11 @@ func (s *SubService) genVlessLink(inbound *model.Inbound, email string) string {
 			}
 			if pcs := pinnedPeerCertSha256ToString(tlsSettings); pcs != "" {
 				params["pcs"] = pcs
+			}
+			if vcn, ok := searchKey(tlsSettings, "verifyPeerCertByName"); ok {
+				if vcnStr, _ := vcn.(string); vcnStr != "" {
+					params["vcn"] = vcnStr
+				}
 			}
 		}
 
@@ -687,6 +697,11 @@ func (s *SubService) genTrojanLink(inbound *model.Inbound, email string) string 
 			if pcs := pinnedPeerCertSha256ToString(tlsSettings); pcs != "" {
 				params["pcs"] = pcs
 			}
+			if vcn, ok := searchKey(tlsSettings, "verifyPeerCertByName"); ok {
+				if vcnStr, _ := vcn.(string); vcnStr != "" {
+					params["vcn"] = vcnStr
+				}
+			}
 		}
 	}
 
@@ -916,6 +931,11 @@ func (s *SubService) genShadowsocksLink(inbound *model.Inbound, email string) st
 			}
 			if pcs := pinnedPeerCertSha256ToString(tlsSettings); pcs != "" {
 				params["pcs"] = pcs
+			}
+			if vcn, ok := searchKey(tlsSettings, "verifyPeerCertByName"); ok {
+				if vcnStr, _ := vcn.(string); vcnStr != "" {
+					params["vcn"] = vcnStr
+				}
 			}
 		}
 	}

@@ -1359,7 +1359,10 @@ class Outbound extends CommonClass {
                 json.sni,
                 json.alpn ? json.alpn.split(',') : [],
                 json.fp,
-                json.allowInsecure);
+                json.allowInsecure,
+                json.ech ?? '',
+                json.vcn ?? '',
+                json.pcs ?? '');
         }
 
         const port = json.port * 1;
@@ -1413,7 +1416,9 @@ class Outbound extends CommonClass {
             let allowInsecure = url.searchParams.get('allowInsecure');
             let sni = url.searchParams.get('sni') ?? '';
             let ech = url.searchParams.get('ech') ?? '';
-            stream.tls = new TlsStreamSettings(sni, alpn ? alpn.split(',') : [], fp, allowInsecure == 1, ech);
+            let vcn = url.searchParams.get('vcn') ?? '';
+            let pcs = url.searchParams.get('pcs') ?? '';
+            stream.tls = new TlsStreamSettings(sni, alpn ? alpn.split(',') : [], fp, allowInsecure == 1, ech, vcn, pcs);
         }
 
         if (security == 'reality') {
@@ -1515,6 +1520,9 @@ class Outbound extends CommonClass {
                 urlParams.get('alpn') ? urlParams.get('alpn').split(',') : [],
                 urlParams.get('fp') ?? undefined,
                 urlParams.get('insecure') ?? urlParams.get('allowInsecure') ?? false,
+                urlParams.get('ech') ?? '',
+                urlParams.get('vcn') ?? '',
+                urlParams.get('pcs') ?? '',
             );
         }
         

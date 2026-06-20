@@ -871,7 +871,7 @@ class TlsStreamSettings extends XrayCommonClass {
         }
 
         if (!ObjectUtil.isEmpty(json.settings)) {
-            settings = new TlsStreamSettings.Settings(json.settings.allowInsecure, json.settings.fingerprint, json.settings.echConfigList, json.settings.pinnedPeerCertSha256);
+            settings = new TlsStreamSettings.Settings(json.settings.allowInsecure, json.settings.fingerprint, json.settings.echConfigList, json.settings.pinnedPeerCertSha256, json.settings.verifyPeerCertByName);
         }
         return new TlsStreamSettings(
             json.serverName,
@@ -990,6 +990,7 @@ TlsStreamSettings.Settings = class extends XrayCommonClass {
         fingerprint = UTLS_FINGERPRINT.UTLS_CHROME,
         echConfigList = '',
         pinnedPeerCertSha256 = [],
+        verifyPeerCertByName = '',
     ) {
         super();
         this.allowInsecure = allowInsecure;
@@ -998,6 +999,7 @@ TlsStreamSettings.Settings = class extends XrayCommonClass {
         this.pinnedPeerCertSha256 = Array.isArray(pinnedPeerCertSha256)
             ? pinnedPeerCertSha256
             : (pinnedPeerCertSha256 ? pinnedPeerCertSha256.split(",").map(h => h.trim()).filter(h => h.length > 0) : []);
+        this.verifyPeerCertByName = verifyPeerCertByName;
     }
     static fromJson(json = {}) {
         return new TlsStreamSettings.Settings(
@@ -1005,6 +1007,7 @@ TlsStreamSettings.Settings = class extends XrayCommonClass {
             json.fingerprint,
             json.echConfigList,
             json.pinnedPeerCertSha256,
+            json.verifyPeerCertByName,
         );
     }
     toJson() {
@@ -1013,6 +1016,7 @@ TlsStreamSettings.Settings = class extends XrayCommonClass {
             fingerprint: this.fingerprint,
             echConfigList: this.echConfigList,
             pinnedPeerCertSha256: this.pinnedPeerCertSha256 && this.pinnedPeerCertSha256.length > 0 ? this.pinnedPeerCertSha256 : undefined,
+            verifyPeerCertByName: this.verifyPeerCertByName ? this.verifyPeerCertByName : undefined,
         };
     }
 };
@@ -1996,6 +2000,9 @@ class Inbound extends XrayCommonClass {
             if (this.stream.tls.settings.pinnedPeerCertSha256?.length > 0) {
                 obj.pcs = this.stream.tls.settings.pinnedPeerCertSha256.join(",");
             }
+            if (!ObjectUtil.isEmpty(this.stream.tls.settings.verifyPeerCertByName)) {
+                obj.vcn = this.stream.tls.settings.verifyPeerCertByName;
+            }
         }
 
         if (extProxy) {
@@ -2089,6 +2096,9 @@ class Inbound extends XrayCommonClass {
                 }
                 if (this.stream.tls.settings.pinnedPeerCertSha256?.length > 0) {
                     params.set("pcs", this.stream.tls.settings.pinnedPeerCertSha256.join(","));
+                }
+                if (!ObjectUtil.isEmpty(this.stream.tls.settings.verifyPeerCertByName)) {
+                    params.set("vcn", this.stream.tls.settings.verifyPeerCertByName);
                 }
                 if (type == "tcp" && !ObjectUtil.isEmpty(flow)) {
                     params.set("flow", flow);
@@ -2215,6 +2225,9 @@ class Inbound extends XrayCommonClass {
                 if (this.stream.tls.settings.pinnedPeerCertSha256?.length > 0) {
                     params.set("pcs", this.stream.tls.settings.pinnedPeerCertSha256.join(","));
                 }
+                if (!ObjectUtil.isEmpty(this.stream.tls.settings.verifyPeerCertByName)) {
+                    params.set("vcn", this.stream.tls.settings.verifyPeerCertByName);
+                }
                 if (!ObjectUtil.isEmpty(this.stream.tls.sni)) {
                     params.set("sni", this.stream.tls.sni);
                 }
@@ -2319,6 +2332,9 @@ class Inbound extends XrayCommonClass {
                 if (this.stream.tls.settings.pinnedPeerCertSha256?.length > 0) {
                     params.set("pcs", this.stream.tls.settings.pinnedPeerCertSha256.join(","));
                 }
+                if (!ObjectUtil.isEmpty(this.stream.tls.settings.verifyPeerCertByName)) {
+                    params.set("vcn", this.stream.tls.settings.verifyPeerCertByName);
+                }
                 if (!ObjectUtil.isEmpty(this.stream.tls.sni)) {
                     params.set("sni", this.stream.tls.sni);
                 }
@@ -2386,6 +2402,7 @@ class Inbound extends XrayCommonClass {
         if (this.stream.tls.settings.allowInsecure) params.set("insecure", "1");
         if (this.stream.tls.settings.echConfigList?.length > 0) params.set("ech", this.stream.tls.settings.echConfigList);
         if (this.stream.tls.settings.pinnedPeerCertSha256?.length > 0) params.set("pcs", this.stream.tls.settings.pinnedPeerCertSha256.join(","));
+        if (!ObjectUtil.isEmpty(this.stream.tls.settings.verifyPeerCertByName)) params.set("vcn", this.stream.tls.settings.verifyPeerCertByName);
         if (this.stream.tls.sni?.length > 0) params.set("sni", this.stream.tls.sni);
 
         if (extProxy) {

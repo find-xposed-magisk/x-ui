@@ -309,6 +309,9 @@ func (s *SubJsonService) tlsData(tData map[string]interface{}) map[string]interf
 	if pcs := pinnedPeerCertSha256ToString(tlsClientSettings); pcs != "" {
 		tlsData["pinnedPeerCertSha256"] = pcs
 	}
+	if vcn, ok := tlsClientSettings["verifyPeerCertByName"].(string); ok && vcn != "" {
+		tlsData["verifyPeerCertByName"] = vcn
+	}
 	return tlsData
 }
 
