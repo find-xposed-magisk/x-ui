@@ -55,6 +55,21 @@
                             <a-space direction="horizontal">
                                 <a-button type="primary" icon="plus" @click="addRule">{{ i18n "pages.xray.rules.add" }}</a-button>
                                 <a-button type="primary" :disabled="saveBtnDisable" @click="saveAll">{{ i18n "pages.xray.save" }}</a-button>
+                                <a-dropdown :trigger="['click']">
+                                    <a-button type="primary" icon="menu">
+                                        <template v-if="!isMobile">{{ i18n "pages.inbounds.generalActions" }}</template>
+                                    </a-button>
+                                    <a-menu slot="overlay" @click="a => generalActions(a)" :theme="themeSwitcher.currentTheme">
+                                        <a-menu-item key="import">
+                                            <a-icon type="import"></a-icon>
+                                            {{ i18n "import" }}
+                                        </a-menu-item>
+                                        <a-menu-item key="export">
+                                            <a-icon type="export"></a-icon>
+                                            {{ i18n "export" }}
+                                        </a-menu-item>
+                                    </a-menu>
+                                </a-dropdown>
                             </a-space>
                         </a-col>
                         <a-col :xs="24" :sm="12">
@@ -239,6 +254,7 @@
 </a-layout>
 {{template "js" .}}
 {{template "component/themeSwitcher" .}}
+<script src="{{ .base_path }}assets/clipboard/clipboard.min.js?{{ .cur_ver }}"></script>
 <script src="{{ .base_path }}assets/js/model/dbroutingrule.js?{{ .cur_ver }}"></script>
 <script>
     const rulesColumns = [
@@ -460,6 +476,59 @@
                     await this.loadAll();
                 }
             },
+            generalActions({ key }) {
+                switch (key) {
+                    case 'import':
+                        this.importRules();
+                        break;
+                    case 'export':
+                        this.exportRules();
+                        break;
+                }
+            },
+            exportRules() {
+                const arr = this.dbRules.map(r => {
+                    const rule = r.toRule();
+                    if (r.tag) rule.ruleTag = r.tag;
+                    return rule;
+                });
+                txtModal.show('{{ i18n "export" }}', JSON.stringify(arr, null, 2), 'routing_rules.json');
+            },
+            importRules() {
+                promptModal.open({
+                    title: '{{ i18n "import" }}',
+                    type: 'textarea',
+                    value: '',
+                    okText: '{{ i18n "import" }}',
+                    confirm: (text) => {
+                        let parsed;
+                        try {
+                            parsed = JSON.parse(text);
+                        } catch (e) {
+                            this.$message.error('{{ i18n "importInvalid" }}');
+                            return;
+                        }
+                        let list = null;
+                        if (Array.isArray(parsed)) {
+                            list = parsed;
+                        } else if (parsed && parsed.routing && Array.isArray(parsed.routing.rules)) {
+                            list = parsed.routing.rules;
+                        } else if (parsed && Array.isArray(parsed.rules)) {
+                            list = parsed.rules;
+                        }
+                        if (!list || list.length === 0) {
+                            this.$message.error('{{ i18n "importInvalid" }}');
+                            return;
+                        }
+                        list.forEach(ruleObj => {
+                            const data = DBRoutingRule.payloadFromRule(ruleObj, { id: this.nextTempId, tag: ruleObj.ruleTag || '' });
+                            this.dbRules.push(new DBRoutingRule({ id: this.nextTempId--, tag: data.tag, sort: this.dbRules.length, rawJson: data.rawJson }));
+                        });
+                        promptModal.close();
+                        this.$message.success(list.length + '');
+                    },
+                });
+            },
             ruleCustomRow(record) {
                 const self = this;
                 let rowClass = '';
@@ -544,5 +613,7 @@
 </script>
 {{template "ruleModal"}}
 {{template "warpModal"}}
+{{template "promptModal"}}
+{{template "textModal"}}
 </body>
 </html>
