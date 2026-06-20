@@ -1298,7 +1298,7 @@
                     title: '{{ i18n "pages.inbounds.importInbound" }}',
                     type: 'textarea',
                     value: '',
-                    okText: '{{ i18n "pages.inbounds.import" }}',
+                    okText: '{{ i18n "import" }}',
                     confirm: async (dbInboundText) => {
                         await this.submit('/xui/inbound/import', {data: dbInboundText}, promptModal);
                     },

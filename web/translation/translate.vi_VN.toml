@@ -59,6 +59,10 @@
 "mtu" = "MTU"
 "basic" = "Cơ bản"
 
+"import" = "Nhập"
+"export" = "Xuất"
+"importInvalid" = "Dữ liệu nhập không hợp lệ"
+
 [menu]
 "dashboard" = "Tổng quan"
 "inbounds" = "Đầu Vào khách hàng"
@@ -184,7 +188,6 @@
 "inboundData" = "Dữ liệu gửi đến"
 "copyLink" = "Sao chép liên kết"
 "exportInbound" = "Xuất nhập khẩu"
-"import" = "Nhập"
 "importInbound" = "Nhập hàng gửi về"
 
 [pages.routingRules]

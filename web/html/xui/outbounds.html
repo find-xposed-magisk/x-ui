@@ -102,6 +102,15 @@
                                                 <a-icon type="cloud"></a-icon>
                                                 WARP
                                             </a-menu-item>
+                                            <a-menu-divider></a-menu-divider>
+                                            <a-menu-item key="import">
+                                                <a-icon type="import"></a-icon>
+                                                {{ i18n "import" }}
+                                            </a-menu-item>
+                                            <a-menu-item key="export">
+                                                <a-icon type="export"></a-icon>
+                                                {{ i18n "export" }}
+                                            </a-menu-item>
                                         </a-menu>
                                     </a-dropdown>
                                 </a-col>
@@ -293,6 +302,7 @@
 </a-layout>
 {{template "js" .}}
 {{template "component/themeSwitcher" .}}
+<script src="{{ .base_path }}assets/clipboard/clipboard.min.js?{{ .cur_ver }}"></script>
 <script src="{{ .base_path }}assets/js/model/outbound.js?{{ .cur_ver }}"></script>
 <script src="{{ .base_path }}assets/js/model/dboutbound.js?{{ .cur_ver }}"></script>
 <script>
@@ -493,7 +503,60 @@
                     case 'warp':
                         warpModal.show();
                         break;
+                    case 'import':
+                        this.importOutbounds();
+                        break;
+                    case 'export':
+                        this.exportOutbounds();
+                        break;
                 }
+            },
+            exportOutbounds() {
+                const arr = this.dbOutbounds.map(o => o.toOutbound().toJson());
+                txtModal.show('{{ i18n "export" }}', JSON.stringify(arr, null, 2), 'outbounds.json');
+            },
+            importOutbounds() {
+                promptModal.open({
+                    title: '{{ i18n "import" }}',
+                    type: 'textarea',
+                    value: '',
+                    okText: '{{ i18n "import" }}',
+                    confirm: async (text) => {
+                        let parsed;
+                        try {
+                            parsed = JSON.parse(text);
+                        } catch (e) {
+                            app.$message.error('{{ i18n "importInvalid" }}');
+                            return;
+                        }
+                        let list = null;
+                        if (Array.isArray(parsed)) {
+                            list = parsed;
+                        } else if (parsed && Array.isArray(parsed.outbounds)) {
+                            list = parsed.outbounds;
+                        }
+                        if (!list || list.length === 0) {
+                            app.$message.error('{{ i18n "importInvalid" }}');
+                            return;
+                        }
+                        promptModal.loading(true);
+                        let ok = 0;
+                        for (const ob of list) {
+                            try {
+                                const db = new DBOutbound();
+                                const data = DBOutbound.payloadFromOutbound(Outbound.fromJson(ob), db);
+                                const msg = await HttpUtil.post('/xui/outbound/add', data);
+                                if (msg.success) ok++;
+                            } catch (e) {
+                                console.error('import outbound failed', e);
+                            }
+                        }
+                        promptModal.loading(false);
+                        promptModal.close();
+                        app.$message.success(ok + ' / ' + list.length);
+                        await this.getDBOutbounds();
+                    },
+                });
             },
             async testOutbound(id) {
                 this.$set(this.testResults, id, { testing: true });
@@ -596,5 +659,7 @@
 </script>
 {{template "outboundModal"}}
 {{template "warpModal"}}
+{{template "promptModal"}}
+{{template "textModal"}}
 </body>
 </html>

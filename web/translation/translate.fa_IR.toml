@@ -59,6 +59,10 @@
 "mtu" = "MTU"
 "basic" = "پایه"
 
+"import" = "وارد کردن"
+"export" = "خروجی گرفتن"
+"importInvalid" = "دادهٔ ورودی نامعتبر است"
+
 [menu]
 "dashboard" = "نمای کلی"
 "inbounds" = "ورودی‌ها"
@@ -184,7 +188,6 @@
 "inboundData" = "داده‌های ورودی"
 "copyLink" = "کپی لینک"
 "exportInbound" = "استخراج ورودی"
-"import" = "افزودن"
 "importInbound" = "افزودن یک ورودی"
 
 [pages.routingRules]

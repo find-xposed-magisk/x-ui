@@ -59,6 +59,10 @@
 "mtu" = "MTU"
 "basic" = "基本"
 
+"import" = "导入"
+"export" = "导出"
+"importInvalid" = "导入数据无效"
+
 [menu]
 "dashboard" = "概述"
 "inbounds" = "入站列表"

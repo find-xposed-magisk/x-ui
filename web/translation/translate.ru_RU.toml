@@ -59,6 +59,10 @@
 "mtu" = "MTU"
 "basic" = "Базовые"
 
+"import" = "Импорт"
+"export" = "Экспорт"
+"importInvalid" = "Неверные данные импорта"
+
 [menu]
 "dashboard" = "Обзор"
 "inbounds" = "Подключения"
@@ -184,7 +188,6 @@
 "inboundData" = "Входящие данные"
 "copyLink" = "Копировать ключ"
 "exportInbound" = "Экспорт входящих"
-"import" = "Импортировать"
 "importInbound" = "Импортировать входящее сообщение"
 
 [pages.routingRules]

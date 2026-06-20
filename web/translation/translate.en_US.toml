@@ -59,6 +59,10 @@
 "mtu" = "MTU"
 "basic" = "Basic"
 
+"import" = "Import"
+"export" = "Export"
+"importInvalid" = "Invalid import data"
+
 [menu]
 "dashboard" = "Overview"
 "inbounds" = "Inbounds"
@@ -184,7 +188,6 @@
 "inboundData" = "Inbound's Data"
 "copyLink" = "Copy URL"
 "exportInbound" = "Export Inbound"
-"import" = "Import"
 "importInbound" = "Import an Inbound"
 
 [pages.routingRules]
