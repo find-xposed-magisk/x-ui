@@ -53,8 +53,8 @@
                     <a-row>
                         <a-col :xs="24" :sm="12" style="padding: 4px;">
                             <a-space direction="horizontal">
-                                <a-button type="primary" icon="plus" @click="addRule">{{ i18n "pages.xray.rules.add" }}</a-button>
                                 <a-button type="primary" :disabled="saveBtnDisable" @click="saveAll">{{ i18n "pages.xray.save" }}</a-button>
+                                <a-button type="primary" icon="plus" @click="addRule">{{ i18n "pages.xray.rules.add" }}</a-button>
                                 <a-dropdown :trigger="['click']">
                                     <a-button type="primary" icon="menu">
                                         <template v-if="!isMobile">{{ i18n "pages.inbounds.generalActions" }}</template>

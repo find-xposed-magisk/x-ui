@@ -3,6 +3,7 @@ module github.com/alireza0/x-ui
 go 1.26.3
 
 require (
+	github.com/andybalholm/brotli v1.2.1
 	github.com/gin-contrib/gzip v1.2.6
 	github.com/gin-contrib/sessions v1.1.0
 	github.com/gin-gonic/gin v1.12.0
@@ -24,7 +25,6 @@ require (
 )
 
 require (
-	github.com/andybalholm/brotli v1.2.1 // indirect
 	github.com/apernet/quic-go v0.59.1-0.20260425001925-6c6cc9bcb716 // indirect
 	github.com/bytedance/gopkg v0.1.4 // indirect
 	github.com/bytedance/sonic v1.15.1 // indirect

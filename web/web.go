@@ -43,42 +43,6 @@ var i18nFS embed.FS
 
 var startTime = time.Now()
 
-type wrapAssetsFS struct {
-	embed.FS
-}
-
-func (f *wrapAssetsFS) Open(name string) (fs.File, error) {
-	file, err := f.FS.Open("assets/" + name)
-	if err != nil {
-		return nil, err
-	}
-	return &wrapAssetsFile{
-		File: file,
-	}, nil
-}
-
-type wrapAssetsFile struct {
-	fs.File
-}
-
-func (f *wrapAssetsFile) Stat() (fs.FileInfo, error) {
-	info, err := f.File.Stat()
-	if err != nil {
-		return nil, err
-	}
-	return &wrapAssetsFileInfo{
-		FileInfo: info,
-	}, nil
-}
-
-type wrapAssetsFileInfo struct {
-	fs.FileInfo
-}
-
-func (f *wrapAssetsFileInfo) ModTime() time.Time {
-	return startTime
-}
-
 type Server struct {
 	httpServer *http.Server
 	listener   net.Listener
@@ -183,7 +147,9 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	engine.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedPaths([]string{basePath + "xui/API/"})))
+	// Assets are served pre-compressed by serveAssets, so exclude them from the
+	// on-the-fly gzip middleware to avoid recompressing them on every request.
+	engine.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedPaths([]string{basePath + "xui/API/", basePath + "assets/"})))
 	assetsBasePath := basePath + "assets/"
 
 	store := cookie.NewStore(secret)
@@ -232,7 +198,6 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 			return nil, err
 		}
 		engine.LoadHTMLFiles(files...)
-		engine.StaticFS(basePath+"assets", http.FS(os.DirFS("web/assets")))
 	} else {
 		// for production
 		template, err := s.getHtmlTemplate(engine.FuncMap)
@@ -240,8 +205,8 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 			return nil, err
 		}
 		engine.SetHTMLTemplate(template)
-		engine.StaticFS(basePath+"assets", http.FS(&wrapAssetsFS{FS: assetsFS}))
 	}
+	engine.GET(basePath+"assets/*filepath", serveAssets)
 
 	g := engine.Group(basePath)
 
