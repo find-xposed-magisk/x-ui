@@ -331,9 +331,11 @@ func (s *Server) Start() (err error) {
 	if certFile != "" || keyFile != "" {
 		cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 		if err == nil {
-			c := &tls.Config{
-				Certificates: []tls.Certificate{cert},
+			webDomain, err := s.settingService.GetWebDomain()
+			if err != nil {
+				return err
 			}
+			c := network.NewTLSConfig(cert, webDomain)
 			listener = network.NewAutoHttpsListener(listener)
 			listener = tls.NewListener(listener, c)
 			logger.Info("Web server running HTTPS on", listener.Addr())

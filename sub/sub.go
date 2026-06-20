@@ -163,9 +163,11 @@ func (s *Server) Start() (err error) {
 	if certFile != "" || keyFile != "" {
 		cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 		if err == nil {
-			c := &tls.Config{
-				Certificates: []tls.Certificate{cert},
+			subDomain, err := s.settingService.GetSubDomain()
+			if err != nil {
+				return err
 			}
+			c := network.NewTLSConfig(cert, subDomain)
 			listener = network.NewAutoHttpsListener(listener)
 			listener = tls.NewListener(listener, c)
 			logger.Info("sub server run https on", listener.Addr())
