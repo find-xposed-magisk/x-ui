@@ -56,8 +56,6 @@ var defaultValueMap = map[string]string{
 	"subURI":             "",
 	"subJsonPath":        "/json/",
 	"subJsonURI":         "",
-	"subJsonFragment":    "",
-	"subJsonNoises":      "",
 	"subJsonMux":         "",
 	"subJsonRules":       "",
 	"warp":               "",
@@ -434,14 +432,6 @@ func (s *SettingService) GetSubURI() (string, error) {
 
 func (s *SettingService) GetSubJsonURI() (string, error) {
 	return s.getString("subJsonURI")
-}
-
-func (s *SettingService) GetSubJsonFragment() (string, error) {
-	return s.getString("subJsonFragment")
-}
-
-func (s *SettingService) GetSubJsonNoises() (string, error) {
-	return s.getString("subJsonNoises")
 }
 
 func (s *SettingService) GetSubJsonMux() (string, error) {

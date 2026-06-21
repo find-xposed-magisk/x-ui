@@ -34,8 +34,6 @@ class AllSetting {
         this.subShowInfo = false;
         this.subURI = "";
         this.subJsonURI = "";
-        this.subJsonFragment = "";
-        this.subJsonNoises = "";
         this.subJsonMux = "";
         this.subJsonRules = "";
         this.ipBlockAfterRemove = false;
