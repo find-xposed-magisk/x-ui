@@ -218,9 +218,42 @@
 "testing" = "Тестирование..."
 "testSuccess" = "Доступен"
 "testFailed" = "Недоступен"
-
-[pages.outbounds.toasts]
 "obtain" = "Не удалось загрузить исходящие"
+"strategy" = "Стратегия"
+"redirect" = "Перенаправление"
+"fragment" = "Фрагмент"
+"packets" = "Пакеты"
+"length" = "Длина"
+"interval" = "Интервал"
+"noises" = "Шумы"
+"responseType" = "Тип ответа"
+"nonIPQueries" = "Запросы не-IP"
+"blockTypes" = "Типы блокировки"
+"inboundTag" = "Тег входящего"
+"version" = "Версия"
+"uploadSpeed" = "Скорость загрузки"
+"downloadSpeed" = "Скорость скачивания"
+"udpHopPort" = "UDP Hop порт"
+"hopIntervalMin" = "Hop интервал мин. (с)"
+"hopIntervalMax" = "Hop интервал макс. (с)"
+"initStreamReceive" = "Init Stream Receive"
+"maxStreamReceive" = "Max Stream Receive"
+"initConnReceive" = "Init Connection Receive"
+"maxConnReceive" = "Max Connection Receive"
+"maxIdleTimeout" = "Макс. idle timeout (с)"
+"keepAlivePeriod" = "Keep Alive период (с)"
+"disablePathMTU" = "Отключить Path MTU"
+"echConfigList" = "Список ECH Config"
+"verifyPeerCertByName" = "Проверка Peer Cert по имени"
+"pinnedPeerCert" = "Закреплённый Peer Cert"
+"shortID" = "Short ID"
+"addressPortStrategy" = "Стратегия адрес/порт"
+"keepAliveInterval" = "Keep Alive интервал"
+"mux" = "Mux"
+"concurrency" = "Параллелизм"
+"xudpConcurrency" = "xudp параллелизм"
+"xudpUDP443" = "xudp UDP 443"
+"pinnedSha256" = "Введите SHA256 отпечатки (base64)"
 
 [pages.client]
 "add" = "Добавить клиента"
@@ -435,57 +468,6 @@
 "peers" = "Пиры"
 "keepAlive" = "Keep Alive"
 "workers" = "Workers"
-
-[pages.xray.outbound.freedom]
-"strategy" = "Стратегия"
-"redirect" = "Перенаправление"
-"fragment" = "Фрагмент"
-"packets" = "Пакеты"
-"length" = "Длина"
-"interval" = "Интервал"
-"noises" = "Шумы"
-
-[pages.xray.outbound.dns]
-"responseType" = "Тип ответа"
-"nonIPQueries" = "Запросы не-IP"
-"blockTypes" = "Типы блокировки"
-
-[pages.xray.outbound.loopback]
-"inboundTag" = "Тег входящего"
-
-[pages.xray.outbound.socks]
-"version" = "Версия"
-
-[pages.xray.outbound.hysteria]
-"uploadSpeed" = "Скорость загрузки"
-"downloadSpeed" = "Скорость скачивания"
-"udpHopPort" = "UDP Hop порт"
-"hopIntervalMin" = "Hop интервал мин. (с)"
-"hopIntervalMax" = "Hop интервал макс. (с)"
-"initStreamReceive" = "Init Stream Receive"
-"maxStreamReceive" = "Max Stream Receive"
-"initConnReceive" = "Init Connection Receive"
-"maxConnReceive" = "Max Connection Receive"
-"maxIdleTimeout" = "Макс. idle timeout (с)"
-"keepAlivePeriod" = "Keep Alive период (с)"
-"disablePathMTU" = "Отключить Path MTU"
-
-[pages.xray.outbound.tlsExtra]
-"echConfigList" = "Список ECH Config"
-"verifyPeerCertByName" = "Проверка Peer Cert по имени"
-"pinnedPeerCert" = "Закреплённый Peer Cert"
-"shortID" = "Short ID"
-
-[pages.xray.outbound.sockoptExtra]
-"addressPortStrategy" = "Стратегия адрес/порт"
-"keepAliveInterval" = "Keep Alive интервал"
-
-[pages.xray.outbound.mux]
-"mux" = "Mux"
-"concurrency" = "Параллелизм"
-"xudpConcurrency" = "xudp параллелизм"
-"xudpUDP443" = "xudp UDP 443"
-"pinnedSha256" = "Введите SHA256 отпечатки (base64)"
 
 [pages.xray.rule]
 "domainMatcher" = "Сопоставитель доменов"

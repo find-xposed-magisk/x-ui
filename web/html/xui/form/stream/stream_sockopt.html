@@ -52,7 +52,7 @@
             </a-select>
         </a-form-item>
         <!-- outbound-only -->
-        <a-form-item v-if="{{.}}.addressPortStrategy !== undefined" label='{{ i18n "pages.xray.outbound.sockoptExtra.addressPortStrategy" }}'>
+        <a-form-item v-if="{{.}}.addressPortStrategy !== undefined" label='{{ i18n "pages.outbounds.addressPortStrategy" }}'>
             <a-select v-model="{{.}}.addressPortStrategy" :style="{ width: '50%' }" :dropdown-class-name="themeSwitcher.currentTheme">
                 <a-select-option v-for="key in Address_Port_Strategy" :value="key">[[ key ]]</a-select-option>
             </a-select>

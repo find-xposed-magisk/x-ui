@@ -81,10 +81,10 @@
 
                 <!-- TCP fragment -->
                 <template v-if="mask.type === 'fragment'">
-                    <a-form-item label='{{ i18n "pages.xray.outbound.freedom.packets" }}'>
+                    <a-form-item label='{{ i18n "pages.outbounds.packets" }}'>
                         <a-input v-model.trim="mask.settings.packets" placeholder="tlshello" />
                     </a-form-item>
-                    <a-form-item label='{{ i18n "pages.xray.outbound.freedom.length" }}'>
+                    <a-form-item label='{{ i18n "pages.outbounds.length" }}'>
                         <a-input v-model.trim="mask.settings.length" placeholder="100-200" />
                     </a-form-item>
                     <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.delay" }}'>
@@ -325,25 +325,25 @@
             <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.udpHopInterval" }}'>
                 <a-input v-model.trim="inbound.stream.finalmask.quicParams.udpHopInterval" placeholder="5-10" />
             </a-form-item>
-            <a-form-item label='{{ i18n "pages.xray.outbound.hysteria.initStreamReceive" }}'>
+            <a-form-item label='{{ i18n "pages.outbounds.initStreamReceive" }}'>
                 <a-input-number v-model.number="inbound.stream.finalmask.quicParams.initStreamReceiveWindow" :min="0" />
             </a-form-item>
-            <a-form-item label='{{ i18n "pages.xray.outbound.hysteria.maxStreamReceive" }}'>
+            <a-form-item label='{{ i18n "pages.outbounds.maxStreamReceive" }}'>
                 <a-input-number v-model.number="inbound.stream.finalmask.quicParams.maxStreamReceiveWindow" :min="0" />
             </a-form-item>
-            <a-form-item label='{{ i18n "pages.xray.outbound.hysteria.initConnReceive" }}'>
+            <a-form-item label='{{ i18n "pages.outbounds.initConnReceive" }}'>
                 <a-input-number v-model.number="inbound.stream.finalmask.quicParams.initConnectionReceiveWindow" :min="0" />
             </a-form-item>
-            <a-form-item label='{{ i18n "pages.xray.outbound.hysteria.maxConnReceive" }}'>
+            <a-form-item label='{{ i18n "pages.outbounds.maxConnReceive" }}'>
                 <a-input-number v-model.number="inbound.stream.finalmask.quicParams.maxConnectionReceiveWindow" :min="0" />
             </a-form-item>
-            <a-form-item label='{{ i18n "pages.xray.outbound.hysteria.maxIdleTimeout" }}'>
+            <a-form-item label='{{ i18n "pages.outbounds.maxIdleTimeout" }}'>
                 <a-input-number v-model.number="inbound.stream.finalmask.quicParams.maxIdleTimeout" :min="0" :max="120" />
             </a-form-item>
-            <a-form-item label='{{ i18n "pages.xray.outbound.hysteria.keepAlivePeriod" }}'>
+            <a-form-item label='{{ i18n "pages.outbounds.keepAlivePeriod" }}'>
                 <a-input-number v-model.number="inbound.stream.finalmask.quicParams.keepAlivePeriod" :min="0" :max="60" />
             </a-form-item>
-            <a-form-item label='{{ i18n "pages.xray.outbound.hysteria.disablePathMTU" }}'>
+            <a-form-item label='{{ i18n "pages.outbounds.disablePathMTU" }}'>
                 <a-switch v-model="inbound.stream.finalmask.quicParams.disablePathMTUDiscovery"></a-switch>
             </a-form-item>
             <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.maxIncomingStreams" }}'>

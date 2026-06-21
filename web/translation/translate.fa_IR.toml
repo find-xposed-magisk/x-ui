@@ -218,9 +218,42 @@
 "testing" = "در حال تست..."
 "testSuccess" = "در دسترس"
 "testFailed" = "در دسترس نیست"
-
-[pages.outbounds.toasts]
 "obtain" = "دریافت خروجی‌ها ناموفق بود"
+"strategy" = "استراتژی"
+"redirect" = "تغییر مسیر"
+"fragment" = "فرگمنت"
+"packets" = "بسته‌ها"
+"length" = "طول"
+"interval" = "بازه"
+"noises" = "نویزها"
+"responseType" = "نوع پاسخ"
+"nonIPQueries" = "کوئری‌های غیر IP"
+"blockTypes" = "نوع‌های مسدودشده"
+"inboundTag" = "برچسب ورودی"
+"version" = "نسخه"
+"uploadSpeed" = "سرعت آپلود"
+"downloadSpeed" = "سرعت دانلود"
+"udpHopPort" = "پورت Hop در UDP"
+"hopIntervalMin" = "حداقل بازه Hop (ث)"
+"hopIntervalMax" = "حداکثر بازه Hop (ث)"
+"initStreamReceive" = "Init Stream Receive"
+"maxStreamReceive" = "Max Stream Receive"
+"initConnReceive" = "Init Connection Receive"
+"maxConnReceive" = "Max Connection Receive"
+"maxIdleTimeout" = "حداکثر زمان بیکاری (ث)"
+"keepAlivePeriod" = "بازه Keep Alive (ث)"
+"disablePathMTU" = "غیرفعال کردن Path MTU"
+"echConfigList" = "لیست ECH Config"
+"verifyPeerCertByName" = "تأیید گواهی Peer با نام"
+"pinnedPeerCert" = "گواهی Peer ثابت"
+"shortID" = "Short ID"
+"addressPortStrategy" = "استراتژی آدرس و پورت"
+"keepAliveInterval" = "بازه Keep Alive"
+"mux" = "Mux"
+"concurrency" = "تعداد همزمان"
+"xudpConcurrency" = "تعداد همزمان xudp"
+"xudpUDP443" = "xudp UDP 443"
+"pinnedSha256" = "اثرانگشت SHA256 را وارد کنید (base64)"
 
 [pages.client]
 "add" = "کاربر جدید"
@@ -435,57 +468,6 @@
 "peers" = "Peerها"
 "keepAlive" = "Keep Alive"
 "workers" = "Workerها"
-
-[pages.xray.outbound.freedom]
-"strategy" = "استراتژی"
-"redirect" = "تغییر مسیر"
-"fragment" = "فرگمنت"
-"packets" = "بسته‌ها"
-"length" = "طول"
-"interval" = "بازه"
-"noises" = "نویزها"
-
-[pages.xray.outbound.dns]
-"responseType" = "نوع پاسخ"
-"nonIPQueries" = "کوئری‌های غیر IP"
-"blockTypes" = "نوع‌های مسدودشده"
-
-[pages.xray.outbound.loopback]
-"inboundTag" = "برچسب ورودی"
-
-[pages.xray.outbound.socks]
-"version" = "نسخه"
-
-[pages.xray.outbound.hysteria]
-"uploadSpeed" = "سرعت آپلود"
-"downloadSpeed" = "سرعت دانلود"
-"udpHopPort" = "پورت Hop در UDP"
-"hopIntervalMin" = "حداقل بازه Hop (ث)"
-"hopIntervalMax" = "حداکثر بازه Hop (ث)"
-"initStreamReceive" = "Init Stream Receive"
-"maxStreamReceive" = "Max Stream Receive"
-"initConnReceive" = "Init Connection Receive"
-"maxConnReceive" = "Max Connection Receive"
-"maxIdleTimeout" = "حداکثر زمان بیکاری (ث)"
-"keepAlivePeriod" = "بازه Keep Alive (ث)"
-"disablePathMTU" = "غیرفعال کردن Path MTU"
-
-[pages.xray.outbound.tlsExtra]
-"echConfigList" = "لیست ECH Config"
-"verifyPeerCertByName" = "تأیید گواهی Peer با نام"
-"pinnedPeerCert" = "گواهی Peer ثابت"
-"shortID" = "Short ID"
-
-[pages.xray.outbound.sockoptExtra]
-"addressPortStrategy" = "استراتژی آدرس و پورت"
-"keepAliveInterval" = "بازه Keep Alive"
-
-[pages.xray.outbound.mux]
-"mux" = "Mux"
-"concurrency" = "تعداد همزمان"
-"xudpConcurrency" = "تعداد همزمان xudp"
-"xudpUDP443" = "xudp UDP 443"
-"pinnedSha256" = "اثرانگشت SHA256 را وارد کنید (base64)"
 
 [pages.xray.rule]
 "domainMatcher" = "Domain Matcher"

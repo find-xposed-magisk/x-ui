@@ -219,9 +219,42 @@
 "testing" = "测试中..."
 "testSuccess" = "可达"
 "testFailed" = "不可达"
-
-[pages.outbounds.toasts]
 "obtain" = "获取出站失败"
+"strategy" = "策略"
+"redirect" = "重定向"
+"fragment" = "分片"
+"packets" = "数据包"
+"length" = "长度"
+"interval" = "间隔"
+"noises" = "噪声"
+"responseType" = "响应类型"
+"nonIPQueries" = "非 IP 查询"
+"blockTypes" = "阻止类型"
+"inboundTag" = "入站标签"
+"version" = "版本"
+"uploadSpeed" = "上传速度"
+"downloadSpeed" = "下载速度"
+"udpHopPort" = "UDP Hop 端口"
+"hopIntervalMin" = "Hop 最小间隔（秒）"
+"hopIntervalMax" = "Hop 最大间隔（秒）"
+"initStreamReceive" = "Init Stream Receive"
+"maxStreamReceive" = "Max Stream Receive"
+"initConnReceive" = "Init Connection Receive"
+"maxConnReceive" = "Max Connection Receive"
+"maxIdleTimeout" = "最大空闲超时（秒）"
+"keepAlivePeriod" = "Keep Alive 周期（秒）"
+"disablePathMTU" = "禁用 Path MTU"
+"echConfigList" = "ECH 配置列表"
+"verifyPeerCertByName" = "按名称验证 Peer 证书"
+"pinnedPeerCert" = "固定 Peer 证书"
+"shortID" = "Short ID"
+"addressPortStrategy" = "地址端口策略"
+"keepAliveInterval" = "Keep Alive 间隔"
+"mux" = "Mux"
+"concurrency" = "并发数"
+"xudpConcurrency" = "xudp 并发数"
+"xudpUDP443" = "xudp UDP 443"
+"pinnedSha256" = "输入 SHA256 指纹（base64）"
 
 [pages.client]
 "add" = "添加客户端"
@@ -436,57 +469,6 @@
 "peers" = "Peers"
 "keepAlive" = "Keep Alive"
 "workers" = "Workers"
-
-[pages.xray.outbound.freedom]
-"strategy" = "策略"
-"redirect" = "重定向"
-"fragment" = "分片"
-"packets" = "数据包"
-"length" = "长度"
-"interval" = "间隔"
-"noises" = "噪声"
-
-[pages.xray.outbound.dns]
-"responseType" = "响应类型"
-"nonIPQueries" = "非 IP 查询"
-"blockTypes" = "阻止类型"
-
-[pages.xray.outbound.loopback]
-"inboundTag" = "入站标签"
-
-[pages.xray.outbound.socks]
-"version" = "版本"
-
-[pages.xray.outbound.hysteria]
-"uploadSpeed" = "上传速度"
-"downloadSpeed" = "下载速度"
-"udpHopPort" = "UDP Hop 端口"
-"hopIntervalMin" = "Hop 最小间隔（秒）"
-"hopIntervalMax" = "Hop 最大间隔（秒）"
-"initStreamReceive" = "Init Stream Receive"
-"maxStreamReceive" = "Max Stream Receive"
-"initConnReceive" = "Init Connection Receive"
-"maxConnReceive" = "Max Connection Receive"
-"maxIdleTimeout" = "最大空闲超时（秒）"
-"keepAlivePeriod" = "Keep Alive 周期（秒）"
-"disablePathMTU" = "禁用 Path MTU"
-
-[pages.xray.outbound.tlsExtra]
-"echConfigList" = "ECH 配置列表"
-"verifyPeerCertByName" = "按名称验证 Peer 证书"
-"pinnedPeerCert" = "固定 Peer 证书"
-"shortID" = "Short ID"
-
-[pages.xray.outbound.sockoptExtra]
-"addressPortStrategy" = "地址端口策略"
-"keepAliveInterval" = "Keep Alive 间隔"
-
-[pages.xray.outbound.mux]
-"mux" = "Mux"
-"concurrency" = "并发数"
-"xudpConcurrency" = "xudp 并发数"
-"xudpUDP443" = "xudp UDP 443"
-"pinnedSha256" = "输入 SHA256 指纹（base64）"
 
 [pages.xray.rule]
 "domainMatcher" = "域名匹配器"

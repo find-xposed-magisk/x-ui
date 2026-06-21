@@ -218,9 +218,42 @@
 "testing" = "Đang kiểm tra..."
 "testSuccess" = "Có thể kết nối"
 "testFailed" = "Không thể kết nối"
-
-[pages.outbounds.toasts]
 "obtain" = "Không thể tải outbounds"
+"strategy" = "Chiến lược"
+"redirect" = "Chuyển hướng"
+"fragment" = "Fragment"
+"packets" = "Gói tin"
+"length" = "Độ dài"
+"interval" = "Khoảng"
+"noises" = "Nhiễu"
+"responseType" = "Loại phản hồi"
+"nonIPQueries" = "Truy vấn không phải IP"
+"blockTypes" = "Loại chặn"
+"inboundTag" = "Thẻ Inbound"
+"version" = "Phiên bản"
+"uploadSpeed" = "Tốc độ tải lên"
+"downloadSpeed" = "Tốc độ tải xuống"
+"udpHopPort" = "UDP Hop Port"
+"hopIntervalMin" = "Hop Interval tối thiểu (s)"
+"hopIntervalMax" = "Hop Interval tối đa (s)"
+"initStreamReceive" = "Init Stream Receive"
+"maxStreamReceive" = "Max Stream Receive"
+"initConnReceive" = "Init Connection Receive"
+"maxConnReceive" = "Max Connection Receive"
+"maxIdleTimeout" = "Max Idle Timeout (s)"
+"keepAlivePeriod" = "Keep Alive Period (s)"
+"disablePathMTU" = "Tắt Path MTU"
+"echConfigList" = "ECH Config List"
+"verifyPeerCertByName" = "Xác minh Peer Cert theo tên"
+"pinnedPeerCert" = "Peer Cert đã ghim"
+"shortID" = "Short ID"
+"addressPortStrategy" = "Chiến lược địa chỉ-cổng"
+"keepAliveInterval" = "Keep Alive Interval"
+"mux" = "Mux"
+"concurrency" = "Đồng thời"
+"xudpConcurrency" = "xudp Đồng thời"
+"xudpUDP443" = "xudp UDP 443"
+"pinnedSha256" = "Nhập SHA256 fingerprint (base64)"
 
 [pages.client]
 "add" = "Thêm máy khách"
@@ -435,57 +468,6 @@
 "peers" = "Peers"
 "keepAlive" = "Keep Alive"
 "workers" = "Workers"
-
-[pages.xray.outbound.freedom]
-"strategy" = "Chiến lược"
-"redirect" = "Chuyển hướng"
-"fragment" = "Fragment"
-"packets" = "Gói tin"
-"length" = "Độ dài"
-"interval" = "Khoảng"
-"noises" = "Nhiễu"
-
-[pages.xray.outbound.dns]
-"responseType" = "Loại phản hồi"
-"nonIPQueries" = "Truy vấn không phải IP"
-"blockTypes" = "Loại chặn"
-
-[pages.xray.outbound.loopback]
-"inboundTag" = "Thẻ Inbound"
-
-[pages.xray.outbound.socks]
-"version" = "Phiên bản"
-
-[pages.xray.outbound.hysteria]
-"uploadSpeed" = "Tốc độ tải lên"
-"downloadSpeed" = "Tốc độ tải xuống"
-"udpHopPort" = "UDP Hop Port"
-"hopIntervalMin" = "Hop Interval tối thiểu (s)"
-"hopIntervalMax" = "Hop Interval tối đa (s)"
-"initStreamReceive" = "Init Stream Receive"
-"maxStreamReceive" = "Max Stream Receive"
-"initConnReceive" = "Init Connection Receive"
-"maxConnReceive" = "Max Connection Receive"
-"maxIdleTimeout" = "Max Idle Timeout (s)"
-"keepAlivePeriod" = "Keep Alive Period (s)"
-"disablePathMTU" = "Tắt Path MTU"
-
-[pages.xray.outbound.tlsExtra]
-"echConfigList" = "ECH Config List"
-"verifyPeerCertByName" = "Xác minh Peer Cert theo tên"
-"pinnedPeerCert" = "Peer Cert đã ghim"
-"shortID" = "Short ID"
-
-[pages.xray.outbound.sockoptExtra]
-"addressPortStrategy" = "Chiến lược địa chỉ-cổng"
-"keepAliveInterval" = "Keep Alive Interval"
-
-[pages.xray.outbound.mux]
-"mux" = "Mux"
-"concurrency" = "Đồng thời"
-"xudpConcurrency" = "xudp Đồng thời"
-"xudpUDP443" = "xudp UDP 443"
-"pinnedSha256" = "Nhập SHA256 fingerprint (base64)"
 
 [pages.xray.rule]
 "domainMatcher" = "Domain Matcher"

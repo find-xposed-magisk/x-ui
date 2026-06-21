@@ -39,7 +39,7 @@ func (a *OutboundController) initRouter(g *gin.RouterGroup) {
 func (a *OutboundController) getOutbounds(c *gin.Context) {
 	outbounds, err := a.outboundService.GetAllOutbounds()
 	if err != nil {
-		jsonMsg(c, I18nWeb(c, "pages.outbounds.toasts.obtain"), err)
+		jsonMsg(c, I18nWeb(c, "pages.outbounds.obtain"), err)
 		return
 	}
 	jsonObj(c, outbounds, nil)
@@ -124,7 +124,7 @@ func (a *OutboundController) onlines(c *gin.Context) {
 func (a *OutboundController) getClientReverseTags(c *gin.Context) {
 	tags, err := a.inboundService.GetClientReverseTags()
 	if err != nil {
-		jsonMsg(c, I18nWeb(c, "pages.outbounds.toasts.obtain"), err)
+		jsonMsg(c, I18nWeb(c, "pages.outbounds.obtain"), err)
 		return
 	}
 	var arr []string

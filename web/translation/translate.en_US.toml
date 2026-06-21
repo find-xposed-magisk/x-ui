@@ -218,8 +218,41 @@
 "testing" = "Testing..."
 "testSuccess" = "Reachable"
 "testFailed" = "Unreachable"
-
-[pages.outbounds.toasts]
+"strategy" = "Strategy"
+"redirect" = "Redirect"
+"fragment" = "Fragment"
+"packets" = "Packets"
+"length" = "Length"
+"interval" = "Interval"
+"noises" = "Noises"
+"responseType" = "Response Type"
+"nonIPQueries" = "non-IP queries"
+"blockTypes" = "Block Types"
+"inboundTag" = "Inbound Tag"
+"version" = "Version"
+"uploadSpeed" = "Upload Speed"
+"downloadSpeed" = "Download Speed"
+"udpHopPort" = "UDP Hop Port"
+"hopIntervalMin" = "Hop Interval Min (s)"
+"hopIntervalMax" = "Hop Interval Max (s)"
+"initStreamReceive" = "Init Stream Receive"
+"maxStreamReceive" = "Max Stream Receive"
+"initConnReceive" = "Init Connection Receive"
+"maxConnReceive" = "Max Connection Receive"
+"maxIdleTimeout" = "Max Idle Timeout (s)"
+"keepAlivePeriod" = "Keep Alive Period (s)"
+"disablePathMTU" = "Disable Path MTU"
+"echConfigList" = "ECH Config List"
+"verifyPeerCertByName" = "Verify Peer Cert By Name"
+"pinnedPeerCert" = "Pinned Peer Cert"
+"shortID" = "Short ID"
+"addressPortStrategy" = "Address Port Strategy"
+"keepAliveInterval" = "Keep Alive Interval"
+"mux" = "Mux"
+"concurrency" = "Concurrency"
+"xudpConcurrency" = "xudp Concurrency"
+"xudpUDP443" = "xudp UDP 443"
+"pinnedSha256" = "Enter SHA256 fingerprints (base64)"
 "obtain" = "Failed to load outbounds"
 
 [pages.client]
@@ -435,57 +468,6 @@
 "peers" = "Peers"
 "keepAlive" = "Keep Alive"
 "workers" = "Workers"
-
-[pages.xray.outbound.freedom]
-"strategy" = "Strategy"
-"redirect" = "Redirect"
-"fragment" = "Fragment"
-"packets" = "Packets"
-"length" = "Length"
-"interval" = "Interval"
-"noises" = "Noises"
-
-[pages.xray.outbound.dns]
-"responseType" = "Response Type"
-"nonIPQueries" = "non-IP queries"
-"blockTypes" = "Block Types"
-
-[pages.xray.outbound.loopback]
-"inboundTag" = "Inbound Tag"
-
-[pages.xray.outbound.socks]
-"version" = "Version"
-
-[pages.xray.outbound.hysteria]
-"uploadSpeed" = "Upload Speed"
-"downloadSpeed" = "Download Speed"
-"udpHopPort" = "UDP Hop Port"
-"hopIntervalMin" = "Hop Interval Min (s)"
-"hopIntervalMax" = "Hop Interval Max (s)"
-"initStreamReceive" = "Init Stream Receive"
-"maxStreamReceive" = "Max Stream Receive"
-"initConnReceive" = "Init Connection Receive"
-"maxConnReceive" = "Max Connection Receive"
-"maxIdleTimeout" = "Max Idle Timeout (s)"
-"keepAlivePeriod" = "Keep Alive Period (s)"
-"disablePathMTU" = "Disable Path MTU"
-
-[pages.xray.outbound.tlsExtra]
-"echConfigList" = "ECH Config List"
-"verifyPeerCertByName" = "Verify Peer Cert By Name"
-"pinnedPeerCert" = "Pinned Peer Cert"
-"shortID" = "Short ID"
-
-[pages.xray.outbound.sockoptExtra]
-"addressPortStrategy" = "Address Port Strategy"
-"keepAliveInterval" = "Keep Alive Interval"
-
-[pages.xray.outbound.mux]
-"mux" = "Mux"
-"concurrency" = "Concurrency"
-"xudpConcurrency" = "xudp Concurrency"
-"xudpUDP443" = "xudp UDP 443"
-"pinnedSha256" = "Enter SHA256 fingerprints (base64)"
 
 [pages.xray.rule]
 "domainMatcher" = "Domain Matcher"
