@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/alireza0/x-ui/web/global"
+	"github.com/alireza0/x-ui/web/network"
 	"github.com/alireza0/x-ui/web/service"
 
 	"github.com/gin-gonic/gin"
@@ -49,6 +50,7 @@ func (a *ServerController) initRouter(g *gin.RouterGroup) {
 
 	g.POST("/getNewEchCert", a.getNewEchCert)
 	g.POST("/getCertHash", a.getCertHash)
+	g.POST("/getTlsPing", a.getTlsPing)
 	g.POST("/stopXrayService", a.stopXrayService)
 	g.POST("/restartXrayService", a.restartXrayService)
 	g.POST("/installXray/:version", a.installXray)
@@ -214,12 +216,23 @@ func (a *ServerController) getNewEchCert(c *gin.Context) {
 func (a *ServerController) getCertHash(c *gin.Context) {
 	certFile := c.PostForm("certFile")
 	certContent := c.PostForm("certContent")
-	hashes, err := a.serverService.GetCertHash(certFile, certContent)
+	hashes, err := network.GetCertHash(certFile, certContent)
 	if err != nil {
 		jsonMsg(c, "get certificate hash", err)
 		return
 	}
 	jsonObj(c, hashes, nil)
+}
+
+func (a *ServerController) getTlsPing(c *gin.Context) {
+	domain := c.PostForm("domain")
+	port := c.PostForm("port")
+	tlsPing, err := network.GetTlsPing(domain, port)
+	if err != nil {
+		jsonMsg(c, "get tls ping", err)
+		return
+	}
+	jsonObj(c, tlsPing, nil)
 }
 
 func (a *ServerController) getNewVlessEnc(c *gin.Context) {

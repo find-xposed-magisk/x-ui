@@ -3,11 +3,7 @@ package service
 import (
 	"archive/zip"
 	"bytes"
-	"crypto/sha256"
-	"crypto/x509"
-	"encoding/hex"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
 	"io"
 	"io/fs"
@@ -668,55 +664,6 @@ func (s *ServerService) GetNewEchCert(sni string) (interface{}, error) {
 		"echServerKeys": serverKeys,
 		"echConfigList": configList,
 	}, nil
-}
-
-func (s *ServerService) GetCertHash(certFile string, certContent string) ([]string, error) {
-	var certBytes []byte
-	if path := strings.TrimSpace(certFile); path != "" {
-		b, err := os.ReadFile(path)
-		if err != nil {
-			return nil, err
-		}
-		certBytes = b
-	} else if strings.TrimSpace(certContent) != "" {
-		certBytes = []byte(certContent)
-	} else {
-		return nil, common.NewError("no certificate provided")
-	}
-
-	var certs []*x509.Certificate
-	if bytes.Contains(certBytes, []byte("BEGIN")) {
-		rest := certBytes
-		for {
-			block, remain := pem.Decode(rest)
-			if block == nil {
-				break
-			}
-			cert, err := x509.ParseCertificate(block.Bytes)
-			if err != nil {
-				return nil, common.NewError("unable to decode certificate: ", err)
-			}
-			certs = append(certs, cert)
-			rest = remain
-		}
-	} else {
-		parsed, err := x509.ParseCertificates(certBytes)
-		if err != nil {
-			return nil, common.NewError("unable to parse certificates: ", err)
-		}
-		certs = parsed
-	}
-
-	if len(certs) == 0 {
-		return nil, common.NewError("no certificates found")
-	}
-
-	hashes := make([]string, 0, len(certs))
-	for _, cert := range certs {
-		sum := sha256.Sum256(cert.Raw)
-		hashes = append(hashes, hex.EncodeToString(sum[:]))
-	}
-	return hashes, nil
 }
 
 func (s *ServerService) GetNewVlessEnc() (any, error) {

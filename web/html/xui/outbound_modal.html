@@ -141,6 +141,20 @@
                     outModal.link = '';
                 }
             },
+
+            async getTlsPing() {
+                const options = {
+                    'domain': this.outbound.stream.tls.serverName || this.outbound.settings.address,
+                    'port': this.outbound.settings.port || 443,
+                }
+                outModal.confirmLoading = true;
+                this.outbound.stream.tls.pinnedPeerCertSha256 = "";
+                const msg = await HttpUtil.post('/server/getTlsPing', options);
+                if (msg.success) {
+                    this.outbound.stream.tls.pinnedPeerCertSha256 = msg.obj.leafHash;
+                }
+                outModal.confirmLoading = false;
+            }
         },
     });
 </script>

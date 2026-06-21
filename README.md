@@ -284,6 +284,8 @@ docker build -t x-ui .
 | `GET`  | `"/getNewX25519Cert"`              | Get new x25519 cert                       |
 | `GET`  | `"/getNewmldsa65"`                 | Get new mldsa65                           |
 | `POST` | `"/getNewEchCert"`                 | Get new ech cert                          |
+| `POST` | `"/getCertHash"`                   | Get hash for provided cert                |
+| `POST` | `"/getTlsPing"`                    | Get hash by TLS ping                      |
 | `POST` | `"/importDB"`                      | Import database to x-ui                   |
 | `POST` | `"/stopXrayService"`               | Stop xray service                         |
 | `POST` | `"/restartXrayService"`            | Restart xray service                      |
