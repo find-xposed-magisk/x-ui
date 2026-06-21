@@ -11,32 +11,12 @@
 {{end}}
 
 {{define "form/sockoptFields"}}
-        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.routeMark" }}'>
-            <a-input-number v-model.number="{{.}}.mark" :min="0"></a-input-number>
-        </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpKeepAliveInterval" }}'>
-            <a-input-number v-model.number="{{.}}.tcpKeepAliveInterval" :min="0"></a-input-number>
-        </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpKeepAliveIdle" }}'>
-            <a-input-number v-model.number="{{.}}.tcpKeepAliveIdle" :min="0"></a-input-number>
-        </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpMaxSeg" }}'>
-            <a-input-number v-model.number="{{.}}.tcpMaxSeg" :min="0"></a-input-number>
-        </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpUserTimeout" }}'>
-            <a-input-number v-model.number="{{.}}.tcpUserTimeout" :min="0"></a-input-number>
-        </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpWindowClamp" }}'>
-            <a-input-number v-model.number="{{.}}.tcpWindowClamp" :min="0"></a-input-number>
-        </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.proxyProtocol" }}'>
+        <!-- inbound-only -->
+        <a-form-item v-if="{{.}}.acceptProxyProtocol !== undefined" label='{{ i18n "pages.inbounds.stream.sockopt.proxyProtocol" }}'>
             <a-switch v-model="{{.}}.acceptProxyProtocol"></a-switch>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpFastOpen" }}'>
             <a-switch v-model.trim="{{.}}.tcpFastOpen"></a-switch>
-        </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpNoDelay" }}'>
-            <a-switch v-model.trim="{{.}}.tcpNoDelay"></a-switch>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.multipathTCP" }}'>
             <a-switch v-model.trim="{{.}}.tcpMptcp"></a-switch>
@@ -44,28 +24,79 @@
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.penetrate" }}'>
             <a-switch v-model.trim="{{.}}.penetrate"></a-switch>
         </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.v6Only" }}'>
+        <!-- inbound-only -->
+        <a-form-item v-if="{{.}}.V6Only !== undefined" label='{{ i18n "pages.inbounds.stream.sockopt.v6Only" }}'>
             <a-switch v-model.trim="{{.}}.V6Only"></a-switch>
+        </a-form-item>
+        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.routeMark" }}'>
+            <a-input-number v-model.number="{{.}}.mark" :min="0"></a-input-number>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.domainStrategy" }}'>
             <a-select v-model="{{.}}.domainStrategy" :style="{ width: '50%' }" :dropdown-class-name="themeSwitcher.currentTheme">
-              <a-select-option v-for="key in DOMAIN_STRATEGY_OPTION" :value="key">[[ key ]]</a-select-option>
+                <a-select-option value="">{{ i18n "none" }}</a-select-option>
+                <a-select-option v-for="s in ['AsIs','UseIP','UseIPv4','UseIPv6','UseIPv6v4','UseIPv4v6','ForceIP','ForceIPv4','ForceIPv6','ForceIPv6v4','ForceIPv4v6']" :value="s">[[ s ]]</a-select-option>
             </a-select>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpCongestion" }}'>
             <a-select v-model="{{.}}.tcpcongestion" :style="{ width: '50%' }" :dropdown-class-name="themeSwitcher.currentTheme">
-              <a-select-option v-for="key in TCP_CONGESTION_OPTION" :value="key">[[ key ]]</a-select-option>
+                <a-select-option value="">{{ i18n "none" }}</a-select-option>
+                <a-select-option v-for="s in ['bbr','cubic','reno']" :value="s">[[ s ]]</a-select-option>
             </a-select>
         </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tproxy" }}'>
+        <!-- inbound-only -->
+        <a-form-item v-if="{{.}}.tproxy !== undefined" label='{{ i18n "pages.inbounds.stream.sockopt.tproxy" }}'>
             <a-select v-model="{{.}}.tproxy" :style="{ width: '50%' }" :dropdown-class-name="themeSwitcher.currentTheme">
                 <a-select-option value="off">Off</a-select-option>
                 <a-select-option value="redirect">Redirect</a-select-option>
                 <a-select-option value="tproxy">TProxy</a-select-option>
             </a-select>
         </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.dialerProxy" }}'>
-            <a-input v-model="{{.}}.dialerProxy"></a-input>
+        <!-- outbound-only -->
+        <a-form-item v-if="{{.}}.addressPortStrategy !== undefined" label='{{ i18n "pages.xray.outbound.sockoptExtra.addressPortStrategy" }}'>
+            <a-select v-model="{{.}}.addressPortStrategy" :style="{ width: '50%' }" :dropdown-class-name="themeSwitcher.currentTheme">
+                <a-select-option v-for="key in Address_Port_Strategy" :value="key">[[ key ]]</a-select-option>
+            </a-select>
+        </a-form-item>
+        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpMaxSeg" }}'>
+            <a-input-number v-model.number="{{.}}.tcpMaxSeg" :min="0"></a-input-number>
+        </a-form-item>
+        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpKeepAliveInterval" }}'>
+            <a-input-number v-model.number="{{.}}.tcpKeepAliveInterval" :min="0"></a-input-number>
+        </a-form-item>
+        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpKeepAliveIdle" }}'>
+            <a-input-number v-model.number="{{.}}.tcpKeepAliveIdle" :min="0"></a-input-number>
+        </a-form-item>
+        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpUserTimeout" }}'>
+            <a-input-number v-model.number="{{.}}.tcpUserTimeout" :min="0"></a-input-number>
+        </a-form-item>
+        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpWindowClamp" }}'>
+            <a-input-number v-model.number="{{.}}.tcpWindowClamp" :min="0"></a-input-number>
+        </a-form-item>
+        <!-- outbound-only -->
+        <template v-if="{{.}}.happyEyeballs !== undefined">
+            <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.happyEyeballs" }}'>
+                <a-switch v-model="{{.}}.happyEyeballs.enabled"></a-switch>
+            </a-form-item>
+            <template v-if="{{.}}.happyEyeballs.enabled">
+                <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.prioritizeIPv6" }}'>
+                    <a-switch v-model="{{.}}.happyEyeballs.prioritizeIPv6"></a-switch>
+                </a-form-item>
+                <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.interleave" }}'>
+                    <a-input-number v-model.number="{{.}}.happyEyeballs.interleave" :min="0"></a-input-number>
+                </a-form-item>
+                <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tryDelayMs" }}'>
+                    <a-input-number v-model.number="{{.}}.happyEyeballs.tryDelayMs" :min="0"></a-input-number>
+                </a-form-item>
+                <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.maxConcurrentTry" }}'>
+                    <a-input-number v-model.number="{{.}}.happyEyeballs.maxConcurrentTry" :min="0"></a-input-number>
+                </a-form-item>
+            </template>
+        </template>
+        <!-- outbound-only -->
+        <a-form-item v-if="{{.}}.dialerProxy !== undefined" label='{{ i18n "pages.inbounds.stream.sockopt.dialerProxy" }}'>
+            <a-select v-model="{{.}}.dialerProxy" :dropdown-class-name="themeSwitcher.currentTheme">
+                <a-select-option v-for="tag in ['', ...outModal.tags]" :value="tag">[[ tag ]]</a-select-option>
+            </a-select>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.interfaceName" }}'>
             <a-input v-model="{{.}}.interfaceName"></a-input>
@@ -78,5 +109,30 @@
                 <a-select-option value="True-Client-IP">True-Client-IP</a-select-option>
                 <a-select-option value="X-Client-IP">X-Client-IP</a-select-option>
             </a-select>
+        </a-form-item>
+        {{template "form/customSockopt" .}}
+{{end}}
+
+{{define "form/customSockopt"}}
+        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.customSockopt" }}'>
+            <a-button type="primary" size="small" icon="plus"
+                @click="{{.}}.customSockopt.push({ system: '', network: 'tcp', level: '', opt: '', value: '', type: 'int' })"></a-button>
+        </a-form-item>
+        <a-form-item v-for="(cs, csIndex) in {{.}}.customSockopt" :key="csIndex">
+            <a-input-group compact style="display:flex;">
+                <a-input style="width: 16%;" v-model.trim="cs.system" placeholder="system"></a-input>
+                <a-select style="width: 14%;" v-model="cs.network" :dropdown-class-name="themeSwitcher.currentTheme">
+                    <a-select-option value="tcp">tcp</a-select-option>
+                    <a-select-option value="udp">udp</a-select-option>
+                </a-select>
+                <a-input style="width: 13%;" v-model.trim="cs.level" placeholder="level"></a-input>
+                <a-input style="width: 13%;" v-model.trim="cs.opt" placeholder="opt"></a-input>
+                <a-input style="width: 22%;" v-model.trim="cs.value" placeholder="value"></a-input>
+                <a-select style="width: 12%;" v-model="cs.type" :dropdown-class-name="themeSwitcher.currentTheme">
+                    <a-select-option value="int">int</a-select-option>
+                    <a-select-option value="str">str</a-select-option>
+                </a-select>
+                <a-button type="danger" size="small" icon="minus" @click="{{.}}.customSockopt.splice(csIndex, 1)"></a-button>
+            </a-input-group>
         </a-form-item>
 {{end}}

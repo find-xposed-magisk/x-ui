@@ -704,24 +704,40 @@ class SockoptStreamSettings extends CommonClass {
     constructor(
         dialerProxy = "",
         tcpFastOpen = false,
-        tcpNoDelay = false,
         tcpKeepAliveInterval = 0,
         tcpMptcp = false,
         penetrate = false,
         addressPortStrategy = Address_Port_Strategy.NONE,
         happyEyeballs = new SockoptStreamSettings.HappyEyeballs(),
         trustedXForwardedFor = [],
+        mark = 0,
+        domainStrategy = "",
+        tcpMaxSeg = 0,
+        tcpKeepAliveIdle = 0,
+        tcpUserTimeout = 0,
+        tcpcongestion = "",
+        tcpWindowClamp = 0,
+        interfaceName = "",
+        customSockopt = [],
     ) {
         super();
         this.dialerProxy = dialerProxy;
         this.tcpFastOpen = tcpFastOpen;
-        this.tcpNoDelay = tcpNoDelay;
         this.tcpKeepAliveInterval = tcpKeepAliveInterval;
         this.tcpMptcp = tcpMptcp;
         this.penetrate = penetrate;
         this.addressPortStrategy = addressPortStrategy;
         this.happyEyeballs = happyEyeballs;
         this.trustedXForwardedFor = trustedXForwardedFor;
+        this.mark = mark;
+        this.domainStrategy = domainStrategy;
+        this.tcpMaxSeg = tcpMaxSeg;
+        this.tcpKeepAliveIdle = tcpKeepAliveIdle;
+        this.tcpUserTimeout = tcpUserTimeout;
+        this.tcpcongestion = tcpcongestion;
+        this.tcpWindowClamp = tcpWindowClamp;
+        this.interfaceName = interfaceName;
+        this.customSockopt = Array.isArray(customSockopt) ? customSockopt : [];
     }
 
     static fromJson(json = {}) {
@@ -729,13 +745,21 @@ class SockoptStreamSettings extends CommonClass {
         return new SockoptStreamSettings(
             json.dialerProxy,
             json.tcpFastOpen,
-            json.tcpNoDelay,
             json.tcpKeepAliveInterval,
             json.tcpMptcp,
             json.penetrate,
             json.addressPortStrategy,
             SockoptStreamSettings.HappyEyeballs.fromJson(json.happyEyeballs),
-            json.trustedXForwardedFor || []
+            json.trustedXForwardedFor || [],
+            json.mark,
+            json.domainStrategy,
+            json.tcpMaxSeg,
+            json.tcpKeepAliveIdle,
+            json.tcpUserTimeout,
+            json.tcpcongestion,
+            json.tcpWindowClamp,
+            json.interface,
+            json.customSockopt || []
         );
     }
 
@@ -743,12 +767,20 @@ class SockoptStreamSettings extends CommonClass {
         const result = {
             dialerProxy: this.dialerProxy,
             tcpFastOpen: this.tcpFastOpen,
-            tcpNoDelay: this.tcpNoDelay,
             tcpKeepAliveInterval: this.tcpKeepAliveInterval,
             tcpMptcp: this.tcpMptcp,
             penetrate: this.penetrate,
             addressPortStrategy: this.addressPortStrategy,
             happyEyeballs: this.happyEyeballs && this.happyEyeballs.enabled ? this.happyEyeballs.toJson() : undefined,
+            mark: this.mark ? this.mark : undefined,
+            domainStrategy: this.domainStrategy ? this.domainStrategy : undefined,
+            tcpMaxSeg: this.tcpMaxSeg ? this.tcpMaxSeg : undefined,
+            tcpKeepAliveIdle: this.tcpKeepAliveIdle ? this.tcpKeepAliveIdle : undefined,
+            tcpUserTimeout: this.tcpUserTimeout ? this.tcpUserTimeout : undefined,
+            tcpcongestion: this.tcpcongestion ? this.tcpcongestion : undefined,
+            tcpWindowClamp: this.tcpWindowClamp ? this.tcpWindowClamp : undefined,
+            interface: this.interfaceName ? this.interfaceName : undefined,
+            customSockopt: this.customSockopt && this.customSockopt.length > 0 ? this.customSockopt : undefined,
         };
         if (this.trustedXForwardedFor && this.trustedXForwardedFor.length > 0) {
             result.trustedXForwardedFor = this.trustedXForwardedFor;

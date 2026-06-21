@@ -1174,14 +1174,12 @@ class SockoptStreamSettings extends XrayCommonClass {
     constructor(
         acceptProxyProtocol = false,
         tcpFastOpen = false,
-        tcpNoDelay = false,
         mark = 0,
         tproxy = "off",
         tcpMptcp = false,
         penetrate = false,
         domainStrategy = DOMAIN_STRATEGY_OPTION.USE_IP,
         tcpMaxSeg = 1440,
-        dialerProxy = "",
         tcpKeepAliveInterval = 0,
         tcpKeepAliveIdle = 300,
         tcpUserTimeout = 10000,
@@ -1190,18 +1188,17 @@ class SockoptStreamSettings extends XrayCommonClass {
         tcpWindowClamp = 600,
         interfaceName = "",
         trustedXForwardedFor = [],
+        customSockopt = [],
     ) {
         super();
         this.acceptProxyProtocol = acceptProxyProtocol;
         this.tcpFastOpen = tcpFastOpen;
-        this.tcpNoDelay = tcpNoDelay;
         this.mark = mark;
         this.tproxy = tproxy;
         this.tcpMptcp = tcpMptcp;
         this.penetrate = penetrate;
         this.domainStrategy = domainStrategy;
         this.tcpMaxSeg = tcpMaxSeg;
-        this.dialerProxy = dialerProxy;
         this.tcpKeepAliveInterval = tcpKeepAliveInterval;
         this.tcpKeepAliveIdle = tcpKeepAliveIdle;
         this.tcpUserTimeout = tcpUserTimeout;
@@ -1210,6 +1207,7 @@ class SockoptStreamSettings extends XrayCommonClass {
         this.tcpWindowClamp = tcpWindowClamp;
         this.interfaceName = interfaceName;
         this.trustedXForwardedFor = trustedXForwardedFor;
+        this.customSockopt = Array.isArray(customSockopt) ? customSockopt : [];
     }
 
     static fromJson(json = {}) {
@@ -1217,14 +1215,12 @@ class SockoptStreamSettings extends XrayCommonClass {
         return new SockoptStreamSettings(
             json.acceptProxyProtocol,
             json.tcpFastOpen,
-            json.tcpNoDelay,
             json.mark,
             json.tproxy,
             json.tcpMptcp,
             json.penetrate,
             json.domainStrategy,
             json.tcpMaxSeg,
-            json.dialerProxy,
             json.tcpKeepAliveInterval,
             json.tcpKeepAliveIdle,
             json.tcpUserTimeout,
@@ -1233,6 +1229,7 @@ class SockoptStreamSettings extends XrayCommonClass {
             json.tcpWindowClamp,
             json.interface,
             json.trustedXForwardedFor || [],
+            json.customSockopt || [],
         );
     }
 
@@ -1240,14 +1237,12 @@ class SockoptStreamSettings extends XrayCommonClass {
         const result = {
             acceptProxyProtocol: this.acceptProxyProtocol,
             tcpFastOpen: this.tcpFastOpen,
-            tcpNoDelay: this.tcpNoDelay,
             mark: this.mark,
             tproxy: this.tproxy,
             tcpMptcp: this.tcpMptcp,
             penetrate: this.penetrate,
             domainStrategy: this.domainStrategy,
             tcpMaxSeg: this.tcpMaxSeg,
-            dialerProxy: this.dialerProxy,
             tcpKeepAliveInterval: this.tcpKeepAliveInterval,
             tcpKeepAliveIdle: this.tcpKeepAliveIdle,
             tcpUserTimeout: this.tcpUserTimeout,
@@ -1258,6 +1253,9 @@ class SockoptStreamSettings extends XrayCommonClass {
         };
         if (this.trustedXForwardedFor && this.trustedXForwardedFor.length > 0) {
             result.trustedXForwardedFor = this.trustedXForwardedFor;
+        }
+        if (this.customSockopt && this.customSockopt.length > 0) {
+            result.customSockopt = this.customSockopt;
         }
         return result;
     }

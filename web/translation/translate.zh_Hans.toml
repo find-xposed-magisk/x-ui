@@ -340,7 +340,7 @@
 "tcpWindowClamp" = "TCP 窗口钳制"
 "proxyProtocol" = "Proxy Protocol"
 "tcpFastOpen" = "TCP Fast Open"
-"tcpNoDelay" = "TCP 无延迟"
+"customSockopt" = "自定义 Sockopt"
 "happyEyeballs" = "Happy Eyeballs"
 "prioritizeIPv6" = "优先 IPv6"
 "interleave" = "交错"

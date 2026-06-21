@@ -339,7 +339,7 @@
 "tcpWindowClamp" = "TCP Window Clamp"
 "proxyProtocol" = "Proxy Protocol"
 "tcpFastOpen" = "TCP Fast Open"
-"tcpNoDelay" = "TCP No Delay"
+"customSockopt" = "Sockopt tùy chỉnh"
 "happyEyeballs" = "Happy Eyeballs"
 "prioritizeIPv6" = "Ưu tiên IPv6"
 "interleave" = "Xen kẽ"

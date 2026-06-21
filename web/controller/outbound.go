@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"strconv"
 
 	"github.com/alireza0/x-ui/database/model"
@@ -10,6 +11,7 @@ import (
 
 type OutboundController struct {
 	outboundService service.OutboundService
+	inboundService  service.InboundService
 	xrayService     service.XrayService
 }
 
@@ -31,6 +33,7 @@ func (a *OutboundController) initRouter(g *gin.RouterGroup) {
 	g.POST("/resetAllTraffics", a.resetAllTraffics)
 	g.POST("/onlines", a.onlines)
 	g.POST("/test", a.test)
+	g.POST("/reverseTags", a.getClientReverseTags)
 }
 
 func (a *OutboundController) getOutbounds(c *gin.Context) {
@@ -116,6 +119,17 @@ func (a *OutboundController) resetAllTraffics(c *gin.Context) {
 
 func (a *OutboundController) onlines(c *gin.Context) {
 	jsonObj(c, a.outboundService.GetOnlineOutbounds(), nil)
+}
+
+func (a *OutboundController) getClientReverseTags(c *gin.Context) {
+	tags, err := a.inboundService.GetClientReverseTags()
+	if err != nil {
+		jsonMsg(c, I18nWeb(c, "pages.outbounds.toasts.obtain"), err)
+		return
+	}
+	var arr []string
+	json.Unmarshal([]byte(tags), &arr)
+	jsonObj(c, arr, nil)
 }
 
 func (a *OutboundController) test(c *gin.Context) {

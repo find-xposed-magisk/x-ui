@@ -339,7 +339,7 @@
 "tcpWindowClamp" = "TCP Window Clamp"
 "proxyProtocol" = "Proxy Protocol"
 "tcpFastOpen" = "TCP Fast Open"
-"tcpNoDelay" = "TCP No Delay"
+"customSockopt" = "Sockopt سفارشی"
 "happyEyeballs" = "Happy Eyeballs"
 "prioritizeIPv6" = "اولویت IPv6"
 "interleave" = "درهم‌آمیزی"

@@ -258,6 +258,7 @@ docker build -t x-ui .
 | `POST` | `"/resetAllTraffics"`             | Reset traffics of all outbounds           |
 | `POST` | `"/onlines"`                       | Get online outbound tags                  |
 | `POST` | `"/test"`                          | Test outbound connectivity                |
+| `POST` | `"/reverseTags"`                   | Get client reverse tags (usable as dialer)|
 
 
 - `/xui/API/routing` base for following actions:

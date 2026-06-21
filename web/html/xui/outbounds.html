@@ -334,6 +334,7 @@
             dbOutbounds: [],
             searchedOutbounds: [],
             onlineOutbounds: [],
+            clientReverseTags: [],
             searchKey: '',
             enableFilter: false,
             filterBy: '',
@@ -362,6 +363,12 @@
                 const msg = await HttpUtil.post('/xui/outbound/onlines');
                 if (msg.success) {
                     this.onlineOutbounds = msg.obj != null ? msg.obj : [];
+                }
+            },
+            async getClientReverseTags() {
+                const msg = await HttpUtil.post('/xui/outbound/reverseTags');
+                if (msg.success) {
+                    this.clientReverseTags = msg.obj != null ? msg.obj : [];
                 }
             },
             setOutbounds(list) {
@@ -424,7 +431,10 @@
                 return serverObj ? serverObj.map(obj => obj.address + ':' + obj.port) : [];
             },
             allTags(excludeId) {
-                return this.dbOutbounds.filter(o => o.id !== excludeId).map(o => o.tag);
+                const tags = this.dbOutbounds.filter(o => o.id !== excludeId).map(o => o.tag).filter(t => t);
+                // client reverse tags act as outbounds (portals); only usable while their client is online
+                const onlineReverse = this.clientReverseTags.filter(t => this.onlineOutbounds.includes(t));
+                return [...new Set([...tags, ...onlineReverse])];
             },
             addOutbound() {
                 outModal.show({
@@ -648,6 +658,7 @@
             window.addEventListener('resize', this.onResize);
             this.onResize();
             this.loading();
+            this.getClientReverseTags();
             if (this.isRefreshEnabled) {
                 this.startDataRefreshLoop();
             } else {

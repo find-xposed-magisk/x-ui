@@ -958,7 +958,7 @@
     <a-switch v-model="outbound.stream.sockoptSwitch"></a-switch>
 </a-form-item>
 <template v-if="outbound.stream.sockoptSwitch">
-    {{template "form/sockoptFieldsOut" "outbound.stream.sockopt"}}
+    {{template "form/sockoptFields" "outbound.stream.sockopt"}}
 </template>
 <template v-if="outbound.canEnableMux()">
     <a-form-item label='{{ i18n "pages.xray.outbound.mux.mux" }}'>
@@ -1039,7 +1039,7 @@
                 <a-switch v-model="outbound.stream.tls.echSockoptSwitch"></a-switch>
             </a-form-item>
             <template v-if="outbound.stream.tls.echSockoptSwitch">
-                {{template "form/sockoptFieldsOut" "outbound.stream.tls.echSockopt"}}
+                {{template "form/sockoptFields" "outbound.stream.tls.echSockopt"}}
             </template>
         </template>
         
@@ -1086,58 +1086,4 @@
     <textarea style="position:absolute; left: -800px;" id="outboundJson"></textarea>
 </a-tab-pane>
 </a-tabs>
-{{end}}
-
-{{define "form/sockoptFieldsOut"}}
-    <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.dialerProxy" }}'>
-        <a-select v-model="{{.}}.dialerProxy" :dropdown-class-name="themeSwitcher.currentTheme">
-            <a-select-option v-for="tag in ['', ...outModal.tags]" :value="tag">[[ tag ]]</a-select-option>
-        </a-select>
-    </a-form-item>
-    <a-form-item label='{{ i18n "pages.xray.outbound.sockoptExtra.addressPortStrategy" }}'>
-        <a-select v-model="{{.}}.addressPortStrategy" :dropdown-class-name="themeSwitcher.currentTheme">
-        <a-select-option v-for="key in Address_Port_Strategy" :value="key">[[ key ]]</a-select-option>
-        </a-select>
-    </a-form-item>
-    <a-form-item label='{{ i18n "pages.xray.outbound.sockoptExtra.keepAliveInterval" }}'>
-        <a-input-number v-model.number="{{.}}.tcpKeepAliveInterval" :min="0"></a-input-number>
-    </a-form-item>
-    <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpFastOpen" }}'>
-        <a-switch v-model="{{.}}.tcpFastOpen"></a-switch>
-    </a-form-item>
-    <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpNoDelay" }}'>
-        <a-switch v-model.trim="{{.}}.tcpNoDelay"></a-switch>
-    </a-form-item>
-    <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.multipathTCP" }}'>
-        <a-switch v-model.trim="{{.}}.tcpMptcp"></a-switch>
-    </a-form-item>
-    <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.penetrate" }}'>
-        <a-switch v-model="{{.}}.penetrate"></a-switch>
-    </a-form-item>
-    <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.happyEyeballs" }}'>
-        <a-switch v-model="{{.}}.happyEyeballs.enabled"></a-switch>
-    </a-form-item>
-    <template v-if="{{.}}.happyEyeballs.enabled">
-        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.prioritizeIPv6" }}'>
-            <a-switch v-model="{{.}}.happyEyeballs.prioritizeIPv6"></a-switch>
-        </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.interleave" }}'>
-            <a-input-number v-model.number="{{.}}.happyEyeballs.interleave" :min="0"></a-input-number>
-        </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tryDelayMs" }}'>
-            <a-input-number v-model.number="{{.}}.happyEyeballs.tryDelayMs" :min="0"></a-input-number>
-        </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.maxConcurrentTry" }}'>
-            <a-input-number v-model.number="{{.}}.happyEyeballs.maxConcurrentTry" :min="0"></a-input-number>
-        </a-form-item>
-    </template>
-    <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.trustedXForwardedFor" }}'>
-        <a-select mode="tags" v-model="{{.}}.trustedXForwardedFor" :style="{ width: '100%' }"
-            :dropdown-class-name="themeSwitcher.currentTheme">
-            <a-select-option value="CF-Connecting-IP">CF-Connecting-IP</a-select-option>
-            <a-select-option value="X-Real-IP">X-Real-IP</a-select-option>
-            <a-select-option value="True-Client-IP">True-Client-IP</a-select-option>
-            <a-select-option value="X-Client-IP">X-Client-IP</a-select-option>
-        </a-select>
-    </a-form-item>
 {{end}}

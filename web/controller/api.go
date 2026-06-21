@@ -85,6 +85,7 @@ func (a *APIController) outboundApi(api *gin.RouterGroup) {
 		{"POST", "/resetAllTraffics", a.outboundController.resetAllTraffics},
 		{"POST", "/onlines", a.outboundController.onlines},
 		{"POST", "/test", a.outboundController.test},
+		{"POST", "/reverseTags", a.outboundController.getClientReverseTags},
 	}
 
 	for _, route := range outboundRoutes {
