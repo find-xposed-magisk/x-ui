@@ -417,8 +417,10 @@
         },
         methods: {
             copyToClipboard(content) {
-                navigator.clipboard.writeText(content).then(() => {
-                    app.$message.success('{{ i18n "copied" }}');
+                ClipboardUtil.copyToClipboard(content).then(success => {
+                    if (success) {
+                        app.$message.success('{{ i18n "copied" }}');
+                    }
                 });
             },
 

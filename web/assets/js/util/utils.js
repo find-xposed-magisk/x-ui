@@ -93,6 +93,48 @@ class PromiseUtil {
     }
 }
 
+class ClipboardUtil {
+    static async copyToClipboard(content) {
+        if (navigator.clipboard && window.isSecureContext) {
+            try {
+                await navigator.clipboard.writeText(content);
+                return true;
+            } catch (e) {
+                // fall through to the legacy method
+            }
+        }
+        return ClipboardUtil.fallbackCopy(content);
+    }
+
+    static fallbackCopy(content) {
+        const isRTL = document.documentElement.getAttribute('dir') === 'rtl';
+        const textArea = document.createElement('textarea');
+        textArea.value = content;
+        textArea.setAttribute('readonly', '');
+        // 12pt keeps iOS Safari from zooming in when the field is focused
+        textArea.style.fontSize = '12pt';
+        textArea.style.border = '0';
+        textArea.style.padding = '0';
+        textArea.style.margin = '0';
+        // push it off-screen on the side that won't introduce horizontal scrolling,
+        // and pin it to the current scroll position so the page doesn't jump
+        textArea.style.position = 'absolute';
+        textArea.style[isRTL ? 'right' : 'left'] = '-9999px';
+        textArea.style.top = (window.pageYOffset || document.documentElement.scrollTop) + 'px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        let success = false;
+        try {
+            success = document.execCommand('copy');
+        } catch (e) {
+            success = false;
+        }
+        document.body.removeChild(textArea);
+        return success;
+    }
+}
+
 const seq = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
 class RandomUtil {
