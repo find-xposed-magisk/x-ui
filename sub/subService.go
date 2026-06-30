@@ -1072,6 +1072,61 @@ func (s *SubService) genHysteriaLink(inbound *model.Inbound, email string) strin
 		protocol = "hysteria"
 	}
 
+	if fm, ok := stream["finalmask"].(map[string]interface{}); ok {
+		if qp, ok := fm["quicParams"].(map[string]interface{}); ok {
+			if v, ok := qp["congestion"].(string); ok && v != "" {
+				params["congestion"] = v
+			}
+			if v, ok := qp["brutalUp"].(string); ok && v != "" {
+				params["up"] = v
+			}
+			if v, ok := qp["brutalDown"].(string); ok && v != "" {
+				params["down"] = v
+			}
+			if udpHop, ok := qp["udpHop"].(map[string]interface{}); ok {
+				if v, ok := udpHop["ports"].(string); ok && v != "" {
+					params["mport"] = v
+				}
+				switch iv := udpHop["interval"].(type) {
+				case string:
+					if iv != "" {
+						params["udphopInterval"] = iv
+					}
+				case float64:
+					params["udphopInterval"] = fmt.Sprintf("%d", int(iv))
+				}
+			}
+			for jsonKey, paramKey := range map[string]string{
+				"initStreamReceiveWindow":     "initStreamReceiveWindow",
+				"maxStreamReceiveWindow":      "maxStreamReceiveWindow",
+				"initConnectionReceiveWindow": "initConnectionReceiveWindow",
+				"maxConnectionReceiveWindow":  "maxConnectionReceiveWindow",
+				"maxIdleTimeout":              "maxIdleTimeout",
+				"keepAlivePeriod":             "keepAlivePeriod",
+			} {
+				if v, ok := qp[jsonKey].(float64); ok && v != 0 {
+					params[paramKey] = fmt.Sprintf("%d", int(v))
+				}
+			}
+			if v, ok := qp["disablePathMTUDiscovery"].(bool); ok && v {
+				params["disablePathMTUDiscovery"] = "true"
+			}
+		}
+		if udpMasks, ok := fm["udp"].([]interface{}); ok {
+			for _, m := range udpMasks {
+				mask, _ := m.(map[string]interface{})
+				settings, _ := mask["settings"].(map[string]interface{})
+				password, _ := settings["password"].(string)
+				maskType, _ := mask["type"].(string)
+				if password != "" && maskType != "" {
+					params["obfs"] = maskType
+					params["obfs-password"] = password
+					break
+				}
+			}
+		}
+	}
+
 	externalProxies, _ := stream["externalProxy"].([]interface{})
 
 	if len(externalProxies) > 0 {

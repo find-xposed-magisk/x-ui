@@ -512,7 +512,7 @@ class TlsStreamSettings extends CommonClass {
         this.serverName = serverName;
         this.alpn = alpn;
         this.fingerprint = fingerprint;
-        this.allowInsecure = allowInsecure;
+        this.allowInsecure = allowInsecure == '1' || allowInsecure == true || allowInsecure === 'true';
         this.echConfigList = echConfigList;
         this.verifyPeerCertByName = verifyPeerCertByName;
         this.pinnedPeerCertSha256 = pinnedPeerCertSha256;
@@ -546,15 +546,28 @@ class TlsStreamSettings extends CommonClass {
         );
     }
 
+    static fromLinkParams(params, defaultAlpn = []) {
+        const alpn = params.get('alpn');
+        return new TlsStreamSettings(
+            params.get('sni') ?? '',
+            alpn ? alpn.split(',') : defaultAlpn,
+            params.get('fp') ?? '',
+            params.get('insecure') ?? params.get('allowInsecure') ?? false,
+            params.get('ech') ?? '',
+            params.get('vcn') ?? '',
+            params.get('pcs') ?? '',
+        );
+    }
+
     toJson() {
         return {
-            serverName: this.serverName,
-            alpn: this.alpn,
-            fingerprint: this.fingerprint,
-            allowInsecure: this.allowInsecure,
-            echConfigList: this.echConfigList,
-            verifyPeerCertByName: this.verifyPeerCertByName,
-            pinnedPeerCertSha256: this.pinnedPeerCertSha256,
+            serverName: this.serverName.length > 0 ? this.serverName : undefined,
+            alpn: this.alpn.length > 0 ? this.alpn : undefined,
+            fingerprint: this.fingerprint.length > 0 ? this.fingerprint : undefined,
+            allowInsecure: this.allowInsecure ?? undefined,
+            echConfigList: this.echConfigList.length > 0 ? this.echConfigList : undefined,
+            verifyPeerCertByName: this.verifyPeerCertByName.length > 0 ? this.verifyPeerCertByName : undefined,
+            pinnedPeerCertSha256: this.pinnedPeerCertSha256.length > 0 ? this.pinnedPeerCertSha256 : undefined,
             curvePreferences: this.curvePreferences && this.curvePreferences.length > 0 ? this.curvePreferences : undefined,
             masterKeyLog: this.masterKeyLog ? this.masterKeyLog : undefined,
             echSockopt: this.echSockopt ? this.echSockopt.toJson() : undefined,
@@ -589,14 +602,24 @@ class RealityStreamSettings extends CommonClass {
             json.mldsa65Verify,
         );
     }
+    static fromLinkParams(params) {
+        return new RealityStreamSettings(
+            params.get('pbk') ?? '',
+            params.get('fp') ?? '',
+            params.get('sni') ?? '',
+            params.get('sid') ?? '',
+            params.get('spx') ?? '',
+            params.get('pqv') ?? '',
+        );
+    }
     toJson() {
         return {
             publicKey: this.publicKey,
             fingerprint: this.fingerprint,
             serverName: this.serverName,
             shortId: this.shortId,
-            spiderX: this.spiderX,
-            mldsa65Verify: this.mldsa65Verify,
+            spiderX: this.spiderX.length > 0 ? this.spiderX : undefined,
+            mldsa65Verify: this.mldsa65Verify.length > 0 ? this.mldsa65Verify : undefined,
         };
     }
 };
@@ -605,94 +628,24 @@ class HysteriaStreamSettings extends CommonClass {
     constructor(
         version = 2,
         auth = '',
-        congestion = '',
-        up = '0',
-        down = '0',
-        udphopPort = '',
-        udphopIntervalMin = 30,
-        udphopIntervalMax = 30,
-        initStreamReceiveWindow = 8388608,
-        maxStreamReceiveWindow = 8388608,
-        initConnectionReceiveWindow = 20971520,
-        maxConnectionReceiveWindow = 20971520,
-        maxIdleTimeout = 30,
-        keepAlivePeriod = 0,
-        disablePathMTUDiscovery = false
     ) {
         super();
         this.version = version;
         this.auth = auth;
-        this.congestion = congestion;
-        this.up = up;
-        this.down = down;
-        this.udphopPort = udphopPort;
-        this.udphopIntervalMin = udphopIntervalMin;
-        this.udphopIntervalMax = udphopIntervalMax;
-        this.initStreamReceiveWindow = initStreamReceiveWindow;
-        this.maxStreamReceiveWindow = maxStreamReceiveWindow;
-        this.initConnectionReceiveWindow = initConnectionReceiveWindow;
-        this.maxConnectionReceiveWindow = maxConnectionReceiveWindow;
-        this.maxIdleTimeout = maxIdleTimeout;
-        this.keepAlivePeriod = keepAlivePeriod;
-        this.disablePathMTUDiscovery = disablePathMTUDiscovery;
     }
 
     static fromJson(json = {}) {
-        let udphopPort = '';
-        let udphopIntervalMin = 30;
-        let udphopIntervalMax = 30;
-        if (json.udphop) {
-            udphopPort = json.udphop.port || '';
-            if (json.udphop.interval !== undefined) {
-                udphopIntervalMin = json.udphop.interval;
-                udphopIntervalMax = json.udphop.interval;
-            } else {
-                udphopIntervalMin = json.udphop.intervalMin || 30;
-                udphopIntervalMax = json.udphop.intervalMax || 30;
-            }
-        }
         return new HysteriaStreamSettings(
             json.version,
             json.auth,
-            json.congestion,
-            json.up,
-            json.down,
-            udphopPort,
-            udphopIntervalMin,
-            udphopIntervalMax,
-            json.initStreamReceiveWindow,
-            json.maxStreamReceiveWindow,
-            json.initConnectionReceiveWindow,
-            json.maxConnectionReceiveWindow,
-            json.maxIdleTimeout,
-            json.keepAlivePeriod,
-            json.disablePathMTUDiscovery
         );
     }
 
     toJson() {
-        const result = {
+        return {
             version: this.version,
             auth: this.auth,
-            congestion: this.congestion,
-            up: this.up,
-            down: this.down,
-            initStreamReceiveWindow: this.initStreamReceiveWindow,
-            maxStreamReceiveWindow: this.maxStreamReceiveWindow,
-            initConnectionReceiveWindow: this.initConnectionReceiveWindow,
-            maxConnectionReceiveWindow: this.maxConnectionReceiveWindow,
-            maxIdleTimeout: this.maxIdleTimeout,
-            keepAlivePeriod: this.keepAlivePeriod,
-            disablePathMTUDiscovery: this.disablePathMTUDiscovery
         };
-        if (this.udphopPort) {
-            result.udphop = {
-                port: this.udphopPort,
-                intervalMin: this.udphopIntervalMin,
-                intervalMax: this.udphopIntervalMax
-            };
-        }
-        return result;
     }
 };
 
@@ -934,8 +887,8 @@ class QuicParams extends CommonClass {
     constructor({
         congestion = '',
         debug = false,
-        brutalUp = '',
-        brutalDown = '',
+        brutalUp = 0,
+        brutalDown = 0,
         udpHopPorts = '',
         udpHopInterval = '',
         initStreamReceiveWindow = 0,
@@ -974,13 +927,25 @@ class QuicParams extends CommonClass {
         return keys.some(k => json[k] !== undefined && json[k] !== '' && json[k] !== 0 && json[k] !== false);
     }
 
+    static getMbpsStr(v) {
+        if (typeof v === 'string') return v;
+        if (typeof v === 'number' && v >= 0) return v.toFixed(0) + ' mbps';
+        return '';
+    }
+
+    static getMbpsInt(v) {
+        if (typeof v === 'string') return parseInt(v.replace(' mbps', ''), 10);
+        if (typeof v === 'number') return v;
+        return 0;
+    }
+
     static fromJson(json = {}) {
         const udpHop = json.udpHop || {};
         return new QuicParams({
             congestion: json.congestion || '',
             debug: !!json.debug,
-            brutalUp: json.brutalUp || '',
-            brutalDown: json.brutalDown || '',
+            brutalUp: QuicParams.getMbpsInt(json.brutalUp),
+            brutalDown: QuicParams.getMbpsInt(json.brutalDown),
             udpHopPorts: udpHop.ports || '',
             udpHopInterval: udpHop.interval !== undefined ? String(udpHop.interval) : '',
             initStreamReceiveWindow: json.initStreamReceiveWindow || 0,
@@ -994,12 +959,29 @@ class QuicParams extends CommonClass {
         });
     }
 
+    static fromLinkParams(params) {
+        return new QuicParams({
+            congestion: params.get('congestion') ?? '',
+            brutalUp: QuicParams.getMbpsInt(params.get('upmbps') ?? params.get('up')),
+            brutalDown: QuicParams.getMbpsInt(params.get('downmbps') ?? params.get('down')),
+            udpHopPorts: params.get('mport') ?? params.get('udphopPort') ?? '',
+            udpHopInterval: params.get('udphopInterval') ?? '',
+            initStreamReceiveWindow: parseInt(params.get('initStreamReceiveWindow')) || 0,
+            maxStreamReceiveWindow: parseInt(params.get('maxStreamReceiveWindow')) || 0,
+            initConnectionReceiveWindow: parseInt(params.get('initConnectionReceiveWindow')) || 0,
+            maxConnectionReceiveWindow: parseInt(params.get('maxConnectionReceiveWindow')) || 0,
+            maxIdleTimeout: parseInt(params.get('maxIdleTimeout')) || 0,
+            keepAlivePeriod: parseInt(params.get('keepalive') ?? params.get('keepAlivePeriod')) || 0,
+            disablePathMTUDiscovery: params.get('disablePathMTUDiscovery') === 'true',
+        });
+    }
+
     toJson() {
         const result = {};
         if (this.congestion) result.congestion = this.congestion;
         if (this.debug) result.debug = this.debug;
-        if (this.brutalUp) result.brutalUp = this.brutalUp;
-        if (this.brutalDown) result.brutalDown = this.brutalDown;
+        if (this.brutalUp) result.brutalUp = QuicParams.getMbpsStr(this.brutalUp);
+        if (this.brutalDown) result.brutalDown = QuicParams.getMbpsStr(this.brutalDown);
         if (this.udpHopPorts) {
             result.udpHop = { ports: this.udpHopPorts };
             if (this.udpHopInterval !== '') result.udpHop.interval = this.udpHopInterval;
@@ -1034,6 +1016,18 @@ class FinalMaskStreamSettings extends CommonClass {
         );
     }
 
+    static fromLinkParams(params) {
+        const qp = QuicParams.fromLinkParams(params);
+        const udpMasks = [];
+        if (params.has('obfs')) {
+            udpMasks.push({
+                type: params.get('obfs'),
+                settings: { password: params.get('obfs-password') ?? '' },
+            });
+        }
+        return new FinalMaskStreamSettings(udpMasks, [], qp.toJson() ? qp : undefined);
+    }
+
     toJson() {
         const result = {};
         if (this.udp && this.udp.length > 0) result.udp = this.udp.map(udp => udp.toJson());
@@ -1042,7 +1036,7 @@ class FinalMaskStreamSettings extends CommonClass {
             const qp = this.quicParams.toJson();
             if (qp) result.quicParams = qp;
         }
-        return result;
+        return Object.keys(result).length > 0 ? result : undefined;
     }
 
     get quicParamsEnable() {
@@ -1439,24 +1433,11 @@ class Outbound extends CommonClass {
         }
 
         if (security == 'tls') {
-            let fp = url.searchParams.get('fp') ?? 'none';
-            let alpn = url.searchParams.get('alpn');
-            let allowInsecure = url.searchParams.get('allowInsecure');
-            let sni = url.searchParams.get('sni') ?? '';
-            let ech = url.searchParams.get('ech') ?? '';
-            let vcn = url.searchParams.get('vcn') ?? '';
-            let pcs = url.searchParams.get('pcs') ?? '';
-            stream.tls = new TlsStreamSettings(sni, alpn ? alpn.split(',') : [], fp, allowInsecure == 1, ech, vcn, pcs);
+            stream.tls = TlsStreamSettings.fromLinkParams(url.searchParams);
         }
 
         if (security == 'reality') {
-            let pbk = url.searchParams.get('pbk');
-            let fp = url.searchParams.get('fp');
-            let sni = url.searchParams.get('sni') ?? '';
-            let sid = url.searchParams.get('sid') ?? '';
-            let spx = url.searchParams.get('spx') ?? '';
-            let pqv = url.searchParams.get('pqv') ?? '';
-            stream.reality = new RealityStreamSettings(pbk, fp, sni, sid, spx, pqv);
+            stream.reality = RealityStreamSettings.fromLinkParams(url.searchParams);
         }
 
         const regex = /([^@]+):\/\/([^@]+)@(.+):(\d+)(.*)$/;
@@ -1499,60 +1480,13 @@ class Outbound extends CommonClass {
         let [, password, address, port, params, hash] = match;
         port = parseInt(port);
         let urlParams = new URLSearchParams(params);
-        let stream = new StreamSettings('hysteria', 'none');
+        let stream = new StreamSettings('hysteria', 'tls');
         
         stream.hysteria.auth = password;
-        stream.hysteria.congestion = urlParams.get('congestion') ?? '';
-        stream.hysteria.up = urlParams.get('up') ?? '0';
-        stream.hysteria.down = urlParams.get('down') ?? '0';
-        stream.hysteria.udphopPort = urlParams.get('mport') ?? urlParams.get('udphopPort') ?? '';
-        if (urlParams.has('udphopInterval')) {
-            const interval = parseInt(urlParams.get('udphopInterval'));
-            stream.hysteria.udphopIntervalMin = interval;
-            stream.hysteria.udphopIntervalMax = interval;
-        } else {
-            stream.hysteria.udphopIntervalMin = parseInt(urlParams.get('udphopIntervalMin') ?? '30');
-            stream.hysteria.udphopIntervalMax = parseInt(urlParams.get('udphopIntervalMax') ?? '30');
-        }        
-        if (urlParams.has('initStreamReceiveWindow')) {
-            stream.hysteria.initStreamReceiveWindow = parseInt(urlParams.get('initStreamReceiveWindow'));
-        }
-        if (urlParams.has('maxStreamReceiveWindow')) {
-            stream.hysteria.maxStreamReceiveWindow = parseInt(urlParams.get('maxStreamReceiveWindow'));
-        }
-        if (urlParams.has('initConnectionReceiveWindow')) {
-            stream.hysteria.initConnectionReceiveWindow = parseInt(urlParams.get('initConnectionReceiveWindow'));
-        }
-        if (urlParams.has('maxConnectionReceiveWindow')) {
-            stream.hysteria.maxConnectionReceiveWindow = parseInt(urlParams.get('maxConnectionReceiveWindow'));
-        }
-        if (urlParams.has('maxIdleTimeout')) {
-            stream.hysteria.maxIdleTimeout = parseInt(urlParams.get('maxIdleTimeout'));
-        }
-        if (urlParams.has('keepAlivePeriod')) {
-            stream.hysteria.keepAlivePeriod = parseInt(urlParams.get('keepAlivePeriod'));
-        }
-        if (urlParams.has('disablePathMTUDiscovery')) {
-            stream.hysteria.disablePathMTUDiscovery = urlParams.get('disablePathMTUDiscovery') === 'true';
-        }
-        if (urlParams.has('obfs')) {
-            stream.finalmask = new FinalMaskStreamSettings([{
-                type: urlParams.get('obfs'), 
-                settings: { password: urlParams.get('obfs-password') ?? '' }
-            }] );
-        }
-        if (urlParams.has('security')){
-            stream.security = urlParams.get('security');
-            stream.tls = new TlsStreamSettings(
-                urlParams.get('sni'),
-                urlParams.get('alpn') ? urlParams.get('alpn').split(',') : [],
-                urlParams.get('fp') ?? undefined,
-                urlParams.get('insecure') ?? urlParams.get('allowInsecure') ?? false,
-                urlParams.get('ech') ?? '',
-                urlParams.get('vcn') ?? '',
-                urlParams.get('pcs') ?? '',
-            );
-        }
+
+        stream.finalmask = FinalMaskStreamSettings.fromLinkParams(urlParams);
+
+        stream.tls = TlsStreamSettings.fromLinkParams(urlParams, ['h3']);
         
         let settings = new Outbound.HysteriaSettings(address, port, 2);
         

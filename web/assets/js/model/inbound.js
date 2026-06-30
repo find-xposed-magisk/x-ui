@@ -707,24 +707,21 @@ class xHTTPStreamSettings extends XrayCommonClass {
 
 class HysteriaStreamSettings extends XrayCommonClass {
     constructor(
-        protocol, 
-        version = 2, 
-        auth = '', 
-        udpIdleTimeout = 60, 
+        protocol,
+        version = 2,
+        udpIdleTimeout = 60,
         masquerade,
     ) {
         super(protocol);
         this.version = version;
-        this.auth = auth;
         this.udpIdleTimeout = udpIdleTimeout;
         this.masquerade = masquerade;
     }
-    
+
     static fromJson(json = {}) {
         return new HysteriaStreamSettings(
             json.protocol,
             json.version,
-            json.auth,
             json.udpIdleTimeout,
             json.masquerade ? HysteriaMasquerade.fromJson(json.masquerade) : undefined,
         );
@@ -734,7 +731,6 @@ class HysteriaStreamSettings extends XrayCommonClass {
         return {
             protocol: this.protocol,
             version: this.version,
-            auth: this.auth,
             udpIdleTimeout: this.udpIdleTimeout,
             masquerade: this.masqueradeSwitch ? this.masquerade.toJson() : undefined,
         };
@@ -1369,8 +1365,8 @@ class QuicParams extends XrayCommonClass {
     constructor({
         congestion = '',
         debug = false,
-        brutalUp = '',
-        brutalDown = '',
+        brutalUp = 0,
+        brutalDown = 0,
         udpHopPorts = '',
         udpHopInterval = '',
         initStreamReceiveWindow = 0,
@@ -1409,13 +1405,25 @@ class QuicParams extends XrayCommonClass {
         return keys.some(k => json[k] !== undefined && json[k] !== '' && json[k] !== 0 && json[k] !== false);
     }
 
+    static getMbpsStr(v) {
+        if (typeof v === 'string') return v;
+        if (typeof v === 'number' && v >= 0) return v.toFixed(0) + ' mbps';
+        return '';
+    }
+
+    static getMbpsInt(v) {
+        if (typeof v === 'string') return parseInt(v.replace(' mbps', ''), 10);
+        if (typeof v === 'number') return v;
+        return 0;
+    }
+
     static fromJson(json = {}) {
         const udpHop = json.udpHop || {};
         return new QuicParams({
             congestion: json.congestion || '',
             debug: !!json.debug,
-            brutalUp: json.brutalUp || '',
-            brutalDown: json.brutalDown || '',
+            brutalUp: this.getMbpsInt(json.brutalUp),
+            brutalDown: this.getMbpsInt(json.brutalDown),
             udpHopPorts: udpHop.ports || '',
             udpHopInterval: udpHop.interval !== undefined ? String(udpHop.interval) : '',
             initStreamReceiveWindow: json.initStreamReceiveWindow || 0,
@@ -1433,8 +1441,8 @@ class QuicParams extends XrayCommonClass {
         const result = {};
         if (this.congestion) result.congestion = this.congestion;
         if (this.debug) result.debug = this.debug;
-        if (this.brutalUp) result.brutalUp = this.brutalUp;
-        if (this.brutalDown) result.brutalDown = this.brutalDown;
+        if (this.brutalUp) result.brutalUp = QuicParams.getMbpsStr(this.brutalUp);
+        if (this.brutalDown) result.brutalDown = QuicParams.getMbpsStr(this.brutalDown);
         if (this.udpHopPorts) {
             result.udpHop = { ports: this.udpHopPorts };
             if (this.udpHopInterval !== '') result.udpHop.interval = this.udpHopInterval;
@@ -1477,7 +1485,7 @@ class FinalMaskStreamSettings extends XrayCommonClass {
             const qp = this.quicParams.toJson();
             if (qp) result.quicParams = qp;
         }
-        return result;
+        return Object.keys(result).length > 0 ? result : undefined;
     }
 
     get quicParamsEnable() {
@@ -1760,6 +1768,7 @@ class Inbound extends XrayCommonClass {
         if (protocol === Protocols.HYSTERIA) {
             this.stream.network = 'hysteria';
             this.stream.security = 'tls';
+            this.stream.tls.alpn = ['h3'];
         }
     }
 
@@ -2399,6 +2408,32 @@ class Inbound extends XrayCommonClass {
         if (!ObjectUtil.isEmpty(this.stream.tls.settings.verifyPeerCertByName)) params.set("vcn", this.stream.tls.settings.verifyPeerCertByName);
         if (this.stream.tls.sni?.length > 0) params.set("sni", this.stream.tls.sni);
 
+        const fm = this.stream.finalmask;
+        if (fm) {
+            const qp = fm.quicParams;
+            if (qp) {
+                if (qp.congestion) params.set("congestion", qp.congestion);
+                if (qp.brutalUp) params.set("upmbps", qp.brutalUp);
+                if (qp.brutalDown) params.set("downmbps", qp.brutalDown);
+                if (qp.udpHopPorts) params.set("mport", qp.udpHopPorts);
+                if (qp.udpHopInterval !== undefined && qp.udpHopInterval !== '') params.set("udphopInterval", qp.udpHopInterval);
+                if (qp.initStreamReceiveWindow) params.set("initStreamReceiveWindow", qp.initStreamReceiveWindow);
+                if (qp.maxStreamReceiveWindow) params.set("maxStreamReceiveWindow", qp.maxStreamReceiveWindow);
+                if (qp.initConnectionReceiveWindow) params.set("initConnectionReceiveWindow", qp.initConnectionReceiveWindow);
+                if (qp.maxConnectionReceiveWindow) params.set("maxConnectionReceiveWindow", qp.maxConnectionReceiveWindow);
+                if (qp.maxIdleTimeout) params.set("maxIdleTimeout", qp.maxIdleTimeout);
+                if (qp.keepAlivePeriod) params.set("keepalive", qp.keepAlivePeriod);
+                if (qp.disablePathMTUDiscovery) params.set("disablePathMTUDiscovery", "true");
+            }
+            if (Array.isArray(fm.udp)) {
+                const obfsMask = fm.udp.find(u => u && u.settings && u.settings.password);
+                if (obfsMask) {
+                    params.set("obfs", obfsMask.type);
+                    params.set("obfs-password", obfsMask.settings.password);
+                }
+            }
+        }
+
         if (extProxy) {
             if (extProxy.sni?.length > 0) {
                 params.set("sni", extProxy.sni);
@@ -2459,7 +2494,7 @@ class Inbound extends XrayCommonClass {
             case Protocols.TROJAN:
                 return this.genTrojanLink(address, port, extProxy, remark, client.password);
             case Protocols.HYSTERIA:
-                return this.genHysteriaLink(address, port, extProxy, remark, client.auth.length > 0 ? client.auth : this.stream.hysteria.auth);
+                return this.genHysteriaLink(address, port, extProxy, remark, client.auth);
             default: return '';
         }
     }
