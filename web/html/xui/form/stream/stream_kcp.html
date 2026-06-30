@@ -17,16 +17,13 @@
         <a-input-number v-model.number="inbound.stream.kcp.downCap"
             :min="0"></a-input-number>
     </a-form-item>
-    <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.congestion" }}'>
-        <a-switch v-model="inbound.stream.kcp.congestion"></a-switch>
+    <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.cwndMultiplier" }}'>
+        <a-input-number v-model.number="inbound.stream.kcp.cwndMultiplier"
+            :min="1"></a-input-number>
     </a-form-item>
-    <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.readBuffer" }}'>
-        <a-input-number v-model.number="inbound.stream.kcp.readBuffer"
-            :min="0"></a-input-number>
-    </a-form-item>
-    <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.writeBuffer" }}'>
-        <a-input-number v-model.number="inbound.stream.kcp.writeBuffer"
-            :min="0"></a-input-number>
+    <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.maxSendingWindow" }}'>
+        <a-input-number v-model.number="inbound.stream.kcp.maxSendingWindow"
+            :min="1460"></a-input-number>
     </a-form-item>
 </a-form>
 {{end}}

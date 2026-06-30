@@ -323,18 +323,16 @@ class KcpStreamSettings extends XrayCommonClass {
         tti = 20,
         uplinkCapacity = 5,
         downlinkCapacity = 20,
-        congestion = false,
-        readBufferSize = 1,
-        writeBufferSize = 1,
+        cwndMultiplier = 1,
+        maxSendingWindow = 2 * 1024 * 1024,
     ) {
         super();
         this.mtu = mtu;
         this.tti = tti;
         this.upCap = uplinkCapacity;
         this.downCap = downlinkCapacity;
-        this.congestion = congestion;
-        this.readBuffer = readBufferSize;
-        this.writeBuffer = writeBufferSize;
+        this.cwndMultiplier = cwndMultiplier;
+        this.maxSendingWindow = maxSendingWindow;
     }
 
     static fromJson(json = {}) {
@@ -343,9 +341,8 @@ class KcpStreamSettings extends XrayCommonClass {
             json.tti,
             json.uplinkCapacity,
             json.downlinkCapacity,
-            json.congestion,
-            json.readBufferSize,
-            json.writeBufferSize,
+            json.cwndMultiplier,
+            json.maxSendingWindow,
         );
     }
 
@@ -355,9 +352,8 @@ class KcpStreamSettings extends XrayCommonClass {
             tti: this.tti,
             uplinkCapacity: this.upCap,
             downlinkCapacity: this.downCap,
-            congestion: this.congestion,
-            readBufferSize: this.readBuffer,
-            writeBufferSize: this.writeBuffer,
+            cwndMultiplier: this.cwndMultiplier,
+            maxSendingWindow: this.maxSendingWindow,
         };
     }
 }
@@ -1071,9 +1067,9 @@ class RealityStreamSettings extends XrayCommonClass {
             json.dest,
             json.serverNames,
             json.privateKey,
-            json.minClient,
-            json.maxClient,
-            json.maxTimediff,
+            json.minClientVer ?? json.minClient,
+            json.maxClientVer ?? json.maxClient,
+            json.maxTimeDiff ?? json.maxTimediff,
             json.shortIds,
             json.mldsa65Seed,
             settings,
@@ -1089,9 +1085,9 @@ class RealityStreamSettings extends XrayCommonClass {
             dest: this.dest,
             serverNames: this.serverNames.split(","),
             privateKey: this.privateKey,
-            minClient: this.minClient,
-            maxClient: this.maxClient,
-            maxTimediff: this.maxTimediff,
+            minClientVer: this.minClient,
+            maxClientVer: this.maxClient,
+            maxTimeDiff: this.maxTimediff,
             shortIds: this.shortIds.split(","),
             mldsa65Seed: this.mldsa65Seed,
             settings: this.settings,

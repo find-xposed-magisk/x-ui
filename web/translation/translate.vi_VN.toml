@@ -401,9 +401,9 @@
 "tti" = "TTI (ms)"
 "uplinkMBps" = "Uplink (MB/s)"
 "downlinkMBps" = "Downlink (MB/s)"
+"cwndMultiplier" = "Hệ số cửa sổ tắc nghẽn"
+"maxSendingWindow" = "Cửa sổ gửi tối đa (byte)"
 "congestion" = "Congestion"
-"readBuffer" = "Read Buffer (MB)"
-"writeBuffer" = "Write Buffer (MB)"
 
 [pages.inbounds.stream.common]
 "proxyProtocol" = "PROXY Protocol"

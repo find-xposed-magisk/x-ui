@@ -402,9 +402,9 @@
 "tti" = "TTI (毫秒)"
 "uplinkMBps" = "上行 (MB/s)"
 "downlinkMBps" = "下行 (MB/s)"
+"cwndMultiplier" = "拥塞窗口倍数"
+"maxSendingWindow" = "最大发送窗口 (字节)"
 "congestion" = "拥塞控制"
-"readBuffer" = "读取缓冲 (MB)"
-"writeBuffer" = "写入缓冲 (MB)"
 
 [pages.inbounds.stream.common]
 "proxyProtocol" = "PROXY Protocol"

@@ -401,9 +401,9 @@
 "tti" = "TTI (ms)"
 "uplinkMBps" = "Uplink (MB/s)"
 "downlinkMBps" = "Downlink (MB/s)"
+"cwndMultiplier" = "Congestion Window Multiplier"
+"maxSendingWindow" = "Max Sending Window (bytes)"
 "congestion" = "Congestion"
-"readBuffer" = "Read Buffer (MB)"
-"writeBuffer" = "Write Buffer (MB)"
 
 [pages.inbounds.stream.common]
 "proxyProtocol" = "PROXY Protocol"

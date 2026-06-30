@@ -342,11 +342,7 @@ func (s *SubJsonService) genOutbound(inbound *model.Inbound, streamSettings map[
 		hyStream := streamSettings["hysteriaSettings"].(map[string]any)
 		outHyStream := map[string]any{
 			"version": inboundSettings["version"],
-		}
-		if client.Auth != "" {
-			outHyStream["auth"] = client.Auth
-		} else {
-			outHyStream["auth"] = hyStream["auth"]
+			"auth":    client.Auth,
 		}
 		if udpIdleTimeout, ok := hyStream["udpIdleTimeout"].(float64); ok {
 			outHyStream["udpIdleTimeout"] = int(udpIdleTimeout)

@@ -395,14 +395,11 @@
         <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.downlinkMBps" }}'>
             <a-input-number v-model.number="outbound.stream.kcp.downCap"></a-input-number>
         </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.congestion" }}'>
-            <a-switch v-model="outbound.stream.kcp.congestion"></a-switch>
+        <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.cwndMultiplier" }}'>
+            <a-input-number v-model.number="outbound.stream.kcp.cwndMultiplier" :min="1"></a-input-number>
         </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.readBuffer" }}'>
-            <a-input-number v-model.number="outbound.stream.kcp.readBuffer"></a-input-number>
-        </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.writeBuffer" }}'>
-            <a-input-number v-model.number="outbound.stream.kcp.writeBuffer"></a-input-number>
+        <a-form-item label='{{ i18n "pages.inbounds.stream.kcp.maxSendingWindow" }}'>
+            <a-input-number v-model.number="outbound.stream.kcp.maxSendingWindow" :min="1460"></a-input-number>
         </a-form-item>
     </template>
     
