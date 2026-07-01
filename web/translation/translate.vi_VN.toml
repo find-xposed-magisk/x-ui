@@ -202,6 +202,9 @@
 "obtain" = "Không thể tải quy tắc định tuyến"
 
 [pages.outbounds]
+"finalRules" = "Final Rules"
+"action" = "Hành động"
+"blockDelay" = "Block Delay (s)"
 "title" = "Outbounds"
 "totalUsage" = "Tổng sử dụng"
 "outboundCount" = "Tổng Outbound"

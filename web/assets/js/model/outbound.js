@@ -1547,13 +1547,15 @@ Outbound.FreedomSettings = class extends CommonClass {
         domainStrategy = '',
         redirect = '',
         fragment = {},
-        noises = []
+        noises = [],
+        finalRules = []
     ) {
         super();
         this.domainStrategy = domainStrategy;
         this.redirect = redirect;
         this.fragment = fragment;
         this.noises = noises;
+        this.finalRules = finalRules;
     }
 
     addNoise() {
@@ -1564,12 +1566,21 @@ Outbound.FreedomSettings = class extends CommonClass {
         this.noises.splice(index, 1);
     }
 
+    addFinalRule() {
+        this.finalRules.push(new Outbound.FreedomSettings.FinalRule());
+    }
+
+    delFinalRule(index) {
+        this.finalRules.splice(index, 1);
+    }
+
     static fromJson(json = {}) {
         return new Outbound.FreedomSettings(
             json.domainStrategy,
             json.redirect,
             json.fragment ? Outbound.FreedomSettings.Fragment.fromJson(json.fragment) : undefined,
             json.noises ? json.noises.map(noise => Outbound.FreedomSettings.Noise.fromJson(noise)) : undefined,
+            json.finalRules ? json.finalRules.map(rule => Outbound.FreedomSettings.FinalRule.fromJson(rule)) : undefined,
         );
     }
 
@@ -1579,6 +1590,7 @@ Outbound.FreedomSettings = class extends CommonClass {
             redirect: ObjectUtil.isEmpty(this.redirect) ? undefined: this.redirect,
             fragment: Object.keys(this.fragment).length === 0 ? undefined : this.fragment,
             noises: this.noises.length === 0 ? undefined : Outbound.FreedomSettings.Noise.toJsonArray(this.noises),
+            finalRules: this.finalRules.length === 0 ? undefined : Outbound.FreedomSettings.FinalRule.toJsonArray(this.finalRules),
         };
     }
 };
@@ -1629,6 +1641,43 @@ Outbound.FreedomSettings.Noise = class extends CommonClass {
             type: this.type,
             packet: this.packet,
             delay: this.delay,
+        };
+    }
+};
+
+Outbound.FreedomSettings.FinalRule = class extends CommonClass {
+    constructor(
+        action = 'block',
+        network = '',
+        port = '',
+        ip = '',
+        blockDelay = ''
+    ) {
+        super();
+        this.action = action;
+        this.network = network;
+        this.port = port;
+        this.ip = ip;
+        this.blockDelay = blockDelay;
+    }
+
+    static fromJson(json = {}) {
+        return new Outbound.FreedomSettings.FinalRule(
+            json.action,
+            json.network,
+            json.port,
+            Array.isArray(json.ip) ? json.ip.join(',') : (json.ip ?? ''),
+            json.blockDelay,
+        );
+    }
+
+    toJson() {
+        return {
+            action: this.action,
+            network: ObjectUtil.isEmpty(this.network) ? undefined : this.network,
+            port: ObjectUtil.isEmpty(this.port) ? undefined : this.port,
+            ip: ObjectUtil.isEmpty(this.ip) ? undefined : this.ip.split(',').map(s => s.trim()).filter(s => s.length > 0),
+            blockDelay: ObjectUtil.isEmpty(this.blockDelay) ? undefined : this.blockDelay,
         };
     }
 };

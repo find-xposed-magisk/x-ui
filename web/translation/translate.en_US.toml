@@ -202,6 +202,9 @@
 "obtain" = "Failed to load routing rules"
 
 [pages.outbounds]
+"finalRules" = "Final Rules"
+"action" = "Action"
+"blockDelay" = "Block Delay (s)"
 "title" = "Outbounds"
 "totalUsage" = "Total Usage"
 "outboundCount" = "Total Outbounds"
