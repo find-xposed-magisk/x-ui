@@ -219,6 +219,11 @@ func (x *XrayAPI) AddUser(Protocol string, inboundTag string, user map[string]in
 				vlessAccount.Testpre = testpre
 			}
 		}
+		if reverse, ok := user["reverse"].(map[string]interface{}); ok {
+			vlessAccount.Reverse = &vless.Reverse{
+				Tag: reverse["tag"].(string),
+			}
+		}
 		account = serial.ToTypedMessage(vlessAccount)
 	case "trojan":
 		account = serial.ToTypedMessage(&trojan.Account{
