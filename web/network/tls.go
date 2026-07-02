@@ -24,7 +24,7 @@ func NewTLSConfig(cert tls.Certificate, domain string) *tls.Config {
 	return &tls.Config{
 		GetCertificate: func(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
 			if !strings.EqualFold(hello.ServerName, domain) {
-				return nil, common.NewError("tls: unrecognized server name %q", hello.ServerName)
+				return nil, common.NewErrorf("tls: unrecognized server name %q", hello.ServerName)
 			}
 			return &crt, nil
 		},
