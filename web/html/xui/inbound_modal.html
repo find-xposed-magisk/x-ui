@@ -7,6 +7,16 @@
 </a-modal>
 <script>
 
+    const inboundCmOptions = {
+        lineNumbers: true,
+        mode: "application/json",
+        lint: true,
+        theme: "xq",
+        lineWrapping: true,
+        indentUnit: 2,
+        tabSize: 2,
+    };
+
     const inModal = {
         title: '',
         visible: false,
@@ -16,12 +26,51 @@
         confirm: null,
         inbound: new Inbound(),
         dbInbound: new DBInbound(),
+        activeKey: 'in-basic',
+        cm: null,
         ok() {
             ObjectUtil.execute(inModal.confirm, inModal.inbound, inModal.dbInbound);
+        },
+        onTabChange(activeKey) {
+            this.activeKey = activeKey;
+            if (activeKey === 'in-json') {
+                setTimeout(() => this.initJsonEditor(), 0);
+            } else {
+                this.destroyJsonEditor();
+            }
+        },
+        initJsonEditor() {
+            const textAreaObj = document.getElementById('inboundJson');
+            if (!textAreaObj) return;
+            this.destroyJsonEditor();
+            textAreaObj.value = JSON.stringify(this.inbound.toJson(), null, 2);
+            this.cm = CodeMirror.fromTextArea(textAreaObj, inboundCmOptions);
+            this.cm.on('change', editor => {
+                const value = editor.getValue();
+                if (this.isJsonString(value)) {
+                    this.inbound = Inbound.fromJson(JSON.parse(value));
+                }
+            });
+        },
+        destroyJsonEditor() {
+            if (this.cm != null) {
+                this.cm.toTextArea();
+                this.cm = null;
+            }
+        },
+        isJsonString(str) {
+            try {
+                JSON.parse(str);
+            } catch (e) {
+                return false;
+            }
+            return true;
         },
         show({ title='', okText='{{ i18n "confirm" }}', inbound=null, dbInbound=null, confirm=(inbound, dbInbound)=>{}, isEdit=false  }) {
             this.title = title;
             this.okText = okText;
+            this.activeKey = 'in-basic';
+            this.destroyJsonEditor();
             if (inbound) {
                 this.inbound = Inbound.fromJson(inbound.toJson());
             } else {

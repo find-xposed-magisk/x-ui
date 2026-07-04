@@ -1,5 +1,6 @@
 {{define "form/inbound"}}
-<a-tabs class="inbound-detail-tabs" :animated="false" style="padding: 1rem;">
+<a-tabs class="inbound-detail-tabs" :animated="false" style="padding: 1rem;"
+    :active-key="inModal.activeKey" @change="(k) => inModal.onTabChange(k)">
     <a-tab-pane key="in-basic" tab='{{ i18n "basic" }}'>
         <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
             <a-form-item label='{{ i18n "enable" }}'>
@@ -115,6 +116,10 @@
 
     <a-tab-pane v-if="inbound.canEnableStream()" key="in-external-proxy" tab='{{ i18n "pages.inbounds.stream.common.externalProxy" }}'>
         {{template "form/externalProxy" }}
+    </a-tab-pane>
+
+    <a-tab-pane key="in-json" tab='{{ i18n "pages.xray.outbound.advanced" }}' force-render="true">
+        <textarea style="position:absolute; left: -800px;" id="inboundJson"></textarea>
     </a-tab-pane>
 </a-tabs>
 {{end}}

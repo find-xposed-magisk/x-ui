@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 {{template "head" .}}
+<link rel="stylesheet" href="{{ .base_path }}assets/codemirror/codemirror.min.css?{{ .cur_ver }}">
+<link rel="stylesheet" href="{{ .base_path }}assets/codemirror/fold/foldgutter.css">
+<link rel="stylesheet" href="{{ .base_path }}assets/codemirror/xq.min.css?{{ .cur_ver }}">
+<link rel="stylesheet" href="{{ .base_path }}assets/codemirror/lint/lint.css">
+<script src="{{ .base_path }}assets/codemirror/codemirror.js?{{ .cur_ver }}"></script>
+<script src="{{ .base_path }}assets/codemirror/javascript.js"></script>
+<script src="{{ .base_path }}assets/codemirror/jshint.js"></script>
+<script src="{{ .base_path }}assets/codemirror/jsonlint.js"></script>
+<script src="{{ .base_path }}assets/codemirror/lint/lint.js"></script>
+<script src="{{ .base_path }}assets/codemirror/lint/javascript-lint.js"></script>
+<script src="{{ .base_path }}assets/codemirror/hint/javascript-hint.js"></script>
+<script src="{{ .base_path }}assets/codemirror/fold/foldcode.js"></script>
+<script src="{{ .base_path }}assets/codemirror/fold/foldgutter.js"></script>
+<script src="{{ .base_path }}assets/codemirror/fold/brace-fold.js"></script>
 <style>
     @media (min-width: 769px) {
         .ant-layout-content {
