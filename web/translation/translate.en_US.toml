@@ -567,6 +567,9 @@
 "muxSett" = "Mux Settings"
 "direct" = "Direct Connection"
 "directDesc" = "Directly establishes connections with domains or IP ranges of a specific country."
+"subRules" = "Custom Routing Rules (JSON)"
+"subRulesDesc" = "Advanced: paste a raw routing rules array to define custom routes. Overrides the presets above."
+"subRulesInvalid" = "Invalid JSON — must be an array of rule objects."
 
 [pages.settings.toasts]
 "modifySettings" = "Modify Settings"

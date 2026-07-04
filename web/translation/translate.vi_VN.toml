@@ -567,6 +567,9 @@
 "muxSett" = "Mux Cài đặt"
 "direct" = "Kết nối trực tiếp"
 "directDesc" = "Trực tiếp thiết lập kết nối với tên miền hoặc dải IP của một quốc gia cụ thể."
+"subRules" = "Quy tắc định tuyến tùy chỉnh (JSON)"
+"subRulesDesc" = "Nâng cao: dán một mảng quy tắc định tuyến thô để xác định các tuyến tùy chỉnh. Ghi đè các tùy chọn mặc định ở trên."
+"subRulesInvalid" = "JSON không hợp lệ — phải là một mảng các đối tượng quy tắc."
 
 [pages.settings.toasts]
 "modifySettings" = "Sửa đổi cài đặt"

@@ -371,6 +371,31 @@
                                                     </a-row>
                                                 </a-list-item>
                                             </a-collapse-panel>
+                                            <a-collapse-panel header='{{ i18n "pages.settings.subRules"}}'>
+                                                <a-list-item>
+                                                    <a-row style="padding: 0 20px">
+                                                        <a-col :span="24">
+                                                            <a-list-item-meta
+                                                                title='{{ i18n "pages.settings.subRules" }}'>
+                                                                <template slot="description">{{ i18n
+                                                                    "pages.settings.subRulesDesc"}}</template>
+                                                            </a-list-item-meta>
+                                                        </a-col>
+                                                        <a-col :span="24" style="margin-top: 10px;">
+                                                            <a-textarea :value="rawRulesText"
+                                                                @change="onRawRulesInput" :rows="10"
+                                                                spellcheck="false"
+                                                                style="font-family: monospace; width: 100%;"
+                                                                :style="{ borderColor: rawRulesValid ? '' : '#f5222d' }">
+                                                            </a-textarea>
+                                                            <div v-if="!rawRulesValid"
+                                                                style="color: #f5222d; margin-top: 6px;">
+                                                                {{ i18n "pages.settings.subRulesInvalid" }}
+                                                            </div>
+                                                        </a-col>
+                                                    </a-row>
+                                                </a-list-item>
+                                            </a-collapse-panel>
                                         </a-collapse>
                                     </a-list-item>
                                 </a-list>
@@ -448,6 +473,8 @@
                     { label: 'Meta', value: 'geosite:meta' },
                     { label: 'Google', value: 'geosite:google' },
                 ],
+                rawRulesText: '',
+                rawRulesValid: true,
                 get remarkModel() {
                     rm = this.allSetting.remarkModel;
                     return rm.length > 1 ? rm.substring(1).split('') : [];
@@ -482,6 +509,7 @@
                         this.oldAllSetting = new AllSetting(msg.obj);
                         this.allSetting = new AllSetting(msg.obj);
                         app.changeRemarkSample();
+                        this.syncRawRulesText();
                         this.saveBtnDisable = true;
                     }
                 },
@@ -551,6 +579,37 @@
                     updatedNoises[index] = { ...updatedNoises[index], delay: value };
                     this.noisesArray = updatedNoises;
                 },
+                syncRawRulesText() {
+                    const value = this.allSetting?.subJsonRules ?? "";
+                    if (value === "") {
+                        this.rawRulesText = "[]";
+                    } else {
+                        try {
+                            this.rawRulesText = JSON.stringify(JSON.parse(value), null, 2);
+                        } catch (e) {
+                            this.rawRulesText = value;
+                        }
+                    }
+                    this.rawRulesValid = true;
+                },
+                // Validate user input from the raw editor; only write back when it is a valid JSON array.
+                onRawRulesInput(e) {
+                    const val = (e && e.target) ? e.target.value : e;
+                    this.rawRulesText = val;
+                    let parsed;
+                    try {
+                        parsed = JSON.parse(val);
+                    } catch (err) {
+                        this.rawRulesValid = false;
+                        return;
+                    }
+                    if (!Array.isArray(parsed)) {
+                        this.rawRulesValid = false;
+                        return;
+                    }
+                    this.rawRulesValid = true;
+                    this.allSetting.subJsonRules = JSON.stringify(parsed);
+                },
             },
             computed: {
                 enableMux: {
@@ -592,7 +651,8 @@
                 directIPs: {
                     get: function () {
                         if (!this.enableDirect) return [];
-                        const rules = JSON.parse(this.allSetting.subJsonRules);
+                        let rules;
+                        try { rules = JSON.parse(this.allSetting.subJsonRules); } catch (e) { return []; }
                         if (!Array.isArray(rules)) return [];
                         const ipRule = rules.find(r => r.ip);
                         return ipRule?.ip ?? [];
@@ -618,7 +678,8 @@
                 directDomains: {
                     get: function () {
                         if (!this.enableDirect) return [];
-                        const rules = JSON.parse(this.allSetting.subJsonRules);
+                        let rules;
+                        try { rules = JSON.parse(this.allSetting.subJsonRules); } catch (e) { return []; }
                         if (!Array.isArray(rules)) return [];
                         const domainRule = rules.find(r => r.domain);
                         return domainRule?.domain ?? [];
@@ -653,6 +714,16 @@
                         }
                         return alerts
                     }
+                }
+            },
+            watch: {
+                'allSetting.subJsonRules': function (newVal) {
+                    let bufferNorm;
+                    try { bufferNorm = JSON.stringify(JSON.parse(this.rawRulesText)); } catch (e) { bufferNorm = null; }
+                    let valueNorm;
+                    try { valueNorm = newVal === "" ? JSON.stringify([]) : JSON.stringify(JSON.parse(newVal)); } catch (e) { valueNorm = newVal; }
+                    if (bufferNorm === valueNorm) return;
+                    this.syncRawRulesText();
                 }
             },
             async mounted() {
