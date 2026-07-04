@@ -2404,7 +2404,7 @@ class Inbound extends XrayCommonClass {
         if (this.stream.tls.alpn?.length > 0) params.set("alpn", this.stream.tls.alpn);
         if (this.stream.tls.settings.allowInsecure) params.set("insecure", "1");
         if (this.stream.tls.settings.echConfigList?.length > 0) params.set("ech", this.stream.tls.settings.echConfigList);
-        if (this.stream.tls.settings.pinnedPeerCertSha256?.length > 0) params.set("pcs", this.stream.tls.settings.pinnedPeerCertSha256.join(","));
+        if (this.stream.tls.settings.pinnedPeerCertSha256?.length > 0) params.set("pinSHA256", this.stream.tls.settings.pinnedPeerCertSha256.join(","));
         if (!ObjectUtil.isEmpty(this.stream.tls.settings.verifyPeerCertByName)) params.set("vcn", this.stream.tls.settings.verifyPeerCertByName);
         if (this.stream.tls.sni?.length > 0) params.set("sni", this.stream.tls.sni);
 
