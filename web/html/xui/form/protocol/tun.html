@@ -31,6 +31,38 @@
         <template slot="label">
             <a-tooltip>
                 <template slot="title">
+                    <span>{{ i18n "pages.xray.tun.gatewayDesc" }}</span>
+                </template>
+                {{ i18n "pages.xray.tun.gateway" }}
+                <a-icon type="question-circle"></a-icon>
+            </a-tooltip>
+        </template>
+        <a-select mode="tags" v-model="inbound.settings.gateway"
+            placeholder="10.0.0.1/16"
+            :dropdown-class-name="themeSwitcher.currentTheme"
+            :token-separators="[',']" style="width: 100%;">
+        </a-select>
+    </a-form-item>
+    <a-form-item>
+        <template slot="label">
+            <a-tooltip>
+                <template slot="title">
+                    <span>{{ i18n "pages.xray.tun.dnsDesc" }}</span>
+                </template>
+                DNS
+                <a-icon type="question-circle"></a-icon>
+            </a-tooltip>
+        </template>
+        <a-select mode="tags" v-model="inbound.settings.dns"
+            placeholder="1.1.1.1"
+            :dropdown-class-name="themeSwitcher.currentTheme"
+            :token-separators="[',']" style="width: 100%;">
+        </a-select>
+    </a-form-item>
+    <a-form-item>
+        <template slot="label">
+            <a-tooltip>
+                <template slot="title">
                     <span>{{ i18n "pages.xray.tun.userLevelDesc" }}</span>
                 </template>
                 {{ i18n "pages.xray.tun.userLevel" }}
@@ -39,6 +71,19 @@
         </template>
         <a-input-number v-model.number="inbound.settings.userLevel" :min="0"
             placeholder="0"></a-input-number>
+    </a-form-item>
+    <a-form-item>
+        <template slot="label">
+            <a-tooltip>
+                <template slot="title">
+                    <span>{{ i18n "pages.xray.tun.outboundInterfaceDesc" }}</span>
+                </template>
+                {{ i18n "pages.xray.tun.outboundInterface" }}
+                <a-icon type="question-circle"></a-icon>
+            </a-tooltip>
+        </template>
+        <a-input v-model.trim="inbound.settings.autoOutboundsInterface"
+            placeholder="auto"></a-input>
     </a-form-item>
 </a-form>
 {{end}}

@@ -3354,12 +3354,18 @@ Inbound.TunSettings = class extends Inbound.Settings {
         protocol,
         name = 'xray0',
         mtu = 1500,
-        userLevel = 0
+        gateway = ['10.0.0.1/16'],
+        dns = [],
+        userLevel = 0,
+        autoOutboundsInterface = 'auto'
     ) {
         super(protocol);
         this.name = name;
         this.mtu = mtu;
+        this.gateway = gateway;
+        this.dns = dns;
         this.userLevel = userLevel;
+        this.autoOutboundsInterface = autoOutboundsInterface;
     }
 
     static fromJson(json = {}) {
@@ -3367,7 +3373,10 @@ Inbound.TunSettings = class extends Inbound.Settings {
             Protocols.TUN,
             json.name ?? 'xray0',
             json.mtu ?? json.MTU ?? 1500,
-            json.userLevel ?? 0
+            json.gateway ?? [],
+            json.dns ?? [],
+            json.userLevel ?? 0,
+            json.autoOutboundsInterface ?? ''
         );
     }
 
@@ -3375,7 +3384,10 @@ Inbound.TunSettings = class extends Inbound.Settings {
         return {
             name: this.name || 'xray0',
             mtu: this.mtu || 1500,
+            gateway: this.gateway.length > 0 ? this.gateway : undefined,
+            dns: this.dns.length > 0 ? this.dns : undefined,
             userLevel: this.userLevel || 0,
+            autoOutboundsInterface: this.autoOutboundsInterface.length > 0 ? this.autoOutboundsInterface : undefined,
         };
     }
 };

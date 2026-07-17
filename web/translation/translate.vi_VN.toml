@@ -686,6 +686,11 @@
 "mtuDesc" = "Đơn vị Truyền Tối đa. Kích thước tối đa của các gói dữ liệu. Giá trị mặc định là 1500"
 "userLevel" = "Mức Người Dùng"
 "userLevelDesc" = "Tất cả các kết nối được thực hiện thông qua inbound này sẽ sử dụng mức người dùng này. Giá trị mặc định là 0"
+"gateway" = "Gateway"
+"gatewayDesc" = "Các tiền tố địa chỉ được gán cho giao diện TUN, thường là một IPv4 và một IPv6. Ví dụ: 10.0.0.1/16"
+"dnsDesc" = "Danh sách máy chủ DNS được gán cho giao diện TUN. Ví dụ: 1.1.1.1"
+"outboundInterface" = "Giao diện Outbound"
+"outboundInterfaceDesc" = "Tự động gắn outbound với giao diện mạng vật lý để tránh vòng lặp lưu lượng. Dùng 'auto' để chọn tự động"
 
 [pages.xray.metrics]
 "title" = "Số liệu"

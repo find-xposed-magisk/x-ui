@@ -687,6 +687,11 @@
 "mtuDesc" = "最大传输单元。数据包的最大大小。默认值为 1500"
 "userLevel" = "用户级别"
 "userLevelDesc" = "通过此入站的所有连接都将使用此用户级别。默认值为 0"
+"gateway" = "网关"
+"gatewayDesc" = "分配给 TUN 接口的地址前缀，通常为一个 IPv4 和一个 IPv6。例如：10.0.0.1/16"
+"dnsDesc" = "分配给 TUN 接口的 DNS 服务器列表。例如：1.1.1.1"
+"outboundInterface" = "出站接口"
+"outboundInterfaceDesc" = "自动将出站绑定到物理网络接口以防止流量回环。使用 'auto' 自动选择"
 
 [pages.xray.metrics]
 "title" = "指标"
