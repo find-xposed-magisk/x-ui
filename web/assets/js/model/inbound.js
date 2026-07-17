@@ -1369,14 +1369,14 @@ class QuicParams extends XrayCommonClass {
         brutalDown = 0,
         udpHopPorts = '',
         udpHopInterval = '',
-        initStreamReceiveWindow = 0,
-        maxStreamReceiveWindow = 0,
-        initConnectionReceiveWindow = 0,
-        maxConnectionReceiveWindow = 0,
-        maxIdleTimeout = 0,
+        initStreamReceiveWindow = 8388608,
+        maxStreamReceiveWindow = 8388608,
+        initConnectionReceiveWindow = 20971520,
+        maxConnectionReceiveWindow = 20971520,
+        maxIdleTimeout = 30,
         keepAlivePeriod = 0,
         disablePathMTUDiscovery = false,
-        maxIncomingStreams = 0,
+        maxIncomingStreams = 1024,
     } = {}) {
         super();
         this.congestion = congestion;
