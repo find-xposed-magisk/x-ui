@@ -15,9 +15,6 @@
         <a-form-item v-if="{{.}}.acceptProxyProtocol !== undefined" label='{{ i18n "pages.inbounds.stream.sockopt.proxyProtocol" }}'>
             <a-switch v-model="{{.}}.acceptProxyProtocol"></a-switch>
         </a-form-item>
-        <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.tcpFastOpen" }}'>
-            <a-switch v-model.trim="{{.}}.tcpFastOpen"></a-switch>
-        </a-form-item>
         <a-form-item label='{{ i18n "pages.inbounds.stream.sockopt.multipathTCP" }}'>
             <a-switch v-model.trim="{{.}}.tcpMptcp"></a-switch>
         </a-form-item>

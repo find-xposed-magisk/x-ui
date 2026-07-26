@@ -187,6 +187,20 @@ class XrayCommonClass {
         }
         return v2Headers;
     }
+
+    static shrinkObject(obj) {
+        if (!obj) return undefined;
+        switch (typeof obj){
+            case "object":
+                return Object.keys(obj).length === 0 ? undefined : obj;
+            case "string":
+                return obj.length === 0 ? undefined : obj;
+            case "number":
+                return obj === 0 ? undefined : obj;
+            default:
+                return obj;
+        }
+    }
 }
 
 class TcpStreamSettings extends XrayCommonClass {
@@ -217,8 +231,8 @@ class TcpStreamSettings extends XrayCommonClass {
 
     toJson() {
         return {
-            acceptProxyProtocol: this.acceptProxyProtocol,
-            header: {
+            acceptProxyProtocol: XrayCommonClass.shrinkObject(this.acceptProxyProtocol),
+            header: this.type === 'none' ? undefined : {
                 type: this.type,
                 request: this.type === 'http' ? this.request.toJson() : undefined,
                 response: this.type === 'http' ? this.response.toJson() : undefined,
@@ -271,7 +285,7 @@ TcpStreamSettings.TcpRequest = class extends XrayCommonClass {
             version: this.version,
             method: this.method,
             path: ObjectUtil.clone(this.path),
-            headers: XrayCommonClass.toV2Headers(this.headers),
+            headers: XrayCommonClass.shrinkObject(XrayCommonClass.toV2Headers(this.headers)),
         };
     }
 };
@@ -312,7 +326,7 @@ TcpStreamSettings.TcpResponse = class extends XrayCommonClass {
             version: this.version,
             status: this.status,
             reason: this.reason,
-            headers: XrayCommonClass.toV2Headers(this.headers),
+            headers: XrayCommonClass.shrinkObject(XrayCommonClass.toV2Headers(this.headers)),
         };
     }
 };
@@ -394,11 +408,11 @@ class WsStreamSettings extends XrayCommonClass {
 
     toJson() {
         return {
-            acceptProxyProtocol: this.acceptProxyProtocol,
-            path: this.path,
-            host: this.host,
-            headers: XrayCommonClass.toV2Headers(this.headers, false),
-            heartbeatPeriod: this.heartbeatPeriod,
+            acceptProxyProtocol: this.acceptProxyProtocol ? true : undefined,
+            path: XrayCommonClass.shrinkObject(this.path),
+            host: XrayCommonClass.shrinkObject(this.host),
+            headers: XrayCommonClass.shrinkObject(XrayCommonClass.toV2Headers(this.headers, false)),
+            heartbeatPeriod: XrayCommonClass.shrinkObject(this.heartbeatPeriod)
         };
     }
 }
@@ -425,9 +439,9 @@ class GrpcStreamSettings extends XrayCommonClass {
 
     toJson() {
         return {
-            serviceName: this.serviceName,
-            authority: this.authority,
-            multiMode: this.multiMode,
+            serviceName: XrayCommonClass.shrinkObject(this.serviceName),
+            authority: XrayCommonClass.shrinkObject(this.authority),
+            multiMode: this.multiMode ? true : undefined,
         }
     }
 }
@@ -465,10 +479,10 @@ class HttpUpgradeStreamSettings extends XrayCommonClass {
 
     toJson() {
         return {
-            acceptProxyProtocol: this.acceptProxyProtocol,
-            path: this.path,
-            host: this.host,
-            headers: XrayCommonClass.toV2Headers(this.headers, false),
+            acceptProxyProtocol: this.acceptProxyProtocol ? true : undefined,
+            path: XrayCommonClass.shrinkObject(this.path),
+            host: XrayCommonClass.shrinkObject(this.host),
+            headers: XrayCommonClass.shrinkObject(XrayCommonClass.toV2Headers(this.headers, false)),
         };
     }
 }
@@ -620,29 +634,29 @@ class XhttpExtraSettings extends XrayCommonClass {
         }
         const xmux = this.xmux || {};
         return {
-            headers: XrayCommonClass.toV2Headers(this.headers, false),
-            scMaxBufferedPosts: this.scMaxBufferedPosts,
-            scMaxEachPostBytes: this.scMaxEachPostBytes,
-            scStreamUpServerSecs: this.scStreamUpServerSecs,
-            noSSEHeader: this.noSSEHeader,
-            xPaddingBytes: this.xPaddingBytes,
-            xPaddingObfsMode: this.xPaddingObfsMode,
-            xPaddingKey: this.xPaddingKey,
-            xPaddingHeader: this.xPaddingHeader,
-            xPaddingPlacement: this.xPaddingPlacement,
-            xPaddingMethod: this.xPaddingMethod,
-            uplinkHTTPMethod: this.uplinkHTTPMethod,
-            sessionPlacement: this.sessionPlacement,
-            sessionKey: this.sessionKey,
-            seqPlacement: this.seqPlacement,
-            seqKey: this.seqKey,
-            uplinkDataPlacement: this.uplinkDataPlacement,
-            uplinkDataKey: this.uplinkDataKey,
-            uplinkChunkSize: this.uplinkChunkSize,
-            downloadSettings: download,
-            noGRPCHeader: this.noGRPCHeader,
-            scMinPostsIntervalMs: this.scMinPostsIntervalMs,
-            xmux: {
+            headers: XrayCommonClass.shrinkObject(XrayCommonClass.toV2Headers(this.headers, false)),
+            scMaxBufferedPosts: XrayCommonClass.shrinkObject(this.scMaxBufferedPosts),
+            scMaxEachPostBytes: XrayCommonClass.shrinkObject(this.scMaxEachPostBytes),
+            scStreamUpServerSecs: XrayCommonClass.shrinkObject(this.scStreamUpServerSecs),
+            noSSEHeader: this.noSSEHeader ? true : undefined,
+            xPaddingBytes: XrayCommonClass.shrinkObject(this.xPaddingBytes),
+            xPaddingObfsMode: this.xPaddingObfsMode ? true : undefined,
+            xPaddingKey: XrayCommonClass.shrinkObject(this.xPaddingKey),
+            xPaddingHeader: XrayCommonClass.shrinkObject(this.xPaddingHeader),
+            xPaddingPlacement: XrayCommonClass.shrinkObject(this.xPaddingPlacement),
+            xPaddingMethod: XrayCommonClass.shrinkObject(this.xPaddingMethod),
+            uplinkHTTPMethod: XrayCommonClass.shrinkObject(this.uplinkHTTPMethod),
+            sessionPlacement: XrayCommonClass.shrinkObject(this.sessionPlacement),
+            sessionKey: XrayCommonClass.shrinkObject(this.sessionKey),
+            seqPlacement: XrayCommonClass.shrinkObject(this.seqPlacement),
+            seqKey: XrayCommonClass.shrinkObject(this.seqKey),
+            uplinkDataPlacement: XrayCommonClass.shrinkObject(this.uplinkDataPlacement),
+            uplinkDataKey: XrayCommonClass.shrinkObject(this.uplinkDataKey),
+            uplinkChunkSize: XrayCommonClass.shrinkObject(this.uplinkChunkSize),
+            downloadSettings: XrayCommonClass.shrinkObject(download),
+            noGRPCHeader: this.noGRPCHeader ? true : undefined,
+            scMinPostsIntervalMs: XrayCommonClass.shrinkObject(this.scMinPostsIntervalMs),
+            xmux: !this.xmux ? undefined : {
                 maxConcurrency: xmux.maxConcurrency,
                 maxConnections: xmux.maxConnections,
                 cMaxReuseTimes: xmux.cMaxReuseTimes,
@@ -650,7 +664,7 @@ class XhttpExtraSettings extends XrayCommonClass {
                 hMaxReusableSecs: xmux.hMaxReusableSecs,
                 hKeepAlivePeriod: xmux.hKeepAlivePeriod,
             },
-            serverMaxHeaderBytes: this.serverMaxHeaderBytes,
+            serverMaxHeaderBytes: XrayCommonClass.shrinkObject(this.serverMaxHeaderBytes),
         };
     }
 }
@@ -697,8 +711,8 @@ class xHTTPStreamSettings extends XrayCommonClass {
 
     toJson() {
         return {
-            path: this.path,
-            host: this.host,
+            path: XrayCommonClass.shrinkObject(this.path),
+            host: XrayCommonClass.shrinkObject(this.host),
             mode: this.mode,
             extra: this.extra ? this.extra.toJson() : undefined,
         };
@@ -791,13 +805,13 @@ class HysteriaMasquerade extends XrayCommonClass {
     toJson() {
         return {
             type: this.type,
-            dir: this.dir,
-            url: this.url,
-            rewriteHost: this.rewriteHost,
-            insecure: this.insecure,
-            content: this.content,
-            headers: XrayCommonClass.toV2Headers(this.headers, false),
-            statusCode: this.statusCode,
+            dir: XrayCommonClass.shrinkObject(this.dir),
+            url: XrayCommonClass.shrinkObject(this.url),
+            rewriteHost: this.rewriteHost ? true : undefined,
+            insecure: this.insecure ? true : undefined,
+            content: XrayCommonClass.shrinkObject(this.content),
+            headers: XrayCommonClass.shrinkObject(XrayCommonClass.toV2Headers(this.headers, false)),
+            statusCode: XrayCommonClass.shrinkObject(this.statusCode),
         };
     }
 };
@@ -886,19 +900,19 @@ class TlsStreamSettings extends XrayCommonClass {
 
     toJson() {
         return {
-            serverName: this.sni,
-            minVersion: this.minVersion,
-            maxVersion: this.maxVersion,
-            cipherSuites: this.cipherSuites,
-            rejectUnknownSni: this.rejectUnknownSni,
-            disableSystemRoot: this.disableSystemRoot,
-            enableSessionResumption: this.enableSessionResumption,
+            serverName: XrayCommonClass.shrinkObject(this.sni),
+            minVersion: XrayCommonClass.shrinkObject(this.minVersion),
+            maxVersion: XrayCommonClass.shrinkObject(this.maxVersion),
+            cipherSuites: XrayCommonClass.shrinkObject(this.cipherSuites),
+            rejectUnknownSni: this.rejectUnknownSni ? true : undefined,
+            disableSystemRoot: this.disableSystemRoot ? true : undefined,
+            enableSessionResumption: this.enableSessionResumption ? true : undefined,
             certificates: TlsStreamSettings.toJsonArray(this.certs),
-            alpn: this.alpn,
-            echServerKeys: this.echServerKeys,
-            echForceQuery: this.echForceQuery,
-            curvePreferences: this.curvePreferences && this.curvePreferences.length > 0 ? this.curvePreferences : undefined,
-            masterKeyLog: this.masterKeyLog ? this.masterKeyLog : undefined,
+            alpn: this.alpn.length > 0 ? this.alpn : undefined,
+            echServerKeys: XrayCommonClass.shrinkObject(this.echServerKeys),
+            echForceQuery: XrayCommonClass.shrinkObject(this.echForceQuery),
+            curvePreferences: XrayCommonClass.shrinkObject(this.curvePreferences),
+            masterKeyLog: XrayCommonClass.shrinkObject(this.masterKeyLog),
             echSockopt: this.echSockopt ? this.echSockopt.toJson() : undefined,
             settings: this.settings,
         };
@@ -954,23 +968,23 @@ TlsStreamSettings.Cert = class extends XrayCommonClass {
     }
 
     toJson() {
+        const commonSettings = {
+            ocspStapling: XrayCommonClass.shrinkObject(this.ocspStapling),
+            oneTimeLoading: this.oneTimeLoading ? true : undefined,
+            usage: XrayCommonClass.shrinkObject(this.usage),
+            buildChain: this.buildChain ? true : undefined,
+        };
         if (this.useFile) {
             return {
                 certificateFile: this.certFile,
                 keyFile: this.keyFile,
-                ocspStapling: this.ocspStapling,
-                oneTimeLoading: this.oneTimeLoading,
-                usage: this.usage,
-                buildChain: this.buildChain,
+                ...commonSettings
             };
         } else {
             return {
                 certificate: this.cert.split('\n'),
                 key: this.key.split('\n'),
-                ocspStapling: this.ocspStapling,
-                oneTimeLoading: this.oneTimeLoading,
-                usage: this.usage,
-                buildChain: this.buildChain,
+                ...commonSettings
             };
         }
     }
@@ -1004,11 +1018,11 @@ TlsStreamSettings.Settings = class extends XrayCommonClass {
     }
     toJson() {
         return {
-            allowInsecure: this.allowInsecure,
+            allowInsecure: this.allowInsecure ? true : undefined,
             fingerprint: this.fingerprint,
-            echConfigList: this.echConfigList,
-            pinnedPeerCertSha256: this.pinnedPeerCertSha256 && this.pinnedPeerCertSha256.length > 0 ? this.pinnedPeerCertSha256 : undefined,
-            verifyPeerCertByName: this.verifyPeerCertByName ? this.verifyPeerCertByName : undefined,
+            echConfigList: XrayCommonClass.shrinkObject(this.echConfigList),
+            pinnedPeerCertSha256: XrayCommonClass.shrinkObject(this.pinnedPeerCertSha256),
+            verifyPeerCertByName: XrayCommonClass.shrinkObject(this.verifyPeerCertByName),
         };
     }
 };
@@ -1076,16 +1090,16 @@ class RealityStreamSettings extends XrayCommonClass {
 
     toJson() {
         return {
-            show: this.show,
+            show: this.show ? true : undefined,
             xver: this.xver,
             dest: this.dest,
             serverNames: this.serverNames.split(","),
             privateKey: this.privateKey,
-            minClientVer: this.minClient,
-            maxClientVer: this.maxClient,
-            maxTimeDiff: this.maxTimediff,
+            minClientVer: XrayCommonClass.shrinkObject(this.minClient),
+            maxClientVer: XrayCommonClass.shrinkObject(this.maxClient),
+            maxTimeDiff: XrayCommonClass.shrinkObject(this.maxTimediff),
             shortIds: this.shortIds.split(","),
-            mldsa65Seed: this.mldsa65Seed,
+            mldsa65Seed: XrayCommonClass.shrinkObject(this.mldsa65Seed),
             settings: this.settings,
             limitFallbackUpload: this.limitFallbackUpload && !this.limitFallbackUpload.isEmpty() ? this.limitFallbackUpload.toJson() : undefined,
             limitFallbackDownload: this.limitFallbackDownload && !this.limitFallbackDownload.isEmpty() ? this.limitFallbackDownload.toJson() : undefined,
@@ -1165,7 +1179,6 @@ RealityStreamSettings.Settings = class extends XrayCommonClass {
 class SockoptStreamSettings extends XrayCommonClass {
     constructor(
         acceptProxyProtocol = false,
-        tcpFastOpen = false,
         mark = 0,
         tproxy = "off",
         tcpMptcp = false,
@@ -1184,7 +1197,6 @@ class SockoptStreamSettings extends XrayCommonClass {
     ) {
         super();
         this.acceptProxyProtocol = acceptProxyProtocol;
-        this.tcpFastOpen = tcpFastOpen;
         this.mark = mark;
         this.tproxy = tproxy;
         this.tcpMptcp = tcpMptcp;
@@ -1206,7 +1218,6 @@ class SockoptStreamSettings extends XrayCommonClass {
         if (Object.keys(json).length === 0) return undefined;
         return new SockoptStreamSettings(
             json.acceptProxyProtocol,
-            json.tcpFastOpen,
             json.mark,
             json.tproxy,
             json.tcpMptcp,
@@ -1227,21 +1238,20 @@ class SockoptStreamSettings extends XrayCommonClass {
 
     toJson() {
         const result = {
-            acceptProxyProtocol: this.acceptProxyProtocol,
-            tcpFastOpen: this.tcpFastOpen,
-            mark: this.mark,
-            tproxy: this.tproxy,
-            tcpMptcp: this.tcpMptcp,
-            penetrate: this.penetrate,
-            domainStrategy: this.domainStrategy,
-            tcpMaxSeg: this.tcpMaxSeg,
-            tcpKeepAliveInterval: this.tcpKeepAliveInterval,
-            tcpKeepAliveIdle: this.tcpKeepAliveIdle,
-            tcpUserTimeout: this.tcpUserTimeout,
-            tcpcongestion: this.tcpcongestion,
-            V6Only: this.V6Only,
-            tcpWindowClamp: this.tcpWindowClamp,
-            interface: this.interfaceName,
+            acceptProxyProtocol: this.acceptProxyProtocol ? true : undefined,
+            mark: XrayCommonClass.shrinkObject(this.mark),
+            tproxy: XrayCommonClass.shrinkObject(this.tproxy),
+            tcpMptcp: this.tcpMptcp ? true : undefined,
+            penetrate: this.penetrate ? true : undefined,
+            domainStrategy: XrayCommonClass.shrinkObject(this.domainStrategy),
+            tcpMaxSeg: XrayCommonClass.shrinkObject(this.tcpMaxSeg),
+            tcpKeepAliveInterval: XrayCommonClass.shrinkObject(this.tcpKeepAliveInterval),
+            tcpKeepAliveIdle: XrayCommonClass.shrinkObject(this.tcpKeepAliveIdle),
+            tcpUserTimeout: XrayCommonClass.shrinkObject(this.tcpUserTimeout),
+            tcpcongestion: XrayCommonClass.shrinkObject(this.tcpcongestion),
+            V6Only: this.V6Only ? true : undefined,
+            tcpWindowClamp: XrayCommonClass.shrinkObject(this.tcpWindowClamp),
+            interface: XrayCommonClass.shrinkObject(this.interfaceName),
         };
         if (this.trustedXForwardedFor && this.trustedXForwardedFor.length > 0) {
             result.trustedXForwardedFor = this.trustedXForwardedFor;
@@ -1715,6 +1725,16 @@ class Sniffing extends XrayCommonClass {
             json.metadataOnly,
             json.routeOnly,
         );
+    }
+
+    toJson() {
+        if (!this.enabled) return {enabled: false};
+        return {
+            enabled: this.enabled,
+            destOverride: this.destOverride,
+            metadataOnly: this.metadataOnly ? true : undefined,
+            routeOnly: this.routeOnly ? true : undefined,
+        };
     }
 }
 
@@ -3201,8 +3221,8 @@ Inbound.SocksSettings = class extends Inbound.Settings {
         return {
             auth: this.auth,
             accounts: this.auth === 'password' ? this.accounts.map(account => account.toJson()) : undefined,
-            udp: this.udp,
-            ip: this.ip,
+            udp: this.udp ? true : undefined,
+            ip: XrayCommonClass.shrinkObject(this.ip),
         };
     }
 };

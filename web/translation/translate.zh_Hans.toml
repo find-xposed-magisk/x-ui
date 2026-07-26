@@ -376,7 +376,6 @@
 "tcpUserTimeout" = "TCP 用户超时"
 "tcpWindowClamp" = "TCP 窗口钳制"
 "proxyProtocol" = "Proxy Protocol"
-"tcpFastOpen" = "TCP Fast Open"
 "customSockopt" = "自定义 Sockopt"
 "happyEyeballs" = "Happy Eyeballs"
 "prioritizeIPv6" = "优先 IPv6"

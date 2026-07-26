@@ -375,7 +375,6 @@
 "tcpUserTimeout" = "TCP User Timeout"
 "tcpWindowClamp" = "TCP Window Clamp"
 "proxyProtocol" = "Proxy Protocol"
-"tcpFastOpen" = "TCP Fast Open"
 "customSockopt" = "Sockopt tùy chỉnh"
 "happyEyeballs" = "Happy Eyeballs"
 "prioritizeIPv6" = "Ưu tiên IPv6"

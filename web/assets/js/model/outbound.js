@@ -132,6 +132,20 @@ class CommonClass {
     toString(format = true) {
         return format ? JSON.stringify(this.toJson(), null, 2) : JSON.stringify(this.toJson());
     }
+
+    static shrinkObject(obj) {
+        if (!obj) return undefined;
+        switch (typeof obj){
+            case "object":
+                return Object.keys(obj).length === 0 ? undefined : obj;
+            case "string":
+                return obj.length === 0 ? undefined : obj;
+            case "number":
+                return obj === 0 ? undefined : obj;
+            default:
+                return obj;
+        }
+    }
 }
 class ReverseSniffing extends CommonClass {
     constructor(
@@ -166,13 +180,14 @@ class ReverseSniffing extends CommonClass {
     }
 
     toJson() {
+        if (!this.enabled) return {enabled: false};
         return {
             enabled: this.enabled,
             destOverride: this.destOverride,
-            metadataOnly: this.metadataOnly,
-            routeOnly: this.routeOnly,
-            ipsExcluded: this.ipsExcluded.length > 0 ? this.ipsExcluded : undefined,
-            domainsExcluded: this.domainsExcluded.length > 0 ? this.domainsExcluded : undefined,
+            metadataOnly: this.metadataOnly ? true : undefined,
+            routeOnly: this.routeOnly ? true : undefined,
+            ipsExcluded: CommonClass.shrinkObject(this.ipsExcluded),
+            domainsExcluded: CommonClass.shrinkObject(this.domainsExcluded),
         };
     }
 }
@@ -200,7 +215,7 @@ class TcpStreamSettings extends CommonClass {
 
     toJson() {
         return {
-            header: {
+            header: this.type === 'none' ? undefined : {
                 type: this.type,
                 request: this.type === 'http' ? {
                     headers: {
@@ -277,9 +292,9 @@ class WsStreamSettings extends CommonClass {
 
     toJson() {
         return {
-            path: this.path,
-            host: this.host,
-            heartbeatPeriod: this.heartbeatPeriod
+            path: CommonClass.shrinkObject(this.path),
+            host: CommonClass.shrinkObject(this.host),
+            heartbeatPeriod: CommonClass.shrinkObject(this.heartbeatPeriod)
         };
     }
 }
@@ -302,9 +317,9 @@ class GrpcStreamSettings extends CommonClass {
 
     toJson() {
         return {
-            serviceName: this.serviceName,
-            authority: this.authority,
-            multiMode: this.multiMode
+            serviceName: CommonClass.shrinkObject(this.serviceName),
+            authority: CommonClass.shrinkObject(this.authority),
+            multiMode: this.multiMode ? true : undefined
         }
     }
 }
@@ -325,8 +340,8 @@ class HttpUpgradeStreamSettings extends CommonClass {
 
     toJson() {
         return {
-            path: this.path,
-            host: this.host,
+            path: CommonClass.shrinkObject(this.path),
+            host: CommonClass.shrinkObject(this.host),
         };
     }
 }
@@ -460,7 +475,7 @@ class XhttpExtraSettings extends CommonClass {
     }
 
     toJson() {
-        let download;
+        let download = undefined;
         if (this.downloadSettingsEnable) {
             try {
                 download = JSON.parse(this.downloadSettings);
@@ -468,33 +483,33 @@ class XhttpExtraSettings extends CommonClass {
                 download = this.downloadSettings;
             }
         }
-        const headersMap = {};
-        if (Array.isArray(this.headers)) {
+        const headersMap = this.headers.length > 0 ? {} : undefined;
+        if (headersMap && Array.isArray(this.headers)) {
             for (const h of this.headers) {
                 if (h && h.name) headersMap[h.name] = h.value;
             }
         }
         const xmux = this.xmux || {};
         return {
-            headers: headersMap,
-            xPaddingBytes: this.xPaddingBytes,
-            xPaddingObfsMode: this.xPaddingObfsMode,
-            xPaddingKey: this.xPaddingKey,
-            xPaddingHeader: this.xPaddingHeader,
-            xPaddingPlacement: this.xPaddingPlacement,
-            xPaddingMethod: this.xPaddingMethod,
-            uplinkHTTPMethod: this.uplinkHTTPMethod,
-            sessionPlacement: this.sessionPlacement,
-            sessionKey: this.sessionKey,
-            seqPlacement: this.seqPlacement,
-            seqKey: this.seqKey,
-            uplinkDataPlacement: this.uplinkDataPlacement,
-            uplinkDataKey: this.uplinkDataKey,
-            uplinkChunkSize: this.uplinkChunkSize,
-            scMaxEachPostBytes: this.scMaxEachPostBytes,
-            noGRPCHeader: this.noGRPCHeader,
-            scMinPostsIntervalMs: this.scMinPostsIntervalMs,
-            xmux: {
+            headers: CommonClass.shrinkObject(headersMap),
+            xPaddingBytes: CommonClass.shrinkObject(this.xPaddingBytes),
+            xPaddingObfsMode: this.xPaddingObfsMode ? true : undefined,
+            xPaddingKey: CommonClass.shrinkObject(this.xPaddingKey),
+            xPaddingHeader: CommonClass.shrinkObject(this.xPaddingHeader),
+            xPaddingPlacement: CommonClass.shrinkObject(this.xPaddingPlacement),
+            xPaddingMethod: CommonClass.shrinkObject(this.xPaddingMethod),
+            uplinkHTTPMethod: CommonClass.shrinkObject(this.uplinkHTTPMethod),
+            sessionPlacement: CommonClass.shrinkObject(this.sessionPlacement),
+            sessionKey: CommonClass.shrinkObject(this.sessionKey),
+            seqPlacement: CommonClass.shrinkObject(this.seqPlacement),
+            seqKey: CommonClass.shrinkObject(this.seqKey),
+            uplinkDataPlacement: CommonClass.shrinkObject(this.uplinkDataPlacement),
+            uplinkDataKey: CommonClass.shrinkObject(this.uplinkDataKey),
+            uplinkChunkSize: CommonClass.shrinkObject(this.uplinkChunkSize),
+            scMaxEachPostBytes: CommonClass.shrinkObject(this.scMaxEachPostBytes),
+            noGRPCHeader: this.noGRPCHeader ? true : undefined,
+            scMinPostsIntervalMs: CommonClass.shrinkObject(this.scMinPostsIntervalMs),
+            xmux: !this.xmux ? undefined : {
                 maxConcurrency: xmux.maxConcurrency,
                 maxConnections: xmux.maxConnections,
                 cMaxReuseTimes: xmux.cMaxReuseTimes,
@@ -502,7 +517,7 @@ class XhttpExtraSettings extends CommonClass {
                 hMaxReusableSecs: xmux.hMaxReusableSecs,
                 hKeepAlivePeriod: xmux.hKeepAlivePeriod,
             },
-            downloadSettings: download,
+            downloadSettings: CommonClass.shrinkObject(download),
         };
     }
 }
@@ -545,8 +560,8 @@ class xHTTPStreamSettings extends CommonClass {
 
     toJson() {
         return {
-            path: this.path,
-            host: this.host,
+            path: CommonClass.shrinkObject(this.path),
+            host: CommonClass.shrinkObject(this.host),
             mode: this.mode,
             extra: this.extra ? this.extra.toJson() : undefined,
         };
@@ -619,15 +634,15 @@ class TlsStreamSettings extends CommonClass {
 
     toJson() {
         return {
-            serverName: this.serverName.length > 0 ? this.serverName : undefined,
+            serverName: CommonClass.shrinkObject(this.serverName),
             alpn: this.alpn.length > 0 ? this.alpn : undefined,
-            fingerprint: this.fingerprint.length > 0 ? this.fingerprint : undefined,
-            allowInsecure: this.allowInsecure ?? undefined,
-            echConfigList: this.echConfigList.length > 0 ? this.echConfigList : undefined,
-            verifyPeerCertByName: this.verifyPeerCertByName.length > 0 ? this.verifyPeerCertByName : undefined,
-            pinnedPeerCertSha256: this.pinnedPeerCertSha256.length > 0 ? this.pinnedPeerCertSha256 : undefined,
-            curvePreferences: this.curvePreferences && this.curvePreferences.length > 0 ? this.curvePreferences : undefined,
-            masterKeyLog: this.masterKeyLog ? this.masterKeyLog : undefined,
+            fingerprint: CommonClass.shrinkObject(this.fingerprint),
+            allowInsecure: this.allowInsecure ? true : undefined,
+            echConfigList: CommonClass.shrinkObject(this.echConfigList),
+            verifyPeerCertByName: CommonClass.shrinkObject(this.verifyPeerCertByName),
+            pinnedPeerCertSha256: CommonClass.shrinkObject(this.pinnedPeerCertSha256),
+            curvePreferences: CommonClass.shrinkObject(this.curvePreferences),
+            masterKeyLog: CommonClass.shrinkObject(this.masterKeyLog),
             echSockopt: this.echSockopt ? this.echSockopt.toJson() : undefined,
         };
     }
@@ -676,8 +691,8 @@ class RealityStreamSettings extends CommonClass {
             fingerprint: this.fingerprint,
             serverName: this.serverName,
             shortId: this.shortId,
-            spiderX: this.spiderX.length > 0 ? this.spiderX : undefined,
-            mldsa65Verify: this.mldsa65Verify.length > 0 ? this.mldsa65Verify : undefined,
+            spiderX: CommonClass.shrinkObject(this.spiderX),
+            mldsa65Verify: CommonClass.shrinkObject(this.mldsa65Verify),
         };
     }
 };
@@ -702,7 +717,7 @@ class HysteriaStreamSettings extends CommonClass {
     toJson() {
         return {
             version: this.version,
-            auth: this.auth,
+            auth: CommonClass.shrinkObject(this.auth),
         };
     }
 };
@@ -710,7 +725,6 @@ class HysteriaStreamSettings extends CommonClass {
 class SockoptStreamSettings extends CommonClass {
     constructor(
         dialerProxy = "",
-        tcpFastOpen = false,
         tcpKeepAliveInterval = 0,
         tcpMptcp = false,
         penetrate = false,
@@ -729,7 +743,6 @@ class SockoptStreamSettings extends CommonClass {
     ) {
         super();
         this.dialerProxy = dialerProxy;
-        this.tcpFastOpen = tcpFastOpen;
         this.tcpKeepAliveInterval = tcpKeepAliveInterval;
         this.tcpMptcp = tcpMptcp;
         this.penetrate = penetrate;
@@ -751,7 +764,6 @@ class SockoptStreamSettings extends CommonClass {
         if (Object.keys(json).length === 0) return undefined;
         return new SockoptStreamSettings(
             json.dialerProxy,
-            json.tcpFastOpen,
             json.tcpKeepAliveInterval,
             json.tcpMptcp,
             json.penetrate,
@@ -772,22 +784,21 @@ class SockoptStreamSettings extends CommonClass {
 
     toJson() {
         const result = {
-            dialerProxy: this.dialerProxy,
-            tcpFastOpen: this.tcpFastOpen,
-            tcpKeepAliveInterval: this.tcpKeepAliveInterval,
-            tcpMptcp: this.tcpMptcp,
-            penetrate: this.penetrate,
-            addressPortStrategy: this.addressPortStrategy,
+            dialerProxy: CommonClass.shrinkObject(this.dialerProxy),
+            tcpKeepAliveInterval: CommonClass.shrinkObject(this.tcpKeepAliveInterval),
+            tcpMptcp: this.tcpMptcp ? true : undefined,
+            penetrate: this.penetrate ? true : undefined,
+            addressPortStrategy: this.addressPortStrategy !== Address_Port_Strategy.NONE ? this.addressPortStrategy : undefined,
             happyEyeballs: this.happyEyeballs && this.happyEyeballs.enabled ? this.happyEyeballs.toJson() : undefined,
-            mark: this.mark ? this.mark : undefined,
-            domainStrategy: this.domainStrategy ? this.domainStrategy : undefined,
-            tcpMaxSeg: this.tcpMaxSeg ? this.tcpMaxSeg : undefined,
-            tcpKeepAliveIdle: this.tcpKeepAliveIdle ? this.tcpKeepAliveIdle : undefined,
-            tcpUserTimeout: this.tcpUserTimeout ? this.tcpUserTimeout : undefined,
-            tcpcongestion: this.tcpcongestion ? this.tcpcongestion : undefined,
-            tcpWindowClamp: this.tcpWindowClamp ? this.tcpWindowClamp : undefined,
-            interface: this.interfaceName ? this.interfaceName : undefined,
-            customSockopt: this.customSockopt && this.customSockopt.length > 0 ? this.customSockopt : undefined,
+            mark: CommonClass.shrinkObject(this.mark),
+            domainStrategy: CommonClass.shrinkObject(this.domainStrategy),
+            tcpMaxSeg: CommonClass.shrinkObject(this.tcpMaxSeg),
+            tcpKeepAliveIdle: CommonClass.shrinkObject(this.tcpKeepAliveIdle),
+            tcpUserTimeout: CommonClass.shrinkObject(this.tcpUserTimeout),
+            tcpcongestion: CommonClass.shrinkObject(this.tcpcongestion),
+            tcpWindowClamp: CommonClass.shrinkObject(this.tcpWindowClamp),
+            interface: CommonClass.shrinkObject(this.interfaceName),
+            customSockopt: CommonClass.shrinkObject(this.customSockopt),
         };
         if (this.trustedXForwardedFor && this.trustedXForwardedFor.length > 0) {
             result.trustedXForwardedFor = this.trustedXForwardedFor;
@@ -885,7 +896,7 @@ class UdpMask extends CommonClass {
     toJson() {
         return {
             type: this.type,
-            settings: (this.settings && Object.keys(this.settings).length > 0) ? this.settings : undefined
+            settings: CommonClass.shrinkObject(this.settings)
         };
     }
 }
@@ -936,7 +947,7 @@ class TcpMask extends CommonClass {
     toJson() {
         return {
             type: this.type,
-            settings: (this.settings && Object.keys(this.settings).length > 0) ? this.settings : undefined
+            settings: CommonClass.shrinkObject(this.settings)
         };
     }
 }
@@ -1644,9 +1655,9 @@ Outbound.FreedomSettings = class extends CommonClass {
 
     toJson() {
         return {
-            domainStrategy: ObjectUtil.isEmpty(this.domainStrategy) ? undefined : this.domainStrategy,
-            redirect: ObjectUtil.isEmpty(this.redirect) ? undefined: this.redirect,
-            fragment: Object.keys(this.fragment).length === 0 ? undefined : this.fragment,
+            domainStrategy: CommonClass.shrinkObject(this.domainStrategy),
+            redirect: CommonClass.shrinkObject(this.redirect),
+            fragment: CommonClass.shrinkObject(this.fragment),
             noises: this.noises.length === 0 ? undefined : Outbound.FreedomSettings.Noise.toJsonArray(this.noises),
             finalRules: this.finalRules.length === 0 ? undefined : Outbound.FreedomSettings.FinalRule.toJsonArray(this.finalRules),
         };
@@ -1732,10 +1743,10 @@ Outbound.FreedomSettings.FinalRule = class extends CommonClass {
     toJson() {
         return {
             action: this.action,
-            network: ObjectUtil.isEmpty(this.network) ? undefined : this.network,
-            port: ObjectUtil.isEmpty(this.port) ? undefined : this.port,
+            network: CommonClass.shrinkObject(this.network),
+            port: CommonClass.shrinkObject(this.port),
             ip: ObjectUtil.isEmpty(this.ip) ? undefined : this.ip.split(',').map(s => s.trim()).filter(s => s.length > 0),
-            blockDelay: ObjectUtil.isEmpty(this.blockDelay) ? undefined : this.blockDelay,
+            blockDelay: CommonClass.shrinkObject(this.blockDelay),
         };
     }
 };
@@ -2065,7 +2076,7 @@ Outbound.WireguardSettings = class extends CommonClass {
             domainStrategy: WireguardDomainStrategy.includes(this.domainStrategy) ? this.domainStrategy : undefined,
             reserved: this.reserved ? this.reserved.split(",").map(Number) : undefined,
             peers: Outbound.WireguardSettings.Peer.toJsonArray(this.peers),
-            noKernelTun: this.noKernelTun,
+            noKernelTun: this.noKernelTun ? true : undefined,
         };
     }
 };
@@ -2099,10 +2110,10 @@ Outbound.WireguardSettings.Peer = class extends CommonClass {
     toJson() {
         return {
             publicKey: this.publicKey,
-            preSharedKey: this.psk.length > 0 ? this.psk : undefined,
-            allowedIPs: this.allowedIPs ? this.allowedIPs : undefined,
+            preSharedKey: CommonClass.shrinkObject(this.psk),
+            allowedIPs: CommonClass.shrinkObject(this.allowedIPs),
             endpoint: this.endpoint,
-            keepAlive: this.keepAlive ?? undefined,
+            keepAlive: CommonClass.shrinkObject(this.keepAlive),
         };
     }
 };
