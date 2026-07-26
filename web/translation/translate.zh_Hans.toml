@@ -198,6 +198,7 @@
 "update" = "更新规则"
 "deleteConfirm" = "确定要删除此路由规则吗？"
 "dragToReorder" = "拖动以排序"
+"warpOutboundMissing" = "WARP 路由需要 WARP 出站。请先在出站页面中创建。"
 
 [pages.routingRules.toasts]
 "obtain" = "加载路由规则失败"

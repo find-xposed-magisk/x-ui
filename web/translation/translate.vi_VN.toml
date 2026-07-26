@@ -197,6 +197,7 @@
 "update" = "Cập nhật quy tắc"
 "deleteConfirm" = "Bạn có chắc muốn xóa quy tắc định tuyến này?"
 "dragToReorder" = "Kéo để sắp xếp lại"
+"warpOutboundMissing" = "Định tuyến WARP cần một outbound WARP. Vui lòng tạo nó trong trang Outbound trước."
 
 [pages.routingRules.toasts]
 "obtain" = "Không thể tải quy tắc định tuyến"

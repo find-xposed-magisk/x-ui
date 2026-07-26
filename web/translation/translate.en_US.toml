@@ -197,6 +197,7 @@
 "update" = "Update Rule"
 "deleteConfirm" = "Are you sure you want to delete this routing rule?"
 "dragToReorder" = "Drag to reorder"
+"warpOutboundMissing" = "WARP routing requires a WARP outbound. Please create it on the Outbounds page first."
 
 [pages.routingRules.toasts]
 "obtain" = "Failed to load routing rules"

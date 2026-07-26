@@ -181,7 +181,13 @@
                                     </a-row>
                                 </a-list-item>
                             </template>
-                            <a-button v-else type="primary" icon="cloud" style="margin: 15px 20px;" @click="showWarp()">WARP</a-button>
+                            <template v-else>
+                                <a-alert type="warning" show-icon style="margin: 15px 20px; text-align: center;">
+                                    <template slot="message">{{ i18n "pages.routingRules.warpOutboundMissing" }}</template>
+                                </a-alert>
+                                <a-button type="primary" icon="cloud" style="margin: 0 20px 15px;"
+                                    href="{{ .base_path }}xui/outbounds">{{ i18n "menu.outbounds" }}</a-button>
+                            </template>
                         </a-collapse-panel>
                     </a-collapse>
                 </a-card>
@@ -588,9 +594,6 @@
                 rules.splice(toIdx, 0, moved);
                 this.dbRules = rules;
             },
-            showWarp() {
-                warpModal.show();
-            },
             onResize() {
                 this.isMobile = window.innerWidth <= 768;
             },
@@ -611,7 +614,6 @@
     const app = routingRulesApp;
 </script>
 {{template "ruleModal"}}
-{{template "warpModal"}}
 {{template "promptModal"}}
 {{template "textModal"}}
 </body>
