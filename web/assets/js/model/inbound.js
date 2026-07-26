@@ -490,11 +490,11 @@ class HttpUpgradeStreamSettings extends XrayCommonClass {
 class XhttpExtraSettings extends XrayCommonClass {
     constructor({
         headers = [],
-        scMaxBufferedPosts = 30,
-        scStreamUpServerSecs = "20-80",
+        scMaxBufferedPosts = 0,
+        scStreamUpServerSecs = "",
         noSSEHeader = false,
         serverMaxHeaderBytes = 0,
-        xPaddingBytes = "100-1000",
+        xPaddingBytes = "",
         xPaddingObfsMode = false,
         xPaddingKey = '',
         xPaddingHeader = '',
@@ -509,8 +509,8 @@ class XhttpExtraSettings extends XrayCommonClass {
         uplinkDataKey = '',
         uplinkChunkSize = 0,
         noGRPCHeader = false,
-        scMaxEachPostBytes = "1000000",
-        scMinPostsIntervalMs = "30",
+        scMaxEachPostBytes = "",
+        scMinPostsIntervalMs = "",
         xmux = undefined,
         downloadSettings = '',
     } = {}) {
@@ -537,14 +537,7 @@ class XhttpExtraSettings extends XrayCommonClass {
         this.noGRPCHeader = noGRPCHeader;
         this.scMaxEachPostBytes = scMaxEachPostBytes;
         this.scMinPostsIntervalMs = scMinPostsIntervalMs;
-        this.xmux = xmux || {
-            maxConcurrency: "16-32",
-            maxConnections: 0,
-            cMaxReuseTimes: 0,
-            hMaxRequestTimes: "600-900",
-            hMaxReusableSecs: "1800-3000",
-            hKeepAlivePeriod: 0,
-        };
+        this.xmux = xmux;
         this.downloadSettings = typeof downloadSettings === 'object' && downloadSettings !== null
             ? JSON.stringify(downloadSettings, null, 2)
             : (downloadSettings || '');
@@ -574,6 +567,22 @@ class XhttpExtraSettings extends XrayCommonClass {
                 tlsSettings: {},
                 xhttpSettings: { path: '/', mode: 'auto' },
             }, null, 2);
+        }
+    }
+
+    get enableXmux() {
+        return this.xmux !== undefined;
+    }
+
+    set enableXmux(value) {
+        if (value && this.xmux == undefined) {
+            this.xmux = {
+                maxConcurrency: "16-32",
+                hMaxRequestTimes: "600-900",
+                hMaxReusableSecs: "1800-3000",
+            };
+        } else if (!value) {
+            this.xmux = undefined;
         }
     }
 
@@ -657,12 +666,12 @@ class XhttpExtraSettings extends XrayCommonClass {
             noGRPCHeader: this.noGRPCHeader ? true : undefined,
             scMinPostsIntervalMs: XrayCommonClass.shrinkObject(this.scMinPostsIntervalMs),
             xmux: !this.xmux ? undefined : {
-                maxConcurrency: xmux.maxConcurrency,
-                maxConnections: xmux.maxConnections,
-                cMaxReuseTimes: xmux.cMaxReuseTimes,
-                hMaxRequestTimes: xmux.hMaxRequestTimes,
-                hMaxReusableSecs: xmux.hMaxReusableSecs,
-                hKeepAlivePeriod: xmux.hKeepAlivePeriod,
+                maxConcurrency: XrayCommonClass.shrinkObject(xmux.maxConcurrency),
+                maxConnections: XrayCommonClass.shrinkObject(xmux.maxConnections),
+                cMaxReuseTimes: XrayCommonClass.shrinkObject(xmux.cMaxReuseTimes),
+                hMaxRequestTimes: XrayCommonClass.shrinkObject(xmux.hMaxRequestTimes),
+                hMaxReusableSecs: XrayCommonClass.shrinkObject(xmux.hMaxReusableSecs),
+                hKeepAlivePeriod: XrayCommonClass.shrinkObject(xmux.hKeepAlivePeriod),
             },
             serverMaxHeaderBytes: XrayCommonClass.shrinkObject(this.serverMaxHeaderBytes),
         };

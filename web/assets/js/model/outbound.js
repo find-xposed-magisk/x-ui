@@ -365,7 +365,7 @@ class XhttpExtraSettings extends CommonClass {
         uplinkChunkSize = 0,
         scMaxEachPostBytes = '',
         noGRPCHeader = false,
-        scMinPostsIntervalMs = "30",
+        scMinPostsIntervalMs = "",
         xmux = undefined,
         downloadSettings = '',
     } = {}) {
@@ -388,14 +388,7 @@ class XhttpExtraSettings extends CommonClass {
         this.scMaxEachPostBytes = scMaxEachPostBytes;
         this.noGRPCHeader = noGRPCHeader;
         this.scMinPostsIntervalMs = scMinPostsIntervalMs;
-        this.xmux = xmux || {
-            maxConcurrency: "16-32",
-            maxConnections: 0,
-            cMaxReuseTimes: 0,
-            hMaxRequestTimes: "600-900",
-            hMaxReusableSecs: "1800-3000",
-            hKeepAlivePeriod: 0,
-        };
+        this.xmux = xmux;
         this.downloadSettings = typeof downloadSettings === 'object' && downloadSettings !== null
             ? JSON.stringify(downloadSettings, null, 2)
             : (downloadSettings || '');
@@ -425,6 +418,22 @@ class XhttpExtraSettings extends CommonClass {
                 tlsSettings: {},
                 xhttpSettings: { path: '/', mode: 'auto' },
             }, null, 2);
+        }
+    }
+
+    get enableXmux() {
+        return this.xmux !== undefined;
+    }
+
+    set enableXmux(value) {
+        if (value && this.xmux == undefined) {
+            this.xmux = {
+                maxConcurrency: "16-32",
+                hMaxRequestTimes: "600-900",
+                hMaxReusableSecs: "1800-3000",
+            };
+        } else if (!value) {
+            this.xmux = undefined;
         }
     }
 
@@ -510,12 +519,12 @@ class XhttpExtraSettings extends CommonClass {
             noGRPCHeader: this.noGRPCHeader ? true : undefined,
             scMinPostsIntervalMs: CommonClass.shrinkObject(this.scMinPostsIntervalMs),
             xmux: !this.xmux ? undefined : {
-                maxConcurrency: xmux.maxConcurrency,
-                maxConnections: xmux.maxConnections,
-                cMaxReuseTimes: xmux.cMaxReuseTimes,
-                hMaxRequestTimes: xmux.hMaxRequestTimes,
-                hMaxReusableSecs: xmux.hMaxReusableSecs,
-                hKeepAlivePeriod: xmux.hKeepAlivePeriod,
+                maxConcurrency: CommonClass.shrinkObject(xmux.maxConcurrency),
+                maxConnections: CommonClass.shrinkObject(xmux.maxConnections),
+                cMaxReuseTimes: CommonClass.shrinkObject(xmux.cMaxReuseTimes),
+                hMaxRequestTimes: CommonClass.shrinkObject(xmux.hMaxRequestTimes),
+                hMaxReusableSecs: CommonClass.shrinkObject(xmux.hMaxReusableSecs),
+                hKeepAlivePeriod: CommonClass.shrinkObject(xmux.hKeepAlivePeriod),
             },
             downloadSettings: CommonClass.shrinkObject(download),
         };
