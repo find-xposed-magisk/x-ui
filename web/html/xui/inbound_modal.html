@@ -43,12 +43,20 @@
             const textAreaObj = document.getElementById('inboundJson');
             if (!textAreaObj) return;
             this.destroyJsonEditor();
-            textAreaObj.value = JSON.stringify(this.inbound.toJson(), null, 2);
+            let inbJson = this.inbound.toJson();
+            delete inbJson.settings.clients;
+            delete inbJson.clientStats;
+            delete inbJson.tag;
+            textAreaObj.value = JSON.stringify(inbJson, null, 2);
             this.cm = CodeMirror.fromTextArea(textAreaObj, inboundCmOptions);
             this.cm.on('change', editor => {
                 const value = editor.getValue();
                 if (this.isJsonString(value)) {
-                    this.inbound = Inbound.fromJson(JSON.parse(value));
+                    newJson = JSON.parse(value);
+                    newJson.settings.clients = this.inbound.settings.clients;
+                    newJson.clientStats = this.inbound.clientStats;
+                    newJson.tag = this.inbound.tag;
+                    this.inbound = Inbound.fromJson(newJson);
                 }
             });
         },
