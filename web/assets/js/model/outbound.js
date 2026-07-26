@@ -335,6 +335,19 @@ class XhttpExtraSettings extends CommonClass {
     constructor({
         headers = [],
         xPaddingBytes = '',
+        xPaddingObfsMode = false,
+        xPaddingKey = '',
+        xPaddingHeader = '',
+        xPaddingPlacement = '',
+        xPaddingMethod = '',
+        uplinkHTTPMethod = '',
+        sessionPlacement = '',
+        sessionKey = '',
+        seqPlacement = '',
+        seqKey = '',
+        uplinkDataPlacement = '',
+        uplinkDataKey = '',
+        uplinkChunkSize = 0,
         scMaxEachPostBytes = '',
         noGRPCHeader = false,
         scMinPostsIntervalMs = "30",
@@ -344,6 +357,19 @@ class XhttpExtraSettings extends CommonClass {
         super();
         this.headers = headers;
         this.xPaddingBytes = xPaddingBytes;
+        this.xPaddingObfsMode = xPaddingObfsMode;
+        this.xPaddingKey = xPaddingKey;
+        this.xPaddingHeader = xPaddingHeader;
+        this.xPaddingPlacement = xPaddingPlacement;
+        this.xPaddingMethod = xPaddingMethod;
+        this.uplinkHTTPMethod = uplinkHTTPMethod;
+        this.sessionPlacement = sessionPlacement;
+        this.sessionKey = sessionKey;
+        this.seqPlacement = seqPlacement;
+        this.seqKey = seqKey;
+        this.uplinkDataPlacement = uplinkDataPlacement;
+        this.uplinkDataKey = uplinkDataKey;
+        this.uplinkChunkSize = uplinkChunkSize;
         this.scMaxEachPostBytes = scMaxEachPostBytes;
         this.noGRPCHeader = noGRPCHeader;
         this.scMinPostsIntervalMs = scMinPostsIntervalMs;
@@ -390,8 +416,14 @@ class XhttpExtraSettings extends CommonClass {
     static hasAnyMeaningfulValue(src) {
         if (!src || typeof src !== 'object') return false;
         const keys = [
-            'headers', 'xPaddingBytes', 'scMaxEachPostBytes',
-            'noGRPCHeader', 'scMinPostsIntervalMs', 'xmux', 'downloadSettings',
+            'headers',
+            'xPaddingBytes', 'xPaddingObfsMode', 'xPaddingKey', 'xPaddingHeader',
+            'xPaddingPlacement', 'xPaddingMethod',
+            'uplinkHTTPMethod', 'sessionPlacement', 'sessionKey',
+            'seqPlacement', 'seqKey',
+            'uplinkDataPlacement', 'uplinkDataKey', 'uplinkChunkSize',
+            'scMaxEachPostBytes', 'noGRPCHeader', 'scMinPostsIntervalMs',
+            'xmux', 'downloadSettings',
         ];
         return keys.some(k => src[k] !== undefined && src[k] !== null);
     }
@@ -406,6 +438,19 @@ class XhttpExtraSettings extends CommonClass {
         return new XhttpExtraSettings({
             headers: headers,
             xPaddingBytes: json.xPaddingBytes,
+            xPaddingObfsMode: json.xPaddingObfsMode,
+            xPaddingKey: json.xPaddingKey,
+            xPaddingHeader: json.xPaddingHeader,
+            xPaddingPlacement: json.xPaddingPlacement,
+            xPaddingMethod: json.xPaddingMethod,
+            uplinkHTTPMethod: json.uplinkHTTPMethod,
+            sessionPlacement: json.sessionPlacement,
+            sessionKey: json.sessionKey,
+            seqPlacement: json.seqPlacement,
+            seqKey: json.seqKey,
+            uplinkDataPlacement: json.uplinkDataPlacement,
+            uplinkDataKey: json.uplinkDataKey,
+            uplinkChunkSize: json.uplinkChunkSize,
             scMaxEachPostBytes: json.scMaxEachPostBytes,
             noGRPCHeader: json.noGRPCHeader,
             scMinPostsIntervalMs: json.scMinPostsIntervalMs,
@@ -433,6 +478,19 @@ class XhttpExtraSettings extends CommonClass {
         return {
             headers: headersMap,
             xPaddingBytes: this.xPaddingBytes,
+            xPaddingObfsMode: this.xPaddingObfsMode,
+            xPaddingKey: this.xPaddingKey,
+            xPaddingHeader: this.xPaddingHeader,
+            xPaddingPlacement: this.xPaddingPlacement,
+            xPaddingMethod: this.xPaddingMethod,
+            uplinkHTTPMethod: this.uplinkHTTPMethod,
+            sessionPlacement: this.sessionPlacement,
+            sessionKey: this.sessionKey,
+            seqPlacement: this.seqPlacement,
+            seqKey: this.seqKey,
+            uplinkDataPlacement: this.uplinkDataPlacement,
+            uplinkDataKey: this.uplinkDataKey,
+            uplinkChunkSize: this.uplinkChunkSize,
             scMaxEachPostBytes: this.scMaxEachPostBytes,
             noGRPCHeader: this.noGRPCHeader,
             scMinPostsIntervalMs: this.scMinPostsIntervalMs,

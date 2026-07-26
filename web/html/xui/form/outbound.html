@@ -523,6 +523,95 @@
             <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.paddingBytes" }}'>
                 <a-input v-model.trim="outbound.stream.xhttp.extra.xPaddingBytes" placeholder="100-1000"></a-input>
             </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.paddingObfsMode" }}'>
+                <a-switch v-model="outbound.stream.xhttp.extra.xPaddingObfsMode"></a-switch>
+            </a-form-item>
+            <template v-if="outbound.stream.xhttp.extra.xPaddingObfsMode">
+                <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.paddingKey" }}'>
+                    <a-input v-model.trim="outbound.stream.xhttp.extra.xPaddingKey"
+                        placeholder="x_padding"></a-input>
+                </a-form-item>
+                <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.paddingHeader" }}'>
+                    <a-input v-model.trim="outbound.stream.xhttp.extra.xPaddingHeader"
+                        placeholder="X-Padding"></a-input>
+                </a-form-item>
+                <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.paddingPlacement" }}'>
+                    <a-select v-model="outbound.stream.xhttp.extra.xPaddingPlacement"
+                        :dropdown-class-name="themeSwitcher.currentTheme">
+                        <a-select-option value>Default (queryInHeader)</a-select-option>
+                        <a-select-option value="queryInHeader">queryInHeader</a-select-option>
+                        <a-select-option value="header">header</a-select-option>
+                    </a-select>
+                </a-form-item>
+                <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.paddingMethod" }}'>
+                    <a-select v-model="outbound.stream.xhttp.extra.xPaddingMethod"
+                        :dropdown-class-name="themeSwitcher.currentTheme">
+                        <a-select-option value>Default (repeat-x)</a-select-option>
+                        <a-select-option value="repeat-x">repeat-x</a-select-option>
+                        <a-select-option value="tokenish">tokenish</a-select-option>
+                    </a-select>
+                </a-form-item>
+            </template>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.uplinkHTTPMethod" }}'>
+                <a-select v-model="outbound.stream.xhttp.extra.uplinkHTTPMethod"
+                    :dropdown-class-name="themeSwitcher.currentTheme">
+                    <a-select-option value>Default (POST)</a-select-option>
+                    <a-select-option value="POST">POST</a-select-option>
+                    <a-select-option value="PUT">PUT</a-select-option>
+                    <a-select-option value="GET">GET (packet-up only)</a-select-option>
+                </a-select>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.sessionPlacement" }}'>
+                <a-select v-model="outbound.stream.xhttp.extra.sessionPlacement"
+                    :dropdown-class-name="themeSwitcher.currentTheme">
+                    <a-select-option value>Default (path)</a-select-option>
+                    <a-select-option value="path">path</a-select-option>
+                    <a-select-option value="header">header</a-select-option>
+                    <a-select-option value="cookie">cookie</a-select-option>
+                    <a-select-option value="query">query</a-select-option>
+                </a-select>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.sessionKey" }}'
+                v-if="outbound.stream.xhttp.extra.sessionPlacement && outbound.stream.xhttp.extra.sessionPlacement !== 'path'">
+                <a-input v-model.trim="outbound.stream.xhttp.extra.sessionKey"
+                    placeholder="x_session"></a-input>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.seqPlacement" }}'>
+                <a-select v-model="outbound.stream.xhttp.extra.seqPlacement"
+                    :dropdown-class-name="themeSwitcher.currentTheme">
+                    <a-select-option value>Default (path)</a-select-option>
+                    <a-select-option value="path">path</a-select-option>
+                    <a-select-option value="header">header</a-select-option>
+                    <a-select-option value="cookie">cookie</a-select-option>
+                    <a-select-option value="query">query</a-select-option>
+                </a-select>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.seqKey" }}'
+                v-if="outbound.stream.xhttp.extra.seqPlacement && outbound.stream.xhttp.extra.seqPlacement !== 'path'">
+                <a-input v-model.trim="outbound.stream.xhttp.extra.seqKey"
+                    placeholder="x_seq"></a-input>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.uplinkDataPlacement" }}'
+                v-if="outbound.stream.xhttp.mode === 'packet-up'">
+                <a-select v-model="outbound.stream.xhttp.extra.uplinkDataPlacement"
+                    :dropdown-class-name="themeSwitcher.currentTheme">
+                    <a-select-option value>Default (auto)</a-select-option>
+                    <a-select-option value="auto">auto</a-select-option>
+                    <a-select-option value="body">body</a-select-option>
+                    <a-select-option value="header">header</a-select-option>
+                    <a-select-option value="cookie">cookie</a-select-option>
+                </a-select>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.uplinkDataKey" }}'
+                v-if="outbound.stream.xhttp.mode === 'packet-up' && outbound.stream.xhttp.extra.uplinkDataPlacement && outbound.stream.xhttp.extra.uplinkDataPlacement !== 'body'">
+                <a-input v-model.trim="outbound.stream.xhttp.extra.uplinkDataKey"
+                    placeholder="x_data"></a-input>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.uplinkChunkSize" }}'
+                v-if="outbound.stream.xhttp.mode === 'packet-up' && outbound.stream.xhttp.extra.uplinkDataPlacement && outbound.stream.xhttp.extra.uplinkDataPlacement !== 'body'">
+                <a-input-number v-model.number="outbound.stream.xhttp.extra.uplinkChunkSize"
+                    :min="0" :placeholder='`0 ({{ i18n "unlimited" }})`'></a-input-number>
+            </a-form-item>
             <a-form-item label='{{ i18n "pages.inbounds.stream.xhttp.maxUploadSize" }}'
                 v-if="outbound.stream.xhttp.mode === 'packet-up'">
                 <a-input v-model.trim="outbound.stream.xhttp.extra.scMaxEachPostBytes" placeholder="1000000"></a-input>
