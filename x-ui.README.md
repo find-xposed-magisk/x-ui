@@ -9,14 +9,14 @@
 
 > **Disclaimer:** This project is only for personal learning and communication, please do not use it for illegal purposes, please do not use it in a production environment
 
-**If you think this project is helpful to you, you may wish to give a**:star2:
+**If you think this project is helpful to you, you may wish to give a**:star2: **or donate me a coffee:**
+
+**Official Donation Page:** [https://donate.alireza0.dev/](https://donate.alireza0.dev/)
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/alireza7)
-
-- USDT (TRC20): `TYTq73Gj6dJ67qe58JVPD9zpjW2cc9XgVz`
-- Tezos (XTZ):
-`tz2Wnh2SsY1eezXrcLChu6idWpgdHzUFQcts`
-
+<a href="https://nowpayments.io/donation/alireza7" target="_blank" rel="noreferrer noopener">
+   <img src="https://nowpayments.io/images/embeds/donation-button-black.svg" alt="Crypto donation button by NOWPayments">
+</a>
 
 ## Quick Overview
 | Features                               |      Enable?       |
@@ -32,7 +32,7 @@
 | Subscription Service (link + info)     | :heavy_check_mark: |
 | Search in Deep                         | :heavy_check_mark: |
 | Dark/Light Theme                       | :heavy_check_mark: |
-
+| IP Limit per client (Linux Only)       | :heavy_check_mark:* |
   
 ## Install & Upgrade to Latest Version
 
@@ -40,12 +40,12 @@
 bash <(curl -Ls https://raw.githubusercontent.com/alireza0/x-ui/master/install.sh)
 ```
 
-## Install Custom Version
+## Install Legacy Version
 
-**Step 1:** To install your desired version, add the version to the end of the installation command. e.g., ver `1.8.0`:
+**Step 1:** To install an old version, use following installation command. e.g., version `1.8.0`:
 
 ```sh
-bash <(curl -Ls https://raw.githubusercontent.com/alireza0/x-ui/master/install.sh) 1.8.0
+VERSION=1.8.0 && bash <(curl -Ls "https://raw.githubusercontent.com/alireza0/x-ui/$VERSION/install.sh") $VERSION
 ```
 
 ## Manual Install & Upgrade
@@ -55,7 +55,20 @@ bash <(curl -Ls https://raw.githubusercontent.com/alireza0/x-ui/master/install.s
   
 ### Usage
 
-1. To download the latest version of the compressed package directly to your server, run the following command:
+1. Make sure the required packages are installed (the install script does this automatically, so this step is only needed for manual installs):
+
+```sh
+# Debian/Ubuntu
+apt-get update && apt-get install -y wget curl tar tzdata cron ca-certificates nftables
+# CentOS/Alma/Rocky/Fedora
+# yum install -y wget curl tar tzdata cronie ca-certificates nftables
+# Arch/Manjaro
+# pacman -Syu --noconfirm wget curl tar tzdata cronie ca-certificates nftables
+```
+
+> `ca-certificates` is needed for HTTPS/TLS connections, and `nftables` is required by the per-client IP limit feature.
+
+2. To download the latest version of the compressed package directly to your server, run the following command:
 
 ```sh
 ARCH=$(uname -m)
@@ -70,7 +83,7 @@ esac
 wget https://github.com/alireza0/x-ui/releases/latest/download/x-ui-linux-${XUI_ARCH}.tar.gz
 ```
 
-2. Once the compressed package is downloaded, execute the following commands to install or upgrade x-ui:
+3. Once the compressed package is downloaded, execute the following commands to install or upgrade x-ui:
 
 ```sh
 ARCH=$(uname -m)
@@ -177,6 +190,7 @@ docker build -t x-ui .
 - An interactive JSON interface for Xray template configuration
 - An advanced interface for inbound and outbound configuration
 - Clients’ traffic cap and expiration date based on first use
+- Per-client IP limit that blocks connections beyond an allowed number of concurrent IPs (powered by nftables)
 - Displays online clients, traffic statistics, and system status monitoring
 - Deep database search
 - Displays depleted clients with expired dates or exceeded traffic cap
@@ -185,13 +199,6 @@ docker build -t x-ui .
 - One-Click SSL certificate application and automatic renewal
 - HTTPS for secure access to the web panel and subscription service (self-provided domain + SSL certificate)
 - Dark/Light theme
-
-## Recommended OS
-
-- CentOS 8+
-- Ubuntu 20+
-- Debian 10+
-- Fedora 36+
 
 ## Preview
 
@@ -216,7 +223,6 @@ docker build -t x-ui .
 | :----: | ---------------------------------  | ----------------------------------------- |
 | `GET`  | `"/"`                              | Get all inbounds                          |
 | `GET`  | `"/get/:id"`                       | Get inbound with inbound.id               |
-| `GET`  | `"/createbackup"`                  | Telegram bot sends backup to admins       |
 | `POST` | `"/add"`                           | Add inbound                               |
 | `POST` | `"/del/:id"`                       | Delete inbound                            |
 | `POST` | `"/update/:id"`                    | Update inbound                            |
@@ -224,17 +230,68 @@ docker build -t x-ui .
 | `POST` | `"/:id/delClient/:clientId"`       | Delete client by clientId\*               |
 | `POST` | `"/updateClient/:clientId"`        | Update client by clientId\*               |
 | `GET`  | `"/getClientTraffics/:email"`      | Get client's traffic                      |
+| `GET`  | `"/getClientTrafficsById/:id"`     | Get client's traffic By ID                |
 | `POST` | `"/:id/resetClientTraffic/:email"` | Reset client's traffic                    |
 | `POST` | `"/resetAllTraffics"`              | Reset traffics of all inbounds            |
 | `POST` | `"/resetAllClientTraffics/:id"`    | Reset inbound clients traffics (-1: all)  |
 | `POST` | `"/delDepletedClients/:id"`        | Delete inbound depleted clients (-1: all) |
+| `POST` | `"/import"`                        | Import an inbound from exported data      |
 | `POST` | `"/onlines"`                       | Get online users ( list of emails )       |
 
-\*- The field `clientId` should be filled by:
 
-- `client.id` for VMess and VLESS
-- `client.password` for Trojan
-- `client.email` for Shadowsocks
+- The field `clientId` should be filled by:
+  - `client.id` for VMess and VLESS
+  - `client.password` for Trojan
+  - `client.email` for Shadowsocks
+
+
+- `/xui/API/outbounds` base for following actions:
+
+| Method | Path                               | Action                                    |
+| :----: | ---------------------------------  | ----------------------------------------- |
+| `GET`  | `"/"`                              | Get all outbounds                         |
+| `POST` | `"/add"`                           | Add outbound                              |
+| `POST` | `"/del/:id"`                       | Delete outbound                           |
+| `POST` | `"/update/:id"`                    | Update outbound                           |
+| `POST` | `"/setFirst/:id"`                  | Move outbound to the top of the list      |
+| `POST` | `"/:id/resetTraffic"`              | Reset outbound's traffic                  |
+| `POST` | `"/resetAllTraffics"`             | Reset traffics of all outbounds           |
+| `POST` | `"/onlines"`                       | Get online outbound tags                  |
+| `POST` | `"/test"`                          | Test outbound connectivity                |
+| `POST` | `"/reverseTags"`                   | Get client reverse tags (usable as dialer)|
+
+
+- `/xui/API/routing` base for following actions:
+
+| Method | Path                               | Action                                    |
+| :----: | ---------------------------------  | ----------------------------------------- |
+| `GET`  | `"/"`                              | Get all routing rules                     |
+| `GET`  | `"/refs"`                          | Get routing references (tags & metadata)  |
+| `POST` | `"/save"`                          | Save routing rules                        |
+| `POST` | `"/replaceBalancerTag"`            | Replace a balancer tag in routing rules   |
+
+
+- `/xui/API/server` base for following actions:
+
+| Method | Path                               | Action                                    |
+| :----: | ---------------------------------  | ----------------------------------------- |
+| `GET`  | `"/status"`                        | Get server status                         |
+| `GET`  | `"/getDb"`                         | Get database backup                       |
+| `GET`  | `"/createbackup"`                  | Telegram bot sends backup to admins       |
+| `GET`  | `"/getConfigJson"`                 | Get config.json                           |
+| `GET`  | `"/getXrayVersion"`                | Get last xray versions                    |
+| `GET`  | `"/getNewVlessEnc"`                | Get new vless enc                         |
+| `GET`  | `"/getNewX25519Cert"`              | Get new x25519 cert                       |
+| `GET`  | `"/getNewmldsa65"`                 | Get new mldsa65                           |
+| `POST` | `"/getNewEchCert"`                 | Get new ech cert                          |
+| `POST` | `"/getCertHash"`                   | Get hash for provided cert                |
+| `POST` | `"/getTlsPing"`                    | Get hash by TLS ping                      |
+| `POST` | `"/importDB"`                      | Import database to x-ui                   |
+| `POST` | `"/stopXrayService"`               | Stop xray service                         |
+| `POST` | `"/restartXrayService"`            | Restart xray service                      |
+| `POST` | `"/installXray/:version"`          | Install specific version of xray          |
+| `POST` | `"/logs/:count"`                   | Get panel/xray logs                       |
+
 
 </details>
 
