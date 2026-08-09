@@ -132,6 +132,7 @@ func (a *APIController) serverApi(api *gin.RouterGroup) {
 		{"GET", "/getNewmldsa65", a.serverController.getNewmldsa65},
 
 		{"POST", "/getNewEchCert", a.serverController.getNewEchCert},
+		{"POST", "/getNewSelfSignedCert", a.serverController.getNewSelfSignedCert},
 		{"POST", "/getCertHash", a.serverController.getCertHash},
 		{"POST", "/getTlsPing", a.serverController.getTlsPing},
 		{"POST", "/importDB", a.serverController.importDB},

@@ -251,6 +251,19 @@
                 this.inbound.stream.tls.echServerKeys = '';
                 this.inbound.stream.tls.settings.echConfigList = '';
             },
+            async getNewSelfSignedCert(index) {
+                const cert = inModal.inbound.stream.tls.certs[index];
+                if (!cert) return;
+                inModal.loading(true);
+                const msg = await HttpUtil.post('/server/getNewSelfSignedCert', {sni: inModal.inbound.stream.tls.sni});
+                inModal.loading(false);
+                if (!msg.success) {
+                    return;
+                }
+                cert.useFile = false;
+                cert.cert = msg.obj.cert;
+                cert.key = msg.obj.key;
+            },
             async getCertHash() {
                 const cert = inModal.inbound.stream.tls.certs[0];
                 if (!cert) return;

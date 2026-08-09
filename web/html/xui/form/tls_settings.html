@@ -104,6 +104,10 @@
                     <a-input type="textarea" :rows="3" v-model="cert.key"></a-input>
                 </a-form-item>
             </template>
+            <a-form-item label=" ">
+                <a-button type="primary" icon="safety-certificate" @click="getNewSelfSignedCert(index)">{{ i18n
+                    "pages.inbounds.generateSelfSignedCert" }}</a-button>
+            </a-form-item>
             <a-form-item label='{{ i18n "pages.inbounds.stream.tls.ocspStapling" }}'>
                 <a-input-number v-model.number="cert.ocspStapling" :min="0"></a-input-number>
             </a-form-item>

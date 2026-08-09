@@ -49,6 +49,7 @@ func (a *ServerController) initRouter(g *gin.RouterGroup) {
 	g.GET("/getNewX25519Cert", a.getNewX25519Cert)
 
 	g.POST("/getNewEchCert", a.getNewEchCert)
+	g.POST("/getNewSelfSignedCert", a.getNewSelfSignedCert)
 	g.POST("/getCertHash", a.getCertHash)
 	g.POST("/getTlsPing", a.getTlsPing)
 	g.POST("/stopXrayService", a.stopXrayService)
@@ -208,6 +209,16 @@ func (a *ServerController) getNewEchCert(c *gin.Context) {
 	cert, err := a.serverService.GetNewEchCert(sni)
 	if err != nil {
 		jsonMsg(c, "get ech certificate", err)
+		return
+	}
+	jsonObj(c, cert, nil)
+}
+
+func (a *ServerController) getNewSelfSignedCert(c *gin.Context) {
+	sni := c.PostForm("sni")
+	cert, err := network.GenerateSelfSignedCert(sni)
+	if err != nil {
+		jsonMsg(c, "generate self-signed certificate", err)
 		return
 	}
 	jsonObj(c, cert, nil)

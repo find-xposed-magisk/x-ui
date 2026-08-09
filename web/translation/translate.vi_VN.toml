@@ -181,6 +181,7 @@
 "email" = "Email"
 "emailDesc" = "vui lòng cung cấp một địa chỉ email duy nhất."
 "setDefaultCert" = "Đặt chứng chỉ từ bảng điều khiển"
+"generateSelfSignedCert" = "Tạo chứng chỉ tự ký"
 "telegramDesc" = "Sử dụng ID Telegram không có @ hoặc ID trò chuyện (bạn có thể lấy nó tại đây @userinfobot hoặc sử dụng lệnh '/id' trong bot)"
 "subscriptionDesc" = "Bạn có thể tìm thấy liên kết phụ của mình trên Chi tiết, bạn cũng có thể sử dụng cùng tên cho một số khách hàng"
 "info" = "Thông tin"

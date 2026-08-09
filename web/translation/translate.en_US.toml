@@ -181,6 +181,7 @@
 "email" = "Email"
 "emailDesc" = "Please provide a unique email address"
 "setDefaultCert" = "Set Cert from Panel"
+"generateSelfSignedCert" = "Generate Self-Signed Cert"
 "telegramDesc" = "Please provide Chat ID(s) without using the '@' symbol. (Get it here @userinfobot) or (Use '/id' command in the bot)"
 "subscriptionDesc" = "To find your subscription URL, navigate to the 'More Information'. Additionally, you can use the same name for several clients."
 "info" = "Info" 
