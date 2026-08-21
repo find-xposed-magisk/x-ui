@@ -83,13 +83,6 @@ func topLevelBindings(script string) []string {
 	return names
 }
 
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 // inlineScriptsOf returns the page's own script bodies, skipping <script src=…>.
 func inlineScriptsOf(t *testing.T, path string) []string {
 	t.Helper()

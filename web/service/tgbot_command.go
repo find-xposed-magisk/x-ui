@@ -42,8 +42,10 @@ func commandArgumentsOf(message *models.Message) string {
 	}
 	runes := []rune(message.Text)
 	end := message.Entities[0].Length
-	if end >= len(runes) {
-		return "" // the command makes up the whole message
+	if end < 0 || end >= len(runes) {
+		// Either the command makes up the whole message, or the entity is
+		// malformed; both mean there is nothing to hand on as an argument.
+		return ""
 	}
 	return string(runes[end+1:])
 }
@@ -56,7 +58,9 @@ func entityText(message *models.Message, entity models.MessageEntity) string {
 	runes := []rune(message.Text)
 	start := entity.Offset
 	end := start + entity.Length
-	if start < 0 || start > len(runes) {
+	// Telegram never sends a negative offset or length, but the fields are plain
+	// ints and this parser runs on whatever arrives from the network.
+	if start < 0 || start > len(runes) || end < start {
 		return ""
 	}
 	if end > len(runes) {

@@ -197,6 +197,24 @@ func TestLoginIsDocumented(t *testing.T) {
 	}
 }
 
+// A caller handing over a file system without the document must get an error
+// back rather than a panic: this runs while the panel is wiring up its router,
+// so a panic here would stop the panel from starting at all.
+func TestServeOpenAPIReportsAMissingDocument(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+
+	err := ServeOpenAPI(engine.Group("/"), fstest.MapFS{})
+	if err == nil {
+		t.Fatal("expected an error for a file system with no document")
+	}
+	for _, route := range engine.Routes() {
+		if route.Path == OpenAPIPath {
+			t.Error("the route was registered even though the document is missing")
+		}
+	}
+}
+
 // The in-panel reference page and the raw document must both sit behind the
 // panel login: an unauthenticated copy of either would identify the host as an
 // x-ui panel to anyone scanning.
@@ -210,7 +228,9 @@ func TestDocumentationRoutesRequireLogin(t *testing.T) {
 	engine := gin.New()
 	group := engine.Group("/")
 	NewXUIController(group)
-	ServeOpenAPI(group, stubSpec)
+	if err := ServeOpenAPI(group, stubSpec); err != nil {
+		t.Fatalf("ServeOpenAPI: %v", err)
+	}
 
 	want := map[string]bool{
 		"GET /xui/api":       false,

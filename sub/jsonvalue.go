@@ -62,10 +62,6 @@ func mapAt(container interface{}, key string) map[string]interface{} {
 	return asMap(valueAt(container, key))
 }
 
-func sliceAt(container interface{}, key string) []interface{} {
-	return asSlice(valueAt(container, key))
-}
-
 // firstString returns the first entry of a list as a string, or "" for a list
 // that is empty or holds something else.
 func firstString(list []interface{}) string {

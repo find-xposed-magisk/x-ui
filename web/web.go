@@ -223,7 +223,9 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 	s.server = controller.NewServerController(g)
 	s.xui = controller.NewXUIController(g)
 	s.api = controller.NewAPIController(g, s.server)
-	controller.ServeOpenAPI(g, openAPIFS)
+	if err := controller.ServeOpenAPI(g, openAPIFS); err != nil {
+		return nil, err
+	}
 
 	engine.NoRoute(func(c *gin.Context) {
 		c.AbortWithStatus(http.StatusNotFound)

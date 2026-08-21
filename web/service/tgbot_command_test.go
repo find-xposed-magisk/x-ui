@@ -138,9 +138,23 @@ func TestCommandParsingSurvivesBadEntities(t *testing.T) {
 		name    string
 		message *models.Message
 	}{
-		{"length past the end", commandMessage("/hi", 99)},
-		{"zero length", commandMessage("/hi", 0)},
-		{"empty text", commandMessage("", 5)},
+		{name: "length past the end", message: commandMessage("/hi", 99)},
+		{name: "zero length", message: commandMessage("/hi", 0)},
+		{name: "empty text", message: commandMessage("", 5)},
+		// Telegram never sends these, but the fields are plain ints and this
+		// parser runs on whatever arrives from the network; a panic here would
+		// take the update worker down with it.
+		{name: "negative length", message: commandMessage("/hi there", -5)},
+		{name: "negative length, no argument", message: commandMessage("/hi", -1)},
+		{
+			name: "negative offset",
+			message: &models.Message{
+				Text: "/hi there",
+				Entities: []models.MessageEntity{
+					{Type: models.MessageEntityTypeBotCommand, Offset: -3, Length: 3},
+				},
+			},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
