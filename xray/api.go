@@ -309,17 +309,65 @@ func wireguardPeerConfig(user map[string]interface{}) (*wireguard.PeerConfig, er
 		}
 	}
 
-	if allowedIPs, _ := user["allowedIPs"].([]string); len(allowedIPs) > 0 {
-		peer.AllowedIps = allowedIPs
-	} else {
+	allowedIPs := toStringSlice(user["allowedIPs"])
+	if len(allowedIPs) == 0 {
 		return nil, common.NewError("wireguard peer without allowed IPs")
 	}
+	peer.AllowedIps = allowedIPs
 
-	if keepAlive, _ := user["keepAlive"].(uint32); keepAlive != 0 {
+	if keepAlive := toUint32(user["keepAlive"]); keepAlive != 0 {
 		peer.KeepAlive = strconv.FormatUint(uint64(keepAlive), 10)
 	}
 
 	return peer, nil
+}
+
+// The peer map reaches AddUser either built from a model.Client (typed fields)
+// or straight out of an inbound's decoded JSON settings (where every list is
+// []interface{} and every number a float64), so both shapes have to be read.
+func toStringSlice(value interface{}) []string {
+	switch typed := value.(type) {
+	case []string:
+		return typed
+	case []interface{}:
+		result := make([]string, 0, len(typed))
+		for _, item := range typed {
+			if str, ok := item.(string); ok && str != "" {
+				result = append(result, str)
+			}
+		}
+		return result
+	default:
+		return nil
+	}
+}
+
+func toUint32(value interface{}) uint32 {
+	switch typed := value.(type) {
+	case uint32:
+		return typed
+	case int:
+		if typed > 0 {
+			return uint32(typed)
+		}
+	case int64:
+		if typed > 0 {
+			return uint32(typed)
+		}
+	case float64:
+		if typed > 0 {
+			return uint32(typed)
+		}
+	case json.Number:
+		if parsed, err := typed.Int64(); err == nil && parsed > 0 {
+			return uint32(parsed)
+		}
+	case string:
+		if parsed, err := strconv.ParseUint(typed, 10, 32); err == nil {
+			return uint32(parsed)
+		}
+	}
+	return 0
 }
 
 func (x *XrayAPI) RemoveUser(inboundTag string, email string) error {

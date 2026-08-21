@@ -43,6 +43,13 @@ type IpLimitClientUpdate struct {
 	ResetIPs      bool
 }
 
+// ipLimitEnabled reports whether a usable firewall backend is installed. The
+// store is initialised from the web server, so callers reachable before that
+// (or from the CLI) can find ipLimitFw still nil.
+func ipLimitEnabled() bool {
+	return ipLimitFw != nil && ipLimitFw.Supported()
+}
+
 func cloneOnlineUsers(users []xray.OnlineUserInfo) []xray.OnlineUserInfo {
 	if users == nil {
 		return nil
@@ -109,16 +116,14 @@ func RefreshIpLimitClients(inboundService *InboundService) error {
 			if !isClientStatEnabled(inbound, client.Email) {
 				continue
 			}
-			existingIPs := []string{}
 			ipLimitMu.RLock()
-			if old, ok := ipLimitClients[client.Email]; ok {
-				existingIPs = append([]string(nil), old.IPs...)
-			}
+			existingIPs, allowed := carryOverIPs(client.Email)
 			ipLimitMu.RUnlock()
 			newMap[client.Email] = &IpLimitClientState{
 				IpLimit: client.LimitIP,
 				Port:    uint16(inbound.Port),
 				IPs:     existingIPs,
+				Allowed: allowed,
 			}
 		}
 	}
@@ -127,6 +132,23 @@ func RefreshIpLimitClients(inboundService *InboundService) error {
 	ipLimitClients = newMap
 	ipLimitMu.Unlock()
 	return nil
+}
+
+// carryOverIPs copies the tracked IPs and the safe set of an existing client
+// state. The safe set has to survive an inbound edit: rebuilding it from scratch
+// would hand fresh slots to whichever IPs happen to be oldest, letting an IP
+// that was blocked a moment ago back in until the next cron tick.
+// Callers must hold ipLimitMu.
+func carryOverIPs(email string) ([]string, map[string]struct{}) {
+	old, ok := ipLimitClients[email]
+	if !ok {
+		return []string{}, make(map[string]struct{})
+	}
+	allowed := make(map[string]struct{}, len(old.Allowed))
+	for ip := range old.Allowed {
+		allowed[ip] = struct{}{}
+	}
+	return append([]string(nil), old.IPs...), allowed
 }
 
 func ipLimitUpdatesFromClients(inbound *model.Inbound, clients []model.Client) []IpLimitClientUpdate {
@@ -182,28 +204,28 @@ func applyIpLimitMemoryChanges(updates []IpLimitClientUpdate, removeEmails []str
 			continue
 		}
 		existingIPs := []string{}
+		allowed := make(map[string]struct{})
 		if !update.ResetIPs {
-			if old, ok := ipLimitClients[update.Email]; ok {
-				existingIPs = append([]string(nil), old.IPs...)
-			}
+			existingIPs, allowed = carryOverIPs(update.Email)
 		}
 		ipLimitClients[update.Email] = &IpLimitClientState{
 			IpLimit: update.LimitIP,
 			Port:    update.Port,
 			IPs:     existingIPs,
+			Allowed: allowed,
 		}
 	}
 }
 
 func (s *InboundService) syncIpLimitStore(updates []IpLimitClientUpdate, removeEmails []string) {
-	if !ipLimitFw.Supported() {
+	if !ipLimitEnabled() {
 		return
 	}
 	applyIpLimitMemoryChanges(updates, removeEmails)
 }
 
 func blockIPsForPort(ips []string, port uint16) {
-	if len(ips) == 0 || !ipBlockAfterRemove || ipLimitFw == nil || !ipLimitFw.Supported() {
+	if len(ips) == 0 || !ipBlockAfterRemove || !ipLimitEnabled() {
 		return
 	}
 	for _, ip := range ips {
@@ -277,6 +299,23 @@ func updateIpLimitOnlineIPs(onlineUsers []xray.OnlineUserInfo) {
 		limit := int(state.IpLimit)
 		ordered := sortIPsByLastSeen(info.IPs)
 		state.IPs = ordered
+
+		// A carried-over safe set can outgrow a limit that was lowered since;
+		// keep the slots of the IPs seen longest ago and release the rest.
+		if len(state.Allowed) > limit {
+			kept := 0
+			for _, ip := range ordered {
+				if _, ok := state.Allowed[ip]; !ok {
+					continue
+				}
+				if kept < limit {
+					kept++
+					continue
+				}
+				delete(state.Allowed, ip)
+			}
+		}
+
 		for _, ip := range ordered {
 			if _, ok := state.Allowed[ip]; ok {
 				continue // already within the safe set
@@ -296,24 +335,11 @@ func updateIpLimitOnlineIPs(onlineUsers []xray.OnlineUserInfo) {
 }
 
 func ProcessIpLimitCron(onlineUsers []xray.OnlineUserInfo) {
-	if !ipLimitFw.Supported() {
+	if !ipLimitEnabled() {
 		return
 	}
 	updateIpLimitOnlineIPs(onlineUsers)
 	reapplyBlocks()
-}
-
-func GetBlockedList() []xray.OnlineUserInfo {
-	ipLimitMu.RLock()
-	defer ipLimitMu.RUnlock()
-	if len(blockedIPs) == 0 {
-		return nil
-	}
-	ips := make(map[string]int64, len(blockedIPs))
-	for key, deadline := range blockedIPs {
-		ips[key.IP] = deadline
-	}
-	return []xray.OnlineUserInfo{{IPs: ips}}
 }
 
 func reapplyBlocks() {

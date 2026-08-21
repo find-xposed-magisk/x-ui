@@ -112,15 +112,13 @@ func migrateV007Wireguard(db *gorm.DB) error {
 }
 
 // existingEmails collects every email already in use, so generated peer emails
-// cannot collide with a client of another inbound.
+// cannot collide with a client of another inbound. The settings column is read
+// in Go rather than with SQLite's JSON functions because those abort the whole
+// statement — and with it the upgrade — on the first row that does not hold
+// valid JSON, and nothing has ever stopped an inbound from storing one.
 func existingEmails(tx *gorm.DB) (map[string]struct{}, error) {
-	var emails []string
-	err := tx.Raw(`
-		SELECT JSON_EXTRACT(client.value, '$.email')
-		FROM inbounds,
-			JSON_EACH(JSON_EXTRACT(inbounds.settings, '$.clients')) AS client
-	`).Scan(&emails).Error
-	if err != nil {
+	var settings []string
+	if err := tx.Model(model.Inbound{}).Pluck("settings", &settings).Error; err != nil {
 		return nil, err
 	}
 
@@ -129,8 +127,15 @@ func existingEmails(tx *gorm.DB) (map[string]struct{}, error) {
 		return nil, err
 	}
 
-	taken := make(map[string]struct{}, len(emails)+len(stats))
-	for _, email := range append(emails, stats...) {
+	taken := make(map[string]struct{}, len(stats))
+	for _, entry := range settings {
+		for _, client := range parseInboundClients(entry) {
+			if client.Email != "" {
+				taken[strings.ToLower(client.Email)] = struct{}{}
+			}
+		}
+	}
+	for _, email := range stats {
 		if email != "" {
 			taken[strings.ToLower(email)] = struct{}{}
 		}

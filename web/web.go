@@ -100,8 +100,13 @@ func (s *Server) getHtmlTemplate(funcMap template.FuncMap) (*template.Template, 
 		if d.IsDir() {
 			newT, err := t.ParseFS(htmlFS, path+"/*.html")
 			if err != nil {
-				// ignore
-				return nil
+				// Directories that hold no templates of their own are expected;
+				// anything else is a broken template and must not be swallowed,
+				// or the panel starts up and only fails once a page is served.
+				if strings.Contains(err.Error(), "pattern matches no files") {
+					return nil
+				}
+				return err
 			}
 			t = newT
 		}
@@ -222,7 +227,7 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 	return engine, nil
 }
 
-func (s *Server) startTask(ipLimitCron bool) {
+func (s *Server) startTask() {
 	err := s.xrayService.RestartXray(true)
 	if err != nil {
 		logger.Warning("start xray failed:", err)
@@ -230,7 +235,8 @@ func (s *Server) startTask(ipLimitCron bool) {
 	// Check whether xray is running every 30 seconds
 	s.cron.AddJob("@every 30s", job.NewCheckXrayRunningJob())
 
-	// Process ip online and ip limit
+	// Refresh the online-user cache, and enforce per-client IP limits with it
+	// where the platform supports the firewall backend.
 	s.cron.AddJob("@every 2s", job.NewIpLimitJob())
 
 	// Check if xray needs to be restarted
@@ -356,7 +362,7 @@ func (s *Server) Start() (err error) {
 		s.httpServer.Serve(listener)
 	}()
 
-	s.startTask(s.ipLimitFw.Supported())
+	s.startTask()
 
 	isTgbotenabled, err := s.settingService.GetTgbotenabled()
 	if (err == nil) && (isTgbotenabled) {

@@ -7,10 +7,10 @@ import (
 type XUIController struct {
 	BaseController
 
-	inboundController      *InboundController
-	outboundController     *OutboundController
-	routingRuleController  *RoutingRuleController
-	settingController      *SettingController
+	inboundController     *InboundController
+	outboundController    *OutboundController
+	routingRuleController *RoutingRuleController
+	settingController     *SettingController
 	xraySettingController *XraySettingController
 }
 
