@@ -203,6 +203,12 @@
                                     <setting-list-item type="text" title='{{ i18n "pages.settings.telegramChatId"}}'
                                         desc='{{ i18n "pages.settings.telegramChatIdDesc"}}'
                                         v-model="allSetting.tgBotChatId"></setting-list-item>
+                                    <setting-list-item type="switch" title='{{ i18n "pages.settings.telegramNotifyOnly"}}'
+                                        desc='{{ i18n "pages.settings.telegramNotifyOnlyDesc"}}'
+                                        v-model="allSetting.tgBotNotifyOnly"></setting-list-item>
+                                    <setting-list-item type="text" title='{{ i18n "pages.settings.telegramProxy"}}'
+                                        desc='{{ i18n "pages.settings.telegramProxyDesc"}}'
+                                        v-model="allSetting.tgBotProxy"></setting-list-item>
                                     <setting-list-item type="text" title='{{ i18n "pages.settings.telegramNotifyTime"}}'
                                         desc='{{ i18n "pages.settings.telegramNotifyTimeDesc"}}'
                                         v-model="allSetting.tgRunTime"></setting-list-item>

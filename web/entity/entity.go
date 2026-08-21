@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/alireza0/x-ui/util/common"
+	"github.com/alireza0/x-ui/util/proxyclient"
+	"github.com/alireza0/x-ui/util/tgchat"
 )
 
 type Msg struct {
@@ -31,6 +33,8 @@ type AllSetting struct {
 	TgBotEnable        bool   `json:"tgBotEnable" form:"tgBotEnable"`
 	TgBotToken         string `json:"tgBotToken" form:"tgBotToken"`
 	TgBotChatId        string `json:"tgBotChatId" form:"tgBotChatId"`
+	TgBotProxy         string `json:"tgBotProxy" form:"tgBotProxy"`
+	TgBotNotifyOnly    bool   `json:"tgBotNotifyOnly" form:"tgBotNotifyOnly"`
 	TgRunTime          string `json:"tgRunTime" form:"tgRunTime"`
 	TgBotBackup        bool   `json:"tgBotBackup" form:"tgBotBackup"`
 	TgBotLoginNotify   bool   `json:"tgBotLoginNotify" form:"tgBotLoginNotify"`
@@ -115,6 +119,14 @@ func (s *AllSetting) CheckValid() error {
 	}
 	if !strings.HasSuffix(s.SubJsonPath, "/") {
 		s.SubJsonPath += "/"
+	}
+
+	if _, err := proxyclient.Parse(s.TgBotProxy); err != nil {
+		return err
+	}
+
+	if _, err := tgchat.Parse(s.TgBotChatId); err != nil {
+		return err
 	}
 
 	_, err := time.LoadLocation(s.TimeLocation)

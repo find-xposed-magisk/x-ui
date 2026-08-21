@@ -17,6 +17,7 @@ import (
 	"github.com/alireza0/x-ui/database"
 	"github.com/alireza0/x-ui/logger"
 	"github.com/alireza0/x-ui/sub"
+	"github.com/alireza0/x-ui/util/proxyclient"
 	"github.com/alireza0/x-ui/util/sys"
 	"github.com/alireza0/x-ui/web"
 	"github.com/alireza0/x-ui/web/global"
@@ -186,7 +187,7 @@ func updateTgbotEnableSts(status bool) {
 	}
 }
 
-func updateTgbotSetting(tgBotToken string, tgBotChatid string, tgBotRuntime string) {
+func updateTgbotSetting(tgBotToken string, tgBotChatid string, tgBotRuntime string, tgBotProxy string) {
 	err := database.InitDB(config.GetDBPath())
 	if err != nil {
 		fmt.Println(err)
@@ -223,6 +224,22 @@ func updateTgbotSetting(tgBotToken string, tgBotChatid string, tgBotRuntime stri
 		} else {
 			logger.Info("updateTgbotSetting tgBotChatid success")
 		}
+	}
+
+	if tgBotProxy != "" {
+		// An empty flag means "leave it alone", so clearing the proxy needs a
+		// word of its own.
+		if tgBotProxy == "none" {
+			tgBotProxy = ""
+		} else if _, err := proxyclient.Parse(tgBotProxy); err != nil {
+			fmt.Println(err)
+			return
+		}
+		if err := settingService.SetTgBotProxy(tgBotProxy); err != nil {
+			fmt.Println(err)
+			return
+		}
+		logger.Info("updateTgbotSetting tgBotProxy success")
 	}
 }
 
@@ -392,6 +409,7 @@ func main() {
 	var tgbotchatid string
 	var enabletgbot bool
 	var tgbotRuntime string
+	var tgbotproxy string
 	var reset bool
 	var show bool
 	settingCmd.BoolVar(&reset, "reset", false, "Reset all settings")
@@ -405,6 +423,7 @@ func main() {
 	settingCmd.StringVar(&tgbottoken, "tgbottoken", "", "Set token for Telegram bot")
 	settingCmd.StringVar(&tgbotRuntime, "tgbotRuntime", "", "Set telegram bot cron time")
 	settingCmd.StringVar(&tgbotchatid, "tgbotchatid", "", "Set telegram bot chat id")
+	settingCmd.StringVar(&tgbotproxy, "tgbotproxy", "", "Set proxy the telegram bot connects through, e.g. socks5://127.0.0.1:1080 ('none' clears it)")
 	settingCmd.BoolVar(&enabletgbot, "enabletgbot", false, "Enable telegram bot notify")
 
 	oldUsage := flag.Usage
@@ -450,8 +469,8 @@ func main() {
 		if show {
 			showSetting(show)
 		}
-		if (tgbottoken != "") || (tgbotchatid != "") || (tgbotRuntime != "") {
-			updateTgbotSetting(tgbottoken, tgbotchatid, tgbotRuntime)
+		if (tgbottoken != "") || (tgbotchatid != "") || (tgbotRuntime != "") || (tgbotproxy != "") {
+			updateTgbotSetting(tgbottoken, tgbotchatid, tgbotRuntime, tgbotproxy)
 		}
 		if enabletgbot {
 			updateTgbotEnableSts(enabletgbot)

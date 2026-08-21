@@ -189,7 +189,6 @@
 "inboundData" = "入站数据"
 "copyLink" = "复制链接"
 "exportInbound" = "导出入站数据"
-"import"="导入"
 "importInbound" = "导入入站数据"
 
 [pages.routingRules]
@@ -515,7 +514,11 @@
 "telegramToken" = "电报机器人TOKEN"
 "telegramTokenDesc" = "重启面板生效"
 "telegramChatId" = "以逗号分隔的多个 chatID"
-"telegramChatIdDesc" = "多个聊天 ID 用逗号分隔。使用 @userinfobot 或在机器人中使用'/id'命令获取您的聊天 ID。"
+"telegramChatIdDesc" = "管理员聊天 ID（用逗号分隔）。可通过 @userinfobot 获取，或在机器人中使用 '/id' 命令。若要发送到超级群组的话题，请附加其 ID：-1001234567890:42"
+"telegramNotifyOnly" = "仅通知"
+"telegramNotifyOnlyDesc" = "机器人只发送报告，不回复任何收到的消息。回复陌生人会暴露该服务器运行着面板，因此如果您不使用机器人命令，请启用此项。"
+"telegramProxy" = "机器人代理"
+"telegramProxyDesc" = "通过代理转发所有机器人流量，适用于无法直连 Telegram 的服务器。留空则直接连接。格式：socks5://host:port、socks5://user:pass@host:port、http://host:port"
 "telegramNotifyTime" = "电报机器人通知时间"
 "telegramNotifyTimeDesc" = "采用 Crontab 定时格式"
 "tgNotifyBackup" = "数据库备份"

@@ -1,10 +1,12 @@
 package service
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"net"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -14,18 +16,40 @@ import (
 	"github.com/alireza0/x-ui/database/model"
 	"github.com/alireza0/x-ui/logger"
 	"github.com/alireza0/x-ui/util/common"
+	"github.com/alireza0/x-ui/util/proxyclient"
+	"github.com/alireza0/x-ui/util/tgchat"
 	"github.com/alireza0/x-ui/web/locale"
 	"github.com/alireza0/x-ui/xray"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	tgbotapi "github.com/go-telegram/bot"
+	"github.com/go-telegram/bot/models"
 )
 
 var (
-	bot       *tgbotapi.BotAPI
-	adminIds  []int64
-	isRunning bool
-	hostname  string
+	bot        *tgbotapi.Bot
+	botCancel  context.CancelFunc
+	adminChats []tgchat.Chat
+	notifyOnly bool
+	isRunning  bool
+	hostname   string
 )
+
+// pollTimeout is how long a long-polling request waits for an update before
+// the library issues a new one.
+const pollTimeout = 10 * time.Second
+
+// botCtx bounds one outgoing API call. Long polling runs on its own context, so
+// stopping the receiver never cancels a report in flight.
+func botCtx() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), 30*time.Second)
+}
+
+// uploadCtx bounds a file upload. A backup of a busy panel's database is orders
+// of magnitude bigger than a message and may cross a slow tunnel, so it cannot
+// share the message deadline.
+func uploadCtx() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), 10*time.Minute)
+}
 
 type LoginStatus byte
 
@@ -68,19 +92,50 @@ func (t *Tgbot) Start(i18nFS embed.FS) error {
 		return err
 	}
 
-	if tgBotid != "" {
-		for _, adminId := range strings.Split(tgBotid, ",") {
-			id, err := strconv.Atoi(adminId)
-			if err != nil {
-				logger.Warning("Failed to get IDs from GetTgBotChatId:", err)
-				return err
-			}
-			adminIds = append(adminIds, int64(id))
-		}
+	adminChats, err = tgchat.Parse(tgBotid)
+	if err != nil {
+		logger.Warning("Failed to get IDs from GetTgBotChatId:", err)
+		return err
+	}
+
+	// In notify-only mode the bot never answers anyone. A bot that replies to a
+	// stranger's /start confirms both that the host runs a panel and which one,
+	// so an admin who only wants outgoing reports can close that door entirely.
+	notifyOnly, err = t.settingService.GetTgBotNotifyOnly()
+	if err != nil {
+		logger.Warning("Get TgBotNotifyOnly failed:", err)
+		return err
+	}
+
+	// A panel inside a censored network usually cannot reach Telegram directly,
+	// so every bot request may need to go through a proxy - typically one of the
+	// panel's own inbounds listening on localhost.
+	tgBotProxy, err := t.settingService.GetTgBotProxy()
+	if err != nil {
+		logger.Warning("Get TgBotProxy failed:", err)
+		return err
+	}
+	httpClient, err := proxyclient.New(tgBotProxy)
+	if err != nil {
+		logger.Error("Tgbot proxy is not usable:", err)
+		return err
+	}
+	if tgBotProxy != "" {
+		logger.Info("Tgbot is using a proxy")
+	}
+
+	options := []tgbotapi.Option{
+		tgbotapi.WithHTTPClient(pollTimeout, httpClient),
+		tgbotapi.WithDefaultHandler(t.onUpdate),
+	}
+	if notifyOnly {
+		// Without a handler the library would still long-poll; skipping the
+		// receiver entirely is what makes the bot invisible to strangers.
+		options = []tgbotapi.Option{tgbotapi.WithHTTPClient(pollTimeout, httpClient)}
 	}
 
 	for {
-		bot, err = tgbotapi.NewBotAPI(tgBottoken)
+		bot, err = tgbotapi.New(tgBottoken, options...)
 		if err != nil {
 			fmt.Println("Get tgbot's api error:", err)
 			fmt.Println("Retrying after 10 secound...")
@@ -90,12 +145,19 @@ func (t *Tgbot) Start(i18nFS embed.FS) error {
 			break
 		}
 	}
-	bot.Debug = false
+
+	if notifyOnly {
+		logger.Info("Tgbot is in notify-only mode, incoming messages are ignored")
+		isRunning = true
+		return nil
+	}
 
 	// listen for TG bot income messages
 	if !isRunning {
 		logger.Info("Starting Telegram receiver ...")
-		go t.OnReceive()
+		var ctx context.Context
+		ctx, botCancel = context.WithCancel(context.Background())
+		go bot.Start(ctx)
 		isRunning = true
 	}
 
@@ -117,38 +179,37 @@ func (t *Tgbot) SetHostname() {
 }
 
 func (t *Tgbot) Stop() {
-	bot.StopReceivingUpdates()
-	logger.Info("Stop Telegram receiver ...")
+	if botCancel != nil {
+		botCancel()
+		botCancel = nil
+		logger.Info("Stop Telegram receiver ...")
+	}
 	isRunning = false
-	adminIds = nil
+	adminChats = nil
+	notifyOnly = false
 }
 
-func (t *Tgbot) OnReceive() {
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 10
-
-	updates := bot.GetUpdatesChan(u)
-
-	for update := range updates {
-		tgId := update.FromChat().ID
-		chatId := update.FromChat().ChatConfig().ChatID
-		isAdmin := checkAdmin(tgId)
-		if update.Message == nil {
-			if update.CallbackQuery != nil {
-				t.answerCallback(update.CallbackQuery)
-			}
-		} else {
-			if update.Message.IsCommand() {
-				t.answerCommand(update.Message, chatId, isAdmin)
-			}
+// onUpdate is called by the library for every incoming update.
+func (t *Tgbot) onUpdate(ctx context.Context, _ *tgbotapi.Bot, update *models.Update) {
+	if update == nil {
+		return
+	}
+	if update.Message == nil {
+		if update.CallbackQuery != nil {
+			t.answerCallback(ctx, update.CallbackQuery)
 		}
+		return
+	}
+	if isCommand(update.Message) {
+		chatId := update.Message.Chat.ID
+		t.answerCommand(update.Message, chatId, checkAdmin(chatId))
 	}
 }
 
-func (t *Tgbot) answerCommand(message *tgbotapi.Message, chatId int64, isAdmin bool) {
+func (t *Tgbot) answerCommand(message *models.Message, chatId int64, isAdmin bool) {
 	msg, onlyMessage := "", false
 
-	command, commandArgs := message.Command(), message.CommandArguments()
+	command, commandArgs := commandOf(message), commandArgumentsOf(message)
 
 	// Extract the command from the Message.
 	switch command {
@@ -196,11 +257,14 @@ func (t *Tgbot) answerCommand(message *tgbotapi.Message, chatId int64, isAdmin b
 	t.SendAnswer(chatId, msg, isAdmin)
 }
 
-func (t *Tgbot) answerCallback(callbackQuery *tgbotapi.CallbackQuery) {
+func (t *Tgbot) answerCallback(ctx context.Context, callbackQuery *models.CallbackQuery) {
 	// Respond to the callback query, telling Telegram to show the user
 	// a message with the data received.
-	callback := tgbotapi.NewCallback(callbackQuery.ID, callbackQuery.Data)
-	if _, err := bot.Request(callback); err != nil {
+	_, err := bot.AnswerCallbackQuery(ctx, &tgbotapi.AnswerCallbackQueryParams{
+		CallbackQueryID: callbackQuery.ID,
+		Text:            callbackQuery.Data,
+	})
+	if err != nil {
 		logger.Warning(err)
 	}
 
@@ -214,7 +278,7 @@ func (t *Tgbot) answerCallback(callbackQuery *tgbotapi.CallbackQuery) {
 	case "get_backup":
 		t.sendBackup(callbackQuery.From.ID)
 	case "client_traffic":
-		t.getClientUsage(callbackQuery.From.ID, callbackQuery.From.UserName)
+		t.getClientUsage(callbackQuery.From.ID, callbackQuery.From.Username)
 	case "client_commands":
 		t.SendMsgToTgbot(callbackQuery.From.ID, t.I18nBot("tgbot.commands.helpClientCommands"))
 	case "onlines":
@@ -222,15 +286,15 @@ func (t *Tgbot) answerCallback(callbackQuery *tgbotapi.CallbackQuery) {
 	case "commands":
 		t.SendMsgToTgbot(callbackQuery.From.ID, t.I18nBot("tgbot.commands.helpAdminCommands"))
 	default:
-		if callbackQuery.Data[:7] == "client_" {
-			t.searchClient(callbackQuery.From.ID, callbackQuery.Data[7:])
+		if email, found := strings.CutPrefix(callbackQuery.Data, "client_"); found {
+			t.searchClient(callbackQuery.From.ID, email)
 		}
 	}
 }
 
 func checkAdmin(tgId int64) bool {
-	for _, adminId := range adminIds {
-		if adminId == tgId {
+	for _, chat := range adminChats {
+		if chat.ChatID == tgId {
 			return true
 		}
 	}
@@ -238,37 +302,39 @@ func checkAdmin(tgId int64) bool {
 }
 
 func (t *Tgbot) SendAnswer(chatId int64, msg string, isAdmin bool) {
-	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData(t.I18nBot("tgbot.buttons.serverUsage"), "get_usage"),
-			tgbotapi.NewInlineKeyboardButtonData(t.I18nBot("tgbot.buttons.dbBackup"), "get_backup"),
-		),
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData(t.I18nBot("tgbot.buttons.getInbounds"), "inbounds"),
-			tgbotapi.NewInlineKeyboardButtonData(t.I18nBot("tgbot.buttons.depleteSoon"), "deplete_soon"),
-		),
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData(t.I18nBot("tgbot.buttons.commands"), "commands"),
-			tgbotapi.NewInlineKeyboardButtonData(t.I18nBot("tgbot.buttons.onlines"), "onlines"),
-		),
-	)
-	numericKeyboardClient := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData(t.I18nBot("tgbot.buttons.clientUsage"), "client_traffic"),
-			tgbotapi.NewInlineKeyboardButtonData(t.I18nBot("tgbot.buttons.commands"), "client_commands"),
-		),
-	)
+	numericKeyboard := models.InlineKeyboardMarkup{
+		InlineKeyboard: [][]models.InlineKeyboardButton{
+			{
+				{Text: t.I18nBot("tgbot.buttons.serverUsage"), CallbackData: "get_usage"},
+				{Text: t.I18nBot("tgbot.buttons.dbBackup"), CallbackData: "get_backup"},
+			},
+			{
+				{Text: t.I18nBot("tgbot.buttons.getInbounds"), CallbackData: "inbounds"},
+				{Text: t.I18nBot("tgbot.buttons.depleteSoon"), CallbackData: "deplete_soon"},
+			},
+			{
+				{Text: t.I18nBot("tgbot.buttons.commands"), CallbackData: "commands"},
+				{Text: t.I18nBot("tgbot.buttons.onlines"), CallbackData: "onlines"},
+			},
+		},
+	}
+	numericKeyboardClient := models.InlineKeyboardMarkup{
+		InlineKeyboard: [][]models.InlineKeyboardButton{
+			{
+				{Text: t.I18nBot("tgbot.buttons.clientUsage"), CallbackData: "client_traffic"},
+				{Text: t.I18nBot("tgbot.buttons.commands"), CallbackData: "client_commands"},
+			},
+		},
+	}
 
-	var keyboardMarkup tgbotapi.InlineKeyboardMarkup
+	keyboardMarkup := numericKeyboardClient
 	if isAdmin {
 		keyboardMarkup = numericKeyboard
-	} else {
-		keyboardMarkup = numericKeyboardClient
 	}
 	t.SendMsgToTgbot(chatId, msg, keyboardMarkup)
 }
 
-func (t *Tgbot) SendMsgToTgbot(tgid int64, msg string, replyMarkup ...tgbotapi.InlineKeyboardMarkup) {
+func (t *Tgbot) SendMsgToTgbot(tgid int64, msg string, replyMarkup ...models.InlineKeyboardMarkup) {
 	if !isRunning {
 		return
 	}
@@ -297,13 +363,22 @@ func (t *Tgbot) SendMsgToTgbot(tgid int64, msg string, replyMarkup ...tgbotapi.I
 	} else {
 		allMessages = append(allMessages, msg)
 	}
+
+	topicId := tgchat.TopicOf(adminChats, tgid)
 	for _, message := range allMessages {
-		info := tgbotapi.NewMessage(tgid, message)
-		info.ParseMode = "HTML"
-		if len(replyMarkup) > 0 {
-			info.ReplyMarkup = replyMarkup[0]
+		params := &tgbotapi.SendMessageParams{
+			ChatID:          tgid,
+			MessageThreadID: topicId,
+			Text:            message,
+			ParseMode:       models.ParseModeHTML,
 		}
-		_, err := bot.Send(info)
+		if len(replyMarkup) > 0 {
+			params.ReplyMarkup = replyMarkup[0]
+		}
+
+		ctx, cancel := botCtx()
+		_, err := bot.SendMessage(ctx, params)
+		cancel()
 		if err != nil {
 			logger.Warning("Error sending telegram message :", err)
 		}
@@ -311,9 +386,30 @@ func (t *Tgbot) SendMsgToTgbot(tgid int64, msg string, replyMarkup ...tgbotapi.I
 	}
 }
 
+// sendFile uploads one local file to a chat, into its topic when it has one.
+func sendFile(chatId int64, path string) error {
+	handle, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer handle.Close()
+
+	ctx, cancel := uploadCtx()
+	defer cancel()
+	_, err = bot.SendDocument(ctx, &tgbotapi.SendDocumentParams{
+		ChatID:          chatId,
+		MessageThreadID: tgchat.TopicOf(adminChats, chatId),
+		Document: &models.InputFileUpload{
+			Filename: filepath.Base(path),
+			Data:     handle,
+		},
+	})
+	return err
+}
+
 func (t *Tgbot) SendMsgToTgbotAdmins(msg string) {
-	for _, adminId := range adminIds {
-		t.SendMsgToTgbot(adminId, msg)
+	for _, chat := range adminChats {
+		t.SendMsgToTgbot(chat.ChatID, msg)
 	}
 }
 
@@ -342,8 +438,8 @@ func (t *Tgbot) SendBackupToAdmins() {
 	if !t.IsRunning() {
 		return
 	}
-	for _, adminId := range adminIds {
-		t.sendBackup(int64(adminId))
+	for _, chat := range adminChats {
+		t.sendBackup(chat.ChatID)
 	}
 }
 
@@ -686,10 +782,11 @@ func (t *Tgbot) onlineClients(chatId int64) {
 	onlines := GetOnlineUsersCache()
 	output := t.I18nBot("tgbot.messages.onlinesCount", "Count=="+fmt.Sprint(len(onlines)))
 	if len(onlines) > 0 {
-		keyboard := tgbotapi.NewInlineKeyboardMarkup()
+		keyboard := models.InlineKeyboardMarkup{}
 		for index, online := range onlines {
-			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf("%d: %s\r\n", index+1, online.Email), "client_"+online.Email)))
+			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, []models.InlineKeyboardButton{
+				{Text: fmt.Sprintf("%d: %s\r\n", index+1, online.Email), CallbackData: "client_" + online.Email},
+			})
 		}
 		t.SendMsgToTgbot(chatId, output, keyboard)
 	} else {
@@ -711,17 +808,11 @@ func (t *Tgbot) sendBackup(chatId int64) {
 	output := t.I18nBot("tgbot.messages.backupTime", "Time=="+time.Now().Format("2006-01-02 15:04:05"))
 	t.SendMsgToTgbot(chatId, output)
 
-	file := tgbotapi.FilePath(config.GetDBPath())
-	msg := tgbotapi.NewDocument(chatId, file)
-	_, err = bot.Send(msg)
-	if err != nil {
+	if err = sendFile(chatId, config.GetDBPath()); err != nil {
 		logger.Warning("Error in uploading backup: ", err)
 	}
 
-	file = tgbotapi.FilePath(xray.GetConfigPath())
-	msg = tgbotapi.NewDocument(chatId, file)
-	_, err = bot.Send(msg)
-	if err != nil {
+	if err = sendFile(chatId, xray.GetConfigPath()); err != nil {
 		logger.Warning("Error in uploading config.json: ", err)
 	}
 }
