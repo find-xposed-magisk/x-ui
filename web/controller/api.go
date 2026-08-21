@@ -23,8 +23,22 @@ func NewAPIController(g *gin.RouterGroup, s *ServerController) *APIController {
 	return a
 }
 
+// apiRoute is one endpoint of the JSON API. The tables below are the single
+// source of truth for what the API exposes: the router registers them and
+// TestOpenAPISpecMatchesRoutes checks the published OpenAPI document against
+// the very same list, so the two cannot drift apart.
+type apiRoute struct {
+	Method  string
+	Path    string
+	Handler gin.HandlerFunc
+}
+
+// APIBasePath is the group every API route hangs off, relative to the panel's
+// configured base path.
+const APIBasePath = "/xui/API"
+
 func (a *APIController) initRouter(g *gin.RouterGroup) {
-	api := g.Group("/xui/API")
+	api := g.Group(APIBasePath)
 	api.Use(a.checkLogin)
 
 	a.inboundApi(api)
@@ -33,16 +47,18 @@ func (a *APIController) initRouter(g *gin.RouterGroup) {
 	a.serverApi(api)
 }
 
+func register(group *gin.RouterGroup, routes []apiRoute) {
+	for _, route := range routes {
+		group.Handle(route.Method, route.Path, route.Handler)
+	}
+}
+
 func (a *APIController) inboundApi(api *gin.RouterGroup) {
 	inboundsApi := api.Group("/inbounds")
 
 	a.inboundController = &InboundController{}
 
-	inboundRoutes := []struct {
-		Method  string
-		Path    string
-		Handler gin.HandlerFunc
-	}{
+	inboundRoutes := []apiRoute{
 		{"GET", "/", a.inboundController.getInbounds},
 		{"GET", "/get/:id", a.inboundController.getInbound},
 		{"GET", "/getClientTraffics/:email", a.inboundController.getClientTraffics},
@@ -61,9 +77,7 @@ func (a *APIController) inboundApi(api *gin.RouterGroup) {
 		{"POST", "/onlines", a.inboundController.onlines},
 	}
 
-	for _, route := range inboundRoutes {
-		inboundsApi.Handle(route.Method, route.Path, route.Handler)
-	}
+	register(inboundsApi, inboundRoutes)
 }
 
 func (a *APIController) outboundApi(api *gin.RouterGroup) {
@@ -71,11 +85,7 @@ func (a *APIController) outboundApi(api *gin.RouterGroup) {
 
 	a.outboundController = &OutboundController{}
 
-	outboundRoutes := []struct {
-		Method  string
-		Path    string
-		Handler gin.HandlerFunc
-	}{
+	outboundRoutes := []apiRoute{
 		{"GET", "/", a.outboundController.getOutbounds},
 		{"POST", "/add", a.outboundController.addOutbound},
 		{"POST", "/del/:id", a.outboundController.delOutbound},
@@ -88,9 +98,7 @@ func (a *APIController) outboundApi(api *gin.RouterGroup) {
 		{"POST", "/reverseTags", a.outboundController.getClientReverseTags},
 	}
 
-	for _, route := range outboundRoutes {
-		outboundsApi.Handle(route.Method, route.Path, route.Handler)
-	}
+	register(outboundsApi, outboundRoutes)
 }
 
 func (a *APIController) routingApi(api *gin.RouterGroup) {
@@ -98,30 +106,20 @@ func (a *APIController) routingApi(api *gin.RouterGroup) {
 
 	a.routingRuleController = &RoutingRuleController{}
 
-	routingRoutes := []struct {
-		Method  string
-		Path    string
-		Handler gin.HandlerFunc
-	}{
+	routingRoutes := []apiRoute{
 		{"GET", "/", a.routingRuleController.getRules},
 		{"GET", "/refs", a.routingRuleController.getRefs},
 		{"POST", "/save", a.routingRuleController.saveRules},
 		{"POST", "/replaceBalancerTag", a.routingRuleController.replaceBalancerTag},
 	}
 
-	for _, route := range routingRoutes {
-		routingApi.Handle(route.Method, route.Path, route.Handler)
-	}
+	register(routingApi, routingRoutes)
 }
 
 func (a *APIController) serverApi(api *gin.RouterGroup) {
 	serverApi := api.Group("/server")
 
-	serverRoutes := []struct {
-		Method  string
-		Path    string
-		Handler gin.HandlerFunc
-	}{
+	serverRoutes := []apiRoute{
 		{"GET", "/status", a.serverController.status},
 		{"GET", "/getDb", a.serverController.getDb},
 		{"GET", "/createbackup", a.createBackup},
@@ -142,9 +140,7 @@ func (a *APIController) serverApi(api *gin.RouterGroup) {
 		{"POST", "/logs/:count", a.serverController.getLogs},
 	}
 
-	for _, route := range serverRoutes {
-		serverApi.Handle(route.Method, route.Path, route.Handler)
-	}
+	register(serverApi, serverRoutes)
 }
 
 func (a *APIController) createBackup(c *gin.Context) {

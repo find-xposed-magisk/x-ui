@@ -70,6 +70,7 @@
 "routing" = "路由"
 "settings" = "面板设置"
 "xray" = "Xray"
+"apiDocs" = "API 文档"
 "logout" = "退出登录"
 "link" = "管理"
 
@@ -817,3 +818,19 @@
 "getInboundsFailed" = "❌ 获取入站信息失败。"
 "askToAddUser" = "找不到您的配置！\r\n您应该配置您的 Telegram 用户名，并要求管理员将其添加到您的配置中。"
 "askToAddUserName" = "找不到您的配置！\r\n请要求您的管理员在您的配置中使用您的 Telegram 用户名。\r\n\r\n您的用户名：<b>@{{ .TgUserName }}</b>"
+
+[pages.apiDocs]
+"title" = "API 文档"
+"searchPlaceholder" = "搜索接口"
+"download" = "下载 openapi.json"
+"loadFailed" = "无法加载 API 描述"
+"parameters" = "参数"
+"requestBody" = "请求体"
+"responses" = "响应"
+"example" = "示例"
+"name" = "名称"
+"in" = "位置"
+"type" = "类型"
+"required" = "必填"
+"columnDescription" = "说明"
+"noMatches" = "没有匹配的接口"

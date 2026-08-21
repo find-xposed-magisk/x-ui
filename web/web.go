@@ -42,6 +42,9 @@ var htmlFS embed.FS
 //go:embed translation/*
 var i18nFS embed.FS
 
+//go:embed api/openapi.json
+var openAPIFS embed.FS
+
 var startTime = time.Now()
 
 type Server struct {
@@ -220,6 +223,7 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 	s.server = controller.NewServerController(g)
 	s.xui = controller.NewXUIController(g)
 	s.api = controller.NewAPIController(g, s.server)
+	controller.ServeOpenAPI(g, openAPIFS)
 
 	engine.NoRoute(func(c *gin.Context) {
 		c.AbortWithStatus(http.StatusNotFound)

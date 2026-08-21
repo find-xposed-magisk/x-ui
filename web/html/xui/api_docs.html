@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+{{template "head" .}}
+<style>
+    @media (min-width: 769px) {
+        .ant-layout-content { margin: 24px 16px; }
+    }
+    @media (max-width: 768px) {
+        .ant-card-body { padding: .5rem; }
+    }
+    .api-method {
+        display: inline-block;
+        min-width: 3.5rem;
+        text-align: center;
+        font-weight: bold;
+        font-family: monospace;
+        border-radius: 3px;
+        padding: 0 .4rem;
+        margin-right: .6rem;
+        color: #fff;
+    }
+    .api-method-get { background: #1890ff; }
+    .api-method-post { background: #52c41a; }
+    .api-path {
+        font-family: monospace;
+        word-break: break-all;
+    }
+    .api-summary {
+        opacity: .75;
+        margin-left: .6rem;
+    }
+    @media (max-width: 768px) {
+        .api-summary { display: block; margin-left: 0; }
+    }
+    .api-section-title {
+        font-weight: bold;
+        margin: 1rem 0 .4rem;
+    }
+    .api-table { width: 100%; overflow-x: auto; display: block; }
+    .api-code {
+        font-family: monospace;
+        white-space: pre-wrap;
+        word-break: break-all;
+        padding: .6rem .8rem;
+        border-radius: 4px;
+        background: rgba(128, 128, 128, .12);
+    }
+    .dark .api-code { background: rgba(255, 255, 255, .06); }
+    .api-prose { opacity: .85; white-space: pre-line; }
+    .api-prose code {
+        font-family: monospace;
+        padding: 0 .25rem;
+        border-radius: 3px;
+        background: rgba(128, 128, 128, .16);
+    }
+    .dark .api-prose code { background: rgba(255, 255, 255, .1); }
+</style>
+<body>
+<a-layout id="app" v-cloak :class="themeSwitcher.currentTheme">
+    {{ template "commonSider" . }}
+    <a-layout id="content-layout">
+        <a-layout-content>
+            <a-spin :spinning="spinning" :delay="500" tip='{{ i18n "loading"}}'>
+                <a-alert v-if="loadError" type="error" show-icon
+                         message='{{ i18n "pages.apiDocs.loadFailed" }}' :description="loadError"
+                         style="margin-bottom: 12px;"></a-alert>
+
+                <a-card v-if="spec" hoverable style="margin-bottom: 12px;">
+                    <template slot="title">
+                        <strong>[[ spec.info.title ]]</strong>
+                        <a-tag color="blue">[[ spec.info.version ]]</a-tag>
+                    </template>
+                    <a-row :gutter="[8, 8]">
+                        <a-col :xs="24" :md="16">
+                            <div class="api-prose" v-html="format(spec.info.description)"></div>
+                        </a-col>
+                        <a-col :xs="24" :md="8" style="text-align: right;">
+                            <a-space direction="vertical" style="width: 100%;">
+                                <a-input-search v-model="search" allow-clear
+                                                placeholder='{{ i18n "pages.apiDocs.searchPlaceholder" }}'></a-input-search>
+                                <a-button icon="download" @click="downloadSpec" style="width: 100%;">
+                                    {{ i18n "pages.apiDocs.download" }}
+                                </a-button>
+                            </a-space>
+                        </a-col>
+                    </a-row>
+                </a-card>
+
+                <a-card v-for="group in filteredGroups" :key="group.name" hoverable style="margin-bottom: 12px;">
+                    <template slot="title">
+                        <strong>[[ group.name ]]</strong>
+                        <span style="opacity: .6; font-weight: normal;">&nbsp;&mdash;&nbsp;[[ group.description ]]</span>
+                        <a-tag style="float: right;">[[ group.operations.length ]]</a-tag>
+                    </template>
+
+                    <a-collapse :bordered="false">
+                        <a-collapse-panel v-for="op in group.operations" :key="op.key">
+                            <template slot="header">
+                                <span class="api-method" :class="'api-method-' + op.method">[[ op.method.toUpperCase() ]]</span>
+                                <span class="api-path">[[ op.path ]]</span>
+                                <span class="api-summary">[[ op.summary ]]</span>
+                            </template>
+
+                            <p class="api-prose" v-html="format(op.description)"></p>
+
+                            <div v-if="op.parameters.length">
+                                <div class="api-section-title">{{ i18n "pages.apiDocs.parameters" }}</div>
+                                <a-table class="api-table" :columns="parameterColumns" :data-source="op.parameters"
+                                         :pagination="false" size="small" row-key="name">
+                                    <template slot="required" slot-scope="text">
+                                        <a-tag v-if="text" color="red">{{ i18n "pages.apiDocs.required" }}</a-tag>
+                                        <span v-else>&mdash;</span>
+                                    </template>
+                                </a-table>
+                            </div>
+
+                            <div v-if="op.bodyFields.length">
+                                <div class="api-section-title">
+                                    {{ i18n "pages.apiDocs.requestBody" }}
+                                    <a-tag>[[ op.bodyContentType ]]</a-tag>
+                                </div>
+                                <a-table class="api-table" :columns="parameterColumns" :data-source="op.bodyFields"
+                                         :pagination="false" size="small" row-key="name">
+                                    <template slot="required" slot-scope="text">
+                                        <a-tag v-if="text" color="red">{{ i18n "pages.apiDocs.required" }}</a-tag>
+                                        <span v-else>&mdash;</span>
+                                    </template>
+                                </a-table>
+                            </div>
+                            <div v-else-if="op.bodySchemaName">
+                                <div class="api-section-title">
+                                    {{ i18n "pages.apiDocs.requestBody" }}
+                                    <a-tag color="blue">[[ op.bodySchemaName ]]</a-tag>
+                                </div>
+                                <a-table class="api-table" :columns="parameterColumns"
+                                         :data-source="schemaFields(op.bodySchemaName)"
+                                         :pagination="false" size="small" row-key="name">
+                                    <template slot="required" slot-scope="text">
+                                        <a-tag v-if="text" color="red">{{ i18n "pages.apiDocs.required" }}</a-tag>
+                                        <span v-else>&mdash;</span>
+                                    </template>
+                                </a-table>
+                            </div>
+
+                            <div class="api-section-title">{{ i18n "pages.apiDocs.responses" }}</div>
+                            <div v-for="r in op.responses" :key="r.code" style="margin-bottom: .4rem;">
+                                <a-tag :color="r.code === '200' ? 'green' : 'orange'">[[ r.code ]]</a-tag>
+                                <span>[[ r.description ]]</span>
+                            </div>
+
+                            <div class="api-section-title">{{ i18n "pages.apiDocs.example" }}</div>
+                            <div class="api-code">[[ op.example ]]</div>
+                        </a-collapse-panel>
+                    </a-collapse>
+                </a-card>
+
+                <a-card v-if="spec && !filteredGroups.length" hoverable>
+                    <a-empty description='{{ i18n "pages.apiDocs.noMatches" }}'></a-empty>
+                </a-card>
+            </a-spin>
+        </a-layout-content>
+    </a-layout>
+</a-layout>
+{{template "js" .}}
+{{template "component/themeSwitcher" .}}
+<script>
+    // basePath and axios.defaults.baseURL are already set by the shared js
+    // template, so the path here is relative to the panel base path.
+    const specUrl = 'xui/API/openapi.json';
+
+    const app = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#app',
+        data: {
+            siderDrawer,
+            themeSwitcher,
+            spinning: false,
+            spec: null,
+            loadError: '',
+            search: '',
+            parameterColumns: [
+                { title: '{{ i18n "pages.apiDocs.name" }}', dataIndex: 'name', width: 180 },
+                { title: '{{ i18n "pages.apiDocs.in" }}', dataIndex: 'in', width: 110 },
+                { title: '{{ i18n "pages.apiDocs.type" }}', dataIndex: 'type', width: 110 },
+                { title: '{{ i18n "pages.apiDocs.required" }}', dataIndex: 'required', width: 110,
+                  scopedSlots: { customRender: 'required' } },
+                { title: '{{ i18n "pages.apiDocs.columnDescription" }}', dataIndex: 'description' },
+            ],
+        },
+        computed: {
+            // Operations grouped by their tag, in the order the document lists
+            // the tags, filtered by the search box.
+            filteredGroups() {
+                if (!this.spec) return [];
+                const needle = this.search.trim().toLowerCase();
+                const tags = this.spec.tags || [];
+                const groups = tags.map(tag => ({
+                    name: tag.name,
+                    description: tag.description || '',
+                    operations: [],
+                }));
+                const byName = {};
+                groups.forEach(g => byName[g.name] = g);
+
+                Object.keys(this.spec.paths).sort().forEach(path => {
+                    const operations = this.spec.paths[path];
+                    Object.keys(operations).forEach(method => {
+                        const op = this.buildOperation(path, method, operations[method]);
+                        if (needle && !this.matches(op, needle)) return;
+                        const group = byName[op.tag] || byName[tags.length ? tags[0].name : ''];
+                        if (group) group.operations.push(op);
+                    });
+                });
+                return groups.filter(g => g.operations.length);
+            },
+        },
+        methods: {
+            // The descriptions are Markdown because real OpenAPI viewers render
+            // them; this handles the little of it the panel needs. The text is
+            // escaped first, so only the tags produced here can reach v-html.
+            format(text) {
+                const escaped = (text || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+                return escaped
+                    .replace(/`([^`]+)`/g, '<code>$1</code>')
+                    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            },
+            matches(op, needle) {
+                return (op.path + ' ' + op.method + ' ' + op.summary + ' ' + op.description)
+                    .toLowerCase().includes(needle);
+            },
+            resolveRef(ref) {
+                // Only local component references are used, e.g. #/components/schemas/Inbound
+                const parts = ref.replace(/^#\//, '').split('/');
+                return parts.reduce((node, key) => (node || {})[key], this.spec);
+            },
+            schemaName(schema) {
+                return schema && schema.$ref ? schema.$ref.split('/').pop() : '';
+            },
+            schemaFields(name) {
+                const schema = (this.spec.components.schemas || {})[name] || {};
+                return this.fieldsOf(schema, 'body');
+            },
+            fieldsOf(schema, where) {
+                const required = schema.required || [];
+                return Object.keys(schema.properties || {}).map(key => {
+                    const property = schema.properties[key] || {};
+                    return {
+                        name: key,
+                        in: where,
+                        type: this.typeOf(property),
+                        required: required.includes(key),
+                        description: property.description || '',
+                    };
+                });
+            },
+            typeOf(schema) {
+                if (!schema) return '';
+                if (schema.$ref) return this.schemaName(schema);
+                if (schema.type === 'array') return this.typeOf(schema.items) + '[]';
+                if (schema.enum) return schema.enum.join(' | ');
+                return schema.type || 'object';
+            },
+            buildOperation(path, method, raw) {
+                const parameters = (raw.parameters || []).map(p => ({
+                    name: p.name,
+                    in: p.in,
+                    type: this.typeOf(p.schema),
+                    required: !!p.required,
+                    description: p.description || '',
+                }));
+
+                let bodyFields = [], bodySchemaName = '', bodyContentType = '';
+                const content = raw.requestBody && raw.requestBody.content;
+                if (content) {
+                    bodyContentType = Object.keys(content)[0];
+                    const schema = content[bodyContentType].schema || {};
+                    if (schema.$ref) {
+                        bodySchemaName = this.schemaName(schema);
+                    } else {
+                        bodyFields = this.fieldsOf(schema, 'body');
+                    }
+                }
+
+                const responses = Object.keys(raw.responses || {}).sort().map(code => {
+                    let response = raw.responses[code];
+                    if (response.$ref) response = this.resolveRef(response.$ref) || {};
+                    return { code, description: response.description || '' };
+                });
+
+                return {
+                    key: method + ' ' + path,
+                    path, method,
+                    tag: (raw.tags || [])[0] || '',
+                    summary: raw.summary || '',
+                    description: raw.description || '',
+                    parameters, bodyFields, bodySchemaName, bodyContentType, responses,
+                    example: this.curlFor(path, method, parameters, bodyFields, bodySchemaName),
+                };
+            },
+            // A ready-to-paste curl, with the session cookie the panel itself uses.
+            curlFor(path, method, parameters, bodyFields, bodySchemaName) {
+                let url = location.origin + basePath.replace(/\/$/, '') + path;
+                parameters.filter(p => p.in === 'path').forEach(p => {
+                    url = url.replace('{' + p.name + '}', '<' + p.name + '>');
+                });
+                const lines = ['curl -b cookies.txt \\'];
+                if (method !== 'get') lines.push("  -X " + method.toUpperCase() + ' \\');
+                if (bodySchemaName) {
+                    lines.push("  -H 'Content-Type: application/json' \\");
+                    lines.push("  -d '{ ... " + bodySchemaName + " ... }' \\");
+                } else {
+                    bodyFields.forEach(f => lines.push("  -d '" + f.name + "=<" + f.name + ">' \\"));
+                }
+                lines.push('  "' + url + '"');
+                return lines.join('\n');
+            },
+            downloadSpec() {
+                const blob = new Blob([JSON.stringify(this.spec, null, 2)], { type: 'application/json' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'openapi.json';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            },
+            async loadSpec() {
+                this.spinning = true;
+                try {
+                    const response = await axios.get(specUrl);
+                    this.spec = response.data;
+                    this.loadError = '';
+                } catch (error) {
+                    this.loadError = error && error.message ? error.message : String(error);
+                } finally {
+                    this.spinning = false;
+                }
+            },
+        },
+        mounted() {
+            this.loadSpec();
+        },
+    });
+</script>
+</body>
+</html>

@@ -30,6 +30,7 @@ func (a *XUIController) initRouter(g *gin.RouterGroup) {
 	g.GET("/routing", a.routingRules)
 	g.GET("/settings", a.settings)
 	g.GET("/xray", a.xraySettings)
+	g.GET("/api", a.apiDocs)
 
 	a.inboundController = NewInboundController(g)
 	a.outboundController = NewOutboundController(g)
@@ -60,4 +61,11 @@ func (a *XUIController) settings(c *gin.Context) {
 
 func (a *XUIController) xraySettings(c *gin.Context) {
 	html(c, "xray.html", "pages.xray.title", nil)
+}
+
+// apiDocs renders the API reference inside the panel. It reads the same
+// OpenAPI document the API group publishes, so both the page and the raw
+// document stay behind the panel login.
+func (a *XUIController) apiDocs(c *gin.Context) {
+	html(c, "api_docs.html", "pages.apiDocs.title", nil)
 }

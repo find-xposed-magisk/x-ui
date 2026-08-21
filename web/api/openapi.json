@@ -1,0 +1,2752 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "x-ui panel API",
+    "version": "1.0.0",
+    "description": "The JSON API behind the x-ui panel, the same one the web UI calls.\n\n**Base URL.** Every path below is relative to the panel's own base path. With a panel on `https://example.com:2053/mypanel/`, the inbound list is at `https://example.com:2053/mypanel/xui/API/inbounds/`.\n\n**Authentication.** Post your credentials to `{basePath}login`, keep the `x-ui` cookie it returns and send it with every later call. There is no API token.\n\n**Errors.** Almost every endpoint answers HTTP 200 with `{success, msg, obj}`; check `success` rather than the status code. Only an unauthenticated request returns 401.",
+    "license": {
+      "name": "GPL-3.0"
+    }
+  },
+  "servers": [
+    {
+      "url": "{basePath}",
+      "description": "the panel's base path",
+      "variables": {
+        "basePath": {
+          "default": "/",
+          "description": "the panel base path, with leading and trailing slashes"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Session",
+      "description": "Logging in"
+    },
+    {
+      "name": "Inbounds",
+      "description": "Inbounds and the clients inside them"
+    },
+    {
+      "name": "Outbounds",
+      "description": "Outbounds and their traffic"
+    },
+    {
+      "name": "Routing",
+      "description": "Routing rules and balancers"
+    },
+    {
+      "name": "Server",
+      "description": "Host status, Xray control and backups"
+    }
+  ],
+  "paths": {
+    "/login": {
+      "post": {
+        "tags": [
+          "Session"
+        ],
+        "summary": "Log in and receive the session cookie",
+        "description": "Every other endpoint requires the `x-ui` cookie this returns. Send the credentials as a form post or JSON and keep the cookie for subsequent calls. Note this path sits directly under the panel base path, not under the API group.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The session cookie is set on success. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/inbounds/": {
+      "get": {
+        "tags": [
+          "Inbounds"
+        ],
+        "summary": "List every inbound",
+        "description": "Returns all inbounds owned by the logged-in user, each with its per-client traffic rows.",
+        "responses": {
+          "200": {
+            "description": "The inbound list. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Inbound"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/inbounds/get/{id}": {
+      "get": {
+        "tags": [
+          "Inbounds"
+        ],
+        "summary": "Get one inbound",
+        "description": "Returns a single inbound with its client traffic rows.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "inbound id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The inbound. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "$ref": "#/components/schemas/Inbound"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/inbounds/getClientTraffics/{email}": {
+      "get": {
+        "tags": [
+          "Inbounds"
+        ],
+        "summary": "Get a client's traffic by email",
+        "description": "Client emails are unique across the whole panel, so no inbound id is needed.",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "client email"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The client's traffic counters. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "$ref": "#/components/schemas/ClientTraffic"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/inbounds/getClientTrafficsById/{id}": {
+      "get": {
+        "tags": [
+          "Inbounds"
+        ],
+        "summary": "Get client traffic by client id",
+        "description": "Looks the client up by its protocol identifier (UUID for VLESS/VMess, password for Trojan, and so on). Returns every matching client, since one id may be reused across inbounds.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "client identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching client traffic rows. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ClientTraffic"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/inbounds/add": {
+      "post": {
+        "tags": [
+          "Inbounds"
+        ],
+        "summary": "Create an inbound",
+        "description": "`settings`, `streamSettings` and `sniffing` are JSON documents passed as strings, exactly as Xray expects them.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Inbound"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Inbound"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created inbound. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "$ref": "#/components/schemas/Inbound"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/inbounds/update/{id}": {
+      "post": {
+        "tags": [
+          "Inbounds"
+        ],
+        "summary": "Update an inbound",
+        "description": "Replaces the inbound's fields. Clients present in `settings` are reconciled with the existing ones.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "inbound id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The updated inbound. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "$ref": "#/components/schemas/Inbound"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Inbound"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Inbound"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/xui/API/inbounds/del/{id}": {
+      "post": {
+        "tags": [
+          "Inbounds"
+        ],
+        "summary": "Delete an inbound",
+        "description": "Removes the inbound together with its clients and their traffic rows.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "inbound id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The deleted inbound id. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/inbounds/addClient": {
+      "post": {
+        "tags": [
+          "Inbounds"
+        ],
+        "summary": "Add clients to an inbound",
+        "description": "Send the target inbound id plus a `settings` document holding a `clients` array; every client in it is added.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "description": "inbound id"
+                  },
+                  "settings": {
+                    "type": "string",
+                    "description": "JSON such as {\"clients\":[{...}]}"
+                  }
+                },
+                "required": [
+                  "id",
+                  "settings"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The clients were added. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/inbounds/updateClient/{clientId}": {
+      "post": {
+        "tags": [
+          "Inbounds"
+        ],
+        "summary": "Update one client",
+        "description": "`clientId` identifies the existing client: the UUID for VLESS/VMess, the password for Trojan, `auth` for Hysteria, and the email for Shadowsocks and WireGuard.",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "current client identifier"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "description": "inbound id"
+                  },
+                  "settings": {
+                    "type": "string",
+                    "description": "JSON holding a single-element clients array"
+                  }
+                },
+                "required": [
+                  "id",
+                  "settings"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The client was updated. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/inbounds/{id}/delClient/{clientId}": {
+      "post": {
+        "tags": [
+          "Inbounds"
+        ],
+        "summary": "Delete one client",
+        "description": "Removes the client from the inbound and drops its traffic row.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "inbound id"
+          },
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "client identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The client was removed. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/inbounds/{id}/resetClientTraffic/{email}": {
+      "post": {
+        "tags": [
+          "Inbounds"
+        ],
+        "summary": "Reset one client's traffic",
+        "description": "Zeroes the client's up and down counters and re-enables it if it had run out.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "inbound id"
+          },
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "client email"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The counters were reset. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/inbounds/resetAllTraffics": {
+      "post": {
+        "tags": [
+          "Inbounds"
+        ],
+        "summary": "Reset every inbound's traffic",
+        "description": "Zeroes the inbound-level counters. Client counters are left alone.",
+        "responses": {
+          "200": {
+            "description": "The counters were reset. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/inbounds/resetAllClientTraffics/{id}": {
+      "post": {
+        "tags": [
+          "Inbounds"
+        ],
+        "summary": "Reset the traffic of every client of an inbound",
+        "description": "Pass -1 to reset the clients of every inbound. Clients that had run out are enabled again.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "inbound id, or -1 for all"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The counters were reset. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/inbounds/delDepletedClients/{id}": {
+      "post": {
+        "tags": [
+          "Inbounds"
+        ],
+        "summary": "Delete depleted clients",
+        "description": "Removes clients that are out of traffic or past their expiry. Pass -1 to sweep every inbound. Clients with a renewal period set are kept.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "inbound id, or -1 for all"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The depleted clients were removed. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/inbounds/import": {
+      "post": {
+        "tags": [
+          "Inbounds"
+        ],
+        "summary": "Import an inbound",
+        "description": "Recreates an inbound from the JSON produced by the panel's export, assigning it a fresh id and tag.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "string",
+                    "description": "the exported inbound as JSON"
+                  }
+                },
+                "required": [
+                  "data"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The imported inbound. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/inbounds/onlines": {
+      "post": {
+        "tags": [
+          "Inbounds"
+        ],
+        "summary": "List clients that are currently online",
+        "description": "Reads the cache the panel refreshes from Xray's stats API every two seconds.",
+        "responses": {
+          "200": {
+            "description": "Online clients with their source addresses. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OnlineUser"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/outbounds/": {
+      "get": {
+        "tags": [
+          "Outbounds"
+        ],
+        "summary": "List every outbound",
+        "description": "Returns the outbounds in the order Xray will try them.",
+        "responses": {
+          "200": {
+            "description": "The outbound list. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Outbound"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/outbounds/add": {
+      "post": {
+        "tags": [
+          "Outbounds"
+        ],
+        "summary": "Create an outbound",
+        "description": "`settings`, `streamSettings`, `proxySettings` and `mux` are JSON documents passed as strings.",
+        "responses": {
+          "200": {
+            "description": "The outbound was created. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Outbound"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Outbound"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/xui/API/outbounds/update/{id}": {
+      "post": {
+        "tags": [
+          "Outbounds"
+        ],
+        "summary": "Update an outbound",
+        "description": "Replaces the outbound's fields.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "outbound id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The outbound was updated. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Outbound"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Outbound"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/xui/API/outbounds/del/{id}": {
+      "post": {
+        "tags": [
+          "Outbounds"
+        ],
+        "summary": "Delete an outbound",
+        "description": "Removes the outbound. Routing rules referring to its tag are left untouched.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "outbound id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The outbound was removed. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/outbounds/setFirst/{id}": {
+      "post": {
+        "tags": [
+          "Outbounds"
+        ],
+        "summary": "Move an outbound to the top",
+        "description": "The first outbound is the default egress for traffic no routing rule claims.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "outbound id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The order was changed. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/outbounds/{id}/resetTraffic": {
+      "post": {
+        "tags": [
+          "Outbounds"
+        ],
+        "summary": "Reset one outbound's traffic",
+        "description": "Zeroes the outbound's up and down counters.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "outbound id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The counters were reset. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/outbounds/resetAllTraffics": {
+      "post": {
+        "tags": [
+          "Outbounds"
+        ],
+        "summary": "Reset every outbound's traffic",
+        "description": "Zeroes the counters of all outbounds.",
+        "responses": {
+          "200": {
+            "description": "The counters were reset. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/outbounds/onlines": {
+      "post": {
+        "tags": [
+          "Outbounds"
+        ],
+        "summary": "List outbounds carrying traffic",
+        "description": "Returns the tags of outbounds Xray currently reports activity on.",
+        "responses": {
+          "200": {
+            "description": "Active outbound tags. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/outbounds/test": {
+      "post": {
+        "tags": [
+          "Outbounds"
+        ],
+        "summary": "Test an outbound",
+        "description": "Sends a probe request through the outbound and reports the latency, using the URL from the panel's outbound test setting.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "description": "outbound id"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The probe result. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/outbounds/reverseTags": {
+      "post": {
+        "tags": [
+          "Outbounds"
+        ],
+        "summary": "List reverse-proxy tags",
+        "description": "Returns the tags declared by clients configured as reverse bridges, for use when building a reverse outbound.",
+        "responses": {
+          "200": {
+            "description": "The available tags. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/routing/": {
+      "get": {
+        "tags": [
+          "Routing"
+        ],
+        "summary": "List routing rules",
+        "description": "Returns the rules in evaluation order.",
+        "responses": {
+          "200": {
+            "description": "The routing rules. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RoutingRule"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/routing/refs": {
+      "get": {
+        "tags": [
+          "Routing"
+        ],
+        "summary": "List taggable references",
+        "description": "Returns the inbound, outbound and balancer tags a rule may point at.",
+        "responses": {
+          "200": {
+            "description": "Tags available to rules. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/routing/save": {
+      "post": {
+        "tags": [
+          "Routing"
+        ],
+        "summary": "Replace every routing rule",
+        "description": "The whole rule set is replaced by what you send, so read it first and post it back modified.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rules": {
+                    "type": "string",
+                    "description": "JSON array of routing rules"
+                  }
+                },
+                "required": [
+                  "rules"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The rules were saved. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/routing/replaceBalancerTag": {
+      "post": {
+        "tags": [
+          "Routing"
+        ],
+        "summary": "Rename a balancer tag across rules",
+        "description": "Rewrites every rule that points at oldTag so it points at newTag.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "oldTag": {
+                    "type": "string"
+                  },
+                  "newTag": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "oldTag",
+                  "newTag"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The rules were rewritten. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/server/status": {
+      "get": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Get server and Xray status",
+        "description": "CPU, memory, network, uptime and the Xray process state. The panel samples this every two seconds while someone is watching.",
+        "responses": {
+          "200": {
+            "description": "The current status. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "$ref": "#/components/schemas/Status"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/server/getXrayVersion": {
+      "get": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "List installable Xray versions",
+        "description": "Cached for one minute. Feed a value from this list to installXray.",
+        "responses": {
+          "200": {
+            "description": "Available versions. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/server/getConfigJson": {
+      "get": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Get the generated Xray config",
+        "description": "The configuration the panel builds from the inbounds, outbounds and routing rules, as Xray receives it.",
+        "responses": {
+          "200": {
+            "description": "The Xray configuration. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/server/getNewX25519Cert": {
+      "get": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Generate an X25519 key pair",
+        "description": "For REALITY. Returns the private and public keys.",
+        "responses": {
+          "200": {
+            "description": "The generated key pair. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/server/getNewmldsa65": {
+      "get": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Generate an ML-DSA-65 key pair",
+        "description": "Post-quantum signature keys for REALITY.",
+        "responses": {
+          "200": {
+            "description": "The generated key pair. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/server/getNewVlessEnc": {
+      "get": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Generate VLESS encryption material",
+        "description": "Returns the matching decryption and encryption values for VLESS encryption.",
+        "responses": {
+          "200": {
+            "description": "The generated values. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/server/getNewEchCert": {
+      "post": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Generate an ECH key pair",
+        "description": "Encrypted Client Hello configuration for the given outer server name.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sni": {
+                    "type": "string",
+                    "description": "outer server name"
+                  }
+                },
+                "required": [
+                  "sni"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The generated ECH configuration. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/server/getNewSelfSignedCert": {
+      "post": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Generate a self-signed certificate",
+        "description": "Issues a certificate and key for the given name, for use when no real certificate is available.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sni": {
+                    "type": "string",
+                    "description": "certificate common name"
+                  }
+                },
+                "required": [
+                  "sni"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The certificate and key. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/server/getCertHash": {
+      "post": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Hash a certificate",
+        "description": "Returns the SHA-256 fingerprints of a certificate chain, for pinning. Give either a path on the server or the PEM text.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "certFile": {
+                    "type": "string",
+                    "description": "path to a certificate file on the server"
+                  },
+                  "certContent": {
+                    "type": "string",
+                    "description": "PEM contents, as an alternative to certFile"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The fingerprints. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/server/getTlsPing": {
+      "post": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Probe a TLS endpoint",
+        "description": "Opens a TLS connection to the host and reports what it answered, to check a certificate or a REALITY target.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "domain": {
+                    "type": "string"
+                  },
+                  "port": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "domain",
+                  "port"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The probe result. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/server/getDb": {
+      "get": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Download the panel database",
+        "description": "Streams the SQLite database as a file attachment. The response is not the usual JSON envelope.",
+        "responses": {
+          "200": {
+            "description": "The database file.",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/server/importDB": {
+      "post": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Replace the panel database",
+        "description": "Uploads a database previously obtained from getDb and restarts Xray. Everything currently configured is replaced.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "db": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "the SQLite database file"
+                  }
+                },
+                "required": [
+                  "db"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The database was imported. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/server/createbackup": {
+      "get": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Send a backup to the Telegram admins",
+        "description": "Asks the bot to push the database and Xray config to every configured admin chat. Does nothing when the bot is off. Returns an empty body.",
+        "responses": {
+          "200": {
+            "description": "The request was accepted; delivery happens in the background."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/server/stopXrayService": {
+      "post": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Stop Xray",
+        "description": "Stops the core. Clients stay configured but nothing is served until it is started again.",
+        "responses": {
+          "200": {
+            "description": "Xray was stopped. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/server/restartXrayService": {
+      "post": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Restart Xray",
+        "description": "Regenerates the configuration and restarts the core. Existing connections are dropped.",
+        "responses": {
+          "200": {
+            "description": "Xray was restarted. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/server/installXray/{version}": {
+      "post": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Install a specific Xray version",
+        "description": "Downloads the given version and restarts the core. Use getXrayVersion for the list of valid values.",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "version tag, for example v26.7.28"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The version was installed. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/xui/API/server/logs/{count}": {
+      "post": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Read panel logs",
+        "description": "Returns the most recent log lines, either from the panel's own buffer or from the systemd journal.",
+        "parameters": [
+          {
+            "name": "count",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "how many lines to return, 1 to 10000"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "level": {
+                    "type": "string",
+                    "description": "minimum level: debug, info, warning or error"
+                  },
+                  "syslog": {
+                    "type": "string",
+                    "enum": [
+                      "true",
+                      "false"
+                    ],
+                    "description": "read the systemd journal instead of the panel buffer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The log lines. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "x-ui",
+        "description": "the cookie returned by POST {basePath}login"
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "No valid session cookie was sent.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": [
+                "success"
+              ],
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "description": "false when the call failed; msg then carries the reason"
+                },
+                "msg": {
+                  "type": "string",
+                  "description": "human-readable result, localised to the panel language"
+                },
+                "obj": {
+                  "nullable": true,
+                  "description": "endpoint payload, null when there is none"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Inbound": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "up": {
+            "type": "integer",
+            "format": "int64",
+            "description": "bytes uploaded"
+          },
+          "down": {
+            "type": "integer",
+            "format": "int64",
+            "description": "bytes downloaded"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "description": "byte quota, 0 for unlimited"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "expiryTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "unix milliseconds, 0 for never"
+          },
+          "listen": {
+            "type": "string",
+            "description": "bind address, empty for all interfaces"
+          },
+          "port": {
+            "type": "integer"
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "vmess",
+              "vless",
+              "trojan",
+              "shadowsocks",
+              "hysteria",
+              "wireguard",
+              "dokodemo-door",
+              "socks",
+              "http",
+              "tun"
+            ]
+          },
+          "settings": {
+            "type": "string",
+            "description": "protocol settings as a JSON document"
+          },
+          "streamSettings": {
+            "type": "string",
+            "description": "transport settings as a JSON document"
+          },
+          "tag": {
+            "type": "string",
+            "description": "unique across the panel"
+          },
+          "sniffing": {
+            "type": "string",
+            "description": "sniffing settings as a JSON document"
+          },
+          "clientStats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClientTraffic"
+            },
+            "description": "per-client counters, read-only"
+          }
+        }
+      },
+      "Outbound": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "up": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "down": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sort": {
+            "type": "integer",
+            "description": "evaluation order, lower comes first"
+          },
+          "sendThrough": {
+            "type": "string",
+            "description": "source address to bind"
+          },
+          "protocol": {
+            "type": "string"
+          },
+          "settings": {
+            "type": "string",
+            "description": "protocol settings as a JSON document"
+          },
+          "tag": {
+            "type": "string",
+            "description": "unique across the panel"
+          },
+          "streamSettings": {
+            "type": "string"
+          },
+          "proxySettings": {
+            "type": "string"
+          },
+          "mux": {
+            "type": "string"
+          },
+          "targetStrategy": {
+            "type": "string"
+          }
+        }
+      },
+      "ClientTraffic": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "inboundId": {
+            "type": "integer"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "false once the quota or expiry is reached"
+          },
+          "email": {
+            "type": "string",
+            "description": "unique across the panel; identifies the client"
+          },
+          "up": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "down": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "expiryTime": {
+            "type": "integer",
+            "format": "int64",
+            "description": "unix milliseconds; a negative value means the countdown starts at first use"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "description": "byte quota, 0 for unlimited"
+          },
+          "reset": {
+            "type": "integer",
+            "description": "days after which an expired client renews, 0 to never"
+          }
+        }
+      },
+      "RoutingRule": {
+        "type": "object",
+        "description": "One Xray routing rule as the panel stores it."
+      },
+      "OnlineUser": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "ips": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "source address to unix seconds last seen"
+          }
+        }
+      },
+      "Status": {
+        "type": "object",
+        "description": "Host and Xray status; see the panel dashboard for the fields."
+      }
+    }
+  },
+  "security": [
+    {
+      "sessionCookie": []
+    }
+  ]
+}

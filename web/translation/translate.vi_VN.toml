@@ -70,6 +70,7 @@
 "routing" = "Định tuyến"
 "settings" = "Cài đặt X-UI"
 "xray" = "Cài đặt Xray"
+"apiDocs" = "Tài liệu API"
 "logout" = "Đăng xuất"
 "link" = "Sự quản lý"
 
@@ -817,3 +818,19 @@
 "getInboundsFailed" = "❌ Không vào được"
 "askToAddUser" = "Không tìm thấy cấu hình của bạn!\r\nBạn nên định cấu hình tên người dùng telegram của mình và yêu cầu Quản trị viên thêm nó vào cấu hình của bạn."
 "askToAddUserName" = "Không tìm thấy cấu hình của bạn!\r\nVui lòng yêu cầu Quản trị viên của bạn sử dụng tên người dùng telegram trong cấu hình của bạn(s).\r\n\r\nTên người dùng của bạn: <b>@{{ .TgUserName }}</b>"
+
+[pages.apiDocs]
+"title" = "Tài liệu API"
+"searchPlaceholder" = "Tìm kiếm điểm cuối"
+"download" = "Tải openapi.json"
+"loadFailed" = "Không thể tải mô tả API"
+"parameters" = "Tham số"
+"requestBody" = "Nội dung yêu cầu"
+"responses" = "Phản hồi"
+"example" = "Ví dụ"
+"name" = "Tên"
+"in" = "Ở"
+"type" = "Kiểu"
+"required" = "Bắt buộc"
+"columnDescription" = "Mô tả"
+"noMatches" = "Không có điểm cuối nào khớp với tìm kiếm"

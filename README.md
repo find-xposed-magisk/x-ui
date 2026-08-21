@@ -211,6 +211,23 @@ docker build -t x-ui .
 
 ## API Routes
 
+The panel publishes a full **OpenAPI 3.0 description** of its API at
+`{basePath}xui/API/openapi.json`, behind the same login as the API itself. It
+covers every endpoint with its parameters, request bodies and response shapes,
+and a test in the repository fails the build if a route is ever added or removed
+without updating it — so it cannot drift from the code.
+
+Fetch it once you have a session cookie and open it in any OpenAPI viewer, or
+point a client generator at it:
+
+```bash
+curl -c cookies.txt -X POST https://example.com:2053/mypanel/login \
+  -d 'username=admin&password=secret'
+curl -b cookies.txt https://example.com:2053/mypanel/xui/API/openapi.json -o openapi.json
+```
+
+The table below is a quick reference for the same endpoints.
+
 <details>
   <summary>Click for details</summary>
 

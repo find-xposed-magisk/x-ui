@@ -70,6 +70,7 @@
 "routing" = "Routing"
 "settings" = "Panel Settings"
 "xray" = "Xray Configs"
+"apiDocs" = "API Docs"
 "logout" = "Log Out"
 "link" = "Manage"
 
@@ -817,3 +818,19 @@
 "getInboundsFailed" = "❌ Failed to get inbounds"
 "askToAddUser" = "Your configuration is not found!\r\nPlease set a Telegram username, and then ask the service admin to add it to the configuration(s)."
 "askToAddUserName" = "Your configuration is not found!\r\nPlease ask the service admin to add your Telegram username to the configuration(s).\r\n\r\nYour Username: <b>@{{ .TgUserName }}</b>"
+
+[pages.apiDocs]
+"title" = "API Documentation"
+"searchPlaceholder" = "Search endpoints"
+"download" = "Download openapi.json"
+"loadFailed" = "Could not load the API description"
+"parameters" = "Parameters"
+"requestBody" = "Request body"
+"responses" = "Responses"
+"example" = "Example"
+"name" = "Name"
+"in" = "In"
+"type" = "Type"
+"required" = "Required"
+"columnDescription" = "Description"
+"noMatches" = "No endpoint matches your search"

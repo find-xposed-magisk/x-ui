@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/alireza0/x-ui/web/locale"
+
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -125,6 +127,41 @@ func TestTelegramSettingKeysExist(t *testing.T) {
 			if strings.TrimSpace(value) == "" {
 				t.Errorf("%s has an empty %q", name, key)
 			}
+		}
+	}
+}
+
+// stubSettingService satisfies the locale package's dependency without a
+// database; the bot language only picks which localizer is built.
+type stubSettingService struct{}
+
+func (stubSettingService) GetTgLang() (string, error) { return "en-US", nil }
+
+// The panel loads these files through go-i18n at startup, and go-i18n rejects a
+// section that mixes its own reserved keys (description, other, one, id, hash,
+// ...) with ordinary ones. That refusal happens before the web server starts, so
+// a single badly named key takes the whole panel down. Loading them here the
+// same way turns that into a failing test.
+func TestTranslationsLoadThroughI18n(t *testing.T) {
+	if err := locale.InitLocalizer(i18nFS, stubSettingService{}); err != nil {
+		t.Fatalf("the panel would refuse to start: %v", err)
+	}
+	// LocalizerWeb is built per request by the gin middleware; InitLocalizer
+	// only builds the bot's.
+	if locale.LocalizerBot == nil {
+		t.Fatal("the bot localizer was not built")
+	}
+}
+
+// A spot check that the loader really resolves keys, so the test above cannot
+// pass on an empty bundle.
+func TestTranslationsResolveKnownKeys(t *testing.T) {
+	if err := locale.InitLocalizer(i18nFS, stubSettingService{}); err != nil {
+		t.Fatalf("init localizer: %v", err)
+	}
+	for _, key := range []string{"menu.apiDocs", "pages.apiDocs.title", "pages.settings.globalReset"} {
+		if value := locale.I18n(locale.Bot, key); strings.TrimSpace(value) == "" {
+			t.Errorf("key %q resolved to nothing", key)
 		}
 	}
 }
