@@ -199,6 +199,13 @@
                 case Protocols.TROJAN: return new Inbound.TrojanSettings.Trojan();
                 case Protocols.SHADOWSOCKS: return new Inbound.ShadowsocksSettings.Shadowsocks(clientsBulkModal.inbound.settings.shadowsockses[0].method);
                 case Protocols.HYSTERIA: return new Inbound.HysteriaSettings.Hysteria();
+                case Protocols.WIREGUARD: {
+                    // Every peer needs its own tunnel address, so keep the local peer
+                    // list in sync to hand out a distinct one on each call.
+                    const peer = new Inbound.WireguardSettings.Peer(null, null, '', [clientsBulkModal.inbound.settings.nextAllowedIP()]);
+                    clientsBulkModal.inbound.settings.peers.push(peer);
+                    return peer;
+                }
                 default: return null;
             }
         },

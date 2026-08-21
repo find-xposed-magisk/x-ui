@@ -678,6 +678,7 @@
 "secretKey" = "Secret Key"
 "publicKey" = "Public Key"
 "allowedIPs" = "Allowed IPs"
+"allowedIPsDesc" = "Tunnel addresses assigned to this peer. The server identifies a peer by them, so they must not overlap with another peer"
 "endpoint" = "Endpoint"
 "psk" = "PreShared Key"
 "domainStrategy" = "Domain Strategy"

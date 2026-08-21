@@ -678,6 +678,7 @@
 "secretKey" = "Chìa khoá bí mật"
 "publicKey" = "Khóa công khai"
 "allowedIPs" = "IP được phép"
+"allowedIPsDesc" = "Địa chỉ đường hầm được gán cho peer này. Máy chủ nhận diện peer bằng chúng, nên không được trùng với peer khác"
 "endpoint" = "Điểm cuối"
 "psk" = "Khóa chia sẻ"
 "domainStrategy" = "Chiến lược tên miền"

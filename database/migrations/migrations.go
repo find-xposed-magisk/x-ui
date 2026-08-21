@@ -5,11 +5,12 @@ import (
 )
 
 const (
-	VersionOutbound = 2
-	VersionRouting  = 3
-	VersionInbound  = 4
-	VersionPolicy   = 5
-	VersionSettings = 6
+	VersionOutbound  = 2
+	VersionRouting   = 3
+	VersionInbound   = 4
+	VersionPolicy    = 5
+	VersionSettings  = 6
+	VersionWireguard = 7
 )
 
 type migration struct {
@@ -23,6 +24,7 @@ var registry = []migration{
 	{VersionInbound, migrateV004Inbound},
 	{VersionPolicy, migrateV005Policy},
 	{VersionSettings, migrateV006Settings},
+	{VersionWireguard, migrateV007Wireguard},
 }
 
 func Run(db *gorm.DB) error {

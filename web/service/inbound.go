@@ -192,6 +192,10 @@ func (s *InboundService) AddInbound(inbound *model.Inbound) (*model.Inbound, boo
 			if client.Auth == "" {
 				return inbound, false, common.NewError("empty client ID")
 			}
+		case "wireguard":
+			if client.PublicKey == "" || client.Email == "" {
+				return inbound, false, common.NewError("empty client ID")
+			}
 		default:
 			if client.ID == "" {
 				return inbound, false, common.NewError("empty client ID")
@@ -432,6 +436,26 @@ func (s *InboundService) updateClientTraffics(tx *gorm.DB, oldInbound *model.Inb
 	return nil
 }
 
+// xrayUserPayload builds the account fields the Xray API needs to add one client
+// over gRPC. Only the fields belonging to the inbound's protocol are read on the
+// other side, so it is safe to always fill in all of them. settings is the
+// inbound's decoded settings, needed for the Shadowsocks cipher.
+func xrayUserPayload(settings map[string]interface{}, client *model.Client) map[string]interface{} {
+	cipher, _ := settings["method"].(string)
+	return map[string]interface{}{
+		"email":        client.Email,
+		"id":           client.ID,
+		"auth":         client.Auth,
+		"flow":         client.Flow,
+		"password":     client.Password,
+		"cipher":       cipher,
+		"publicKey":    client.PublicKey,
+		"preSharedKey": client.PreSharedKey,
+		"allowedIPs":   client.AllowedIPs,
+		"keepAlive":    client.KeepAlive,
+	}
+}
+
 func (s *InboundService) AddInboundClient(data *model.Inbound) (bool, error) {
 	clients, err := s.GetClients(data)
 	if err != nil {
@@ -471,6 +495,10 @@ func (s *InboundService) AddInboundClient(data *model.Inbound) (bool, error) {
 			}
 		case "hysteria":
 			if client.Auth == "" {
+				return false, common.NewError("empty client ID")
+			}
+		case "wireguard":
+			if client.PublicKey == "" || client.Email == "" {
 				return false, common.NewError("empty client ID")
 			}
 		default:
@@ -515,18 +543,7 @@ func (s *InboundService) AddInboundClient(data *model.Inbound) (bool, error) {
 		if len(client.Email) > 0 {
 			s.AddClientStat(tx, data.Id, &client)
 			if client.Enable {
-				cipher := ""
-				if oldInbound.Protocol == "shadowsocks" {
-					cipher = oldSettings["method"].(string)
-				}
-				err1 := s.xrayApi.AddUser(string(oldInbound.Protocol), oldInbound.Tag, map[string]interface{}{
-					"email":    client.Email,
-					"id":       client.ID,
-					"auth":     client.Auth,
-					"flow":     client.Flow,
-					"password": client.Password,
-					"cipher":   cipher,
-				})
+				err1 := s.xrayApi.AddUser(string(oldInbound.Protocol), oldInbound.Tag, xrayUserPayload(oldSettings, &client))
 				if err1 == nil {
 					logger.Debug("Client added by api:", client.Email)
 				} else {
@@ -568,6 +585,8 @@ func (s *InboundService) DelInboundClient(inboundId int, clientId string) (bool,
 		client_key = "email"
 	case "hysteria":
 		client_key = "auth"
+	case "wireguard":
+		client_key = "email"
 	}
 
 	interfaceClients := settings["clients"].([]interface{})
@@ -676,6 +695,9 @@ func (s *InboundService) UpdateInboundClient(data *model.Inbound, clientId strin
 		case "hysteria":
 			oldClientId = oldClient.Auth
 			newClientId = clients[0].Auth
+		case "wireguard":
+			oldClientId = oldClient.Email
+			newClientId = clients[0].Email
 		default:
 			oldClientId = oldClient.ID
 			newClientId = clients[0].ID
@@ -765,18 +787,7 @@ func (s *InboundService) UpdateInboundClient(data *model.Inbound, clientId strin
 			}
 		}
 		if clients[0].Enable {
-			cipher := ""
-			if oldInbound.Protocol == "shadowsocks" {
-				cipher = oldSettings["method"].(string)
-			}
-			err1 := s.xrayApi.AddUser(string(oldInbound.Protocol), oldInbound.Tag, map[string]interface{}{
-				"email":    clients[0].Email,
-				"id":       clients[0].ID,
-				"flow":     clients[0].Flow,
-				"auth":     clients[0].Auth,
-				"password": clients[0].Password,
-				"cipher":   cipher,
-			})
+			err1 := s.xrayApi.AddUser(string(oldInbound.Protocol), oldInbound.Tag, xrayUserPayload(oldSettings, &clients[0]))
 			if err1 == nil {
 				logger.Debug("Client edited by api:", clients[0].Email)
 			} else {
@@ -1257,23 +1268,12 @@ func (s *InboundService) ResetClientTraffic(id int, clientEmail string) (bool, e
 		}
 		for _, client := range clients {
 			if client.Email == clientEmail && client.Enable {
-				s.xrayApi.Init(p.GetAPIAddr())
-				cipher := ""
-				if string(inbound.Protocol) == "shadowsocks" {
-					var oldSettings map[string]interface{}
-					err = json.Unmarshal([]byte(inbound.Settings), &oldSettings)
-					if err != nil {
-						return false, err
-					}
-					cipher = oldSettings["method"].(string)
+				var oldSettings map[string]interface{}
+				if err = json.Unmarshal([]byte(inbound.Settings), &oldSettings); err != nil {
+					return false, err
 				}
-				err1 := s.xrayApi.AddUser(string(inbound.Protocol), inbound.Tag, map[string]interface{}{
-					"email":    client.Email,
-					"id":       client.ID,
-					"flow":     client.Flow,
-					"password": client.Password,
-					"cipher":   cipher,
-				})
+				s.xrayApi.Init(p.GetAPIAddr())
+				err1 := s.xrayApi.AddUser(string(inbound.Protocol), inbound.Tag, xrayUserPayload(oldSettings, &client))
 				if err1 == nil {
 					logger.Debug("Client enabled due to reset traffic:", clientEmail)
 				} else {

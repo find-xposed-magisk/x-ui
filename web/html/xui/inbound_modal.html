@@ -44,6 +44,10 @@
             if (!textAreaObj) return;
             this.destroyJsonEditor();
             let inbJson = this.inbound.toJson();
+            // Clients are managed from the client table, not from here. Hold on to
+            // their serialized form and put it back on every edit, otherwise
+            // re-parsing the edited JSON would drop them.
+            const clients = inbJson.settings.clients;
             delete inbJson.settings.clients;
             delete inbJson.clientStats;
             delete inbJson.tag;
@@ -53,7 +57,7 @@
                 const value = editor.getValue();
                 if (this.isJsonString(value)) {
                     newJson = JSON.parse(value);
-                    newJson.settings.clients = this.inbound.settings.clients;
+                    newJson.settings.clients = clients;
                     newJson.clientStats = this.inbound.clientStats;
                     newJson.tag = this.inbound.tag;
                     this.inbound = Inbound.fromJson(newJson);

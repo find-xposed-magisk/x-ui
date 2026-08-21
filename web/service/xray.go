@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/alireza0/x-ui/database/model"
 	"github.com/alireza0/x-ui/logger"
 	"github.com/alireza0/x-ui/util/json_util"
 	"github.com/alireza0/x-ui/xray"
@@ -19,6 +20,24 @@ var (
 	isNeedXrayRestart atomic.Bool
 	result            string
 )
+
+var xrayClientKeys = map[string]struct{}{
+	"email":    {},
+	"id":       {},
+	"password": {},
+	"flow":     {},
+	"method":   {},
+	"auth":     {},
+	"reverse":  {},
+}
+
+var xrayWireguardPeerKeys = map[string]struct{}{
+	"email":        {},
+	"publicKey":    {},
+	"preSharedKey": {},
+	"allowedIPs":   {},
+	"keepAlive":    {},
+}
 
 type XrayService struct {
 	inboundService     InboundService
@@ -143,8 +162,12 @@ func (s *XrayService) GetXrayConfig() (*xray.Config, error) {
 						continue
 					}
 				}
+				allowedKeys := xrayClientKeys
+				if inbound.Protocol == model.Wireguard {
+					allowedKeys = xrayWireguardPeerKeys
+				}
 				for key := range c {
-					if key != "email" && key != "id" && key != "password" && key != "flow" && key != "method" && key != "auth" && key != "reverse" {
+					if _, keep := allowedKeys[key]; !keep {
 						delete(c, key)
 					}
 					if flow, ok := c["flow"].(string); ok && flow == "xtls-rprx-vision-udp443" {

@@ -18,6 +18,7 @@ const (
 	Trojan      Protocol = "trojan"
 	Shadowsocks Protocol = "shadowsocks"
 	Hysteria    Protocol = "hysteria"
+	Wireguard   Protocol = "wireguard"
 )
 
 type User struct {
@@ -115,15 +116,37 @@ func (i *Inbound) GenXrayInboundConfig() *xray.InboundConfig {
 	if listen != "" {
 		listen = fmt.Sprintf("\"%v\"", listen)
 	}
+	settings := i.Settings
+	if i.Protocol == Wireguard {
+		settings = wireguardClientsAsPeers(settings)
+	}
 	return &xray.InboundConfig{
 		Listen:         json_util.RawMessage(listen),
 		Port:           i.Port,
 		Protocol:       string(i.Protocol),
-		Settings:       json_util.RawMessage(i.Settings),
+		Settings:       json_util.RawMessage(settings),
 		StreamSettings: json_util.RawMessage(i.StreamSettings),
 		Tag:            i.Tag,
 		Sniffing:       json_util.RawMessage(i.Sniffing),
 	}
+}
+
+func wireguardClientsAsPeers(settings string) string {
+	var raw map[string]any
+	if err := json.Unmarshal([]byte(settings), &raw); err != nil {
+		return settings
+	}
+	clients, ok := raw["clients"]
+	if !ok {
+		return settings
+	}
+	delete(raw, "clients")
+	raw["peers"] = clients
+	converted, err := json.Marshal(raw)
+	if err != nil {
+		return settings
+	}
+	return string(converted)
 }
 
 type Setting struct {
@@ -137,19 +160,28 @@ type ClientReverse struct {
 	Sniffing json_util.RawMessage `json:"sniffing,omitempty"`
 }
 type Client struct {
-	ID         string         `json:"id,omitempty"`
-	Password   string         `json:"password,omitempty"`
-	Auth       string         `json:"auth,omitempty"`
-	Flow       string         `json:"flow,omitempty"`
-	Reverse    *ClientReverse `json:"reverse,omitempty"`
-	Email      string         `json:"email"`
-	TotalGB    int64          `json:"totalGB" form:"totalGB"`
-	LimitIP    uint16         `json:"limitIp" form:"limitIp"`
-	ExpiryTime int64          `json:"expiryTime" form:"expiryTime"`
-	Enable     bool           `json:"enable" form:"enable"`
-	TgID       string         `json:"tgId" form:"tgId"`
-	SubID      string         `json:"subId" form:"subId"`
-	Reset      int            `json:"reset" form:"reset"`
+	ID       string         `json:"id,omitempty"`
+	Password string         `json:"password,omitempty"`
+	Auth     string         `json:"auth,omitempty"`
+	Flow     string         `json:"flow,omitempty"`
+	Reverse  *ClientReverse `json:"reverse,omitempty"`
+
+	// WireGuard peer credentials. PrivateKey never reaches the Xray config; the
+	// panel only stores it to hand the user a ready-made .conf file.
+	PublicKey    string   `json:"publicKey,omitempty"`
+	PrivateKey   string   `json:"privateKey,omitempty"`
+	PreSharedKey string   `json:"preSharedKey,omitempty"`
+	AllowedIPs   []string `json:"allowedIPs,omitempty"`
+	KeepAlive    uint32   `json:"keepAlive,omitempty"`
+
+	Email      string `json:"email"`
+	TotalGB    int64  `json:"totalGB" form:"totalGB"`
+	LimitIP    uint16 `json:"limitIp" form:"limitIp"`
+	ExpiryTime int64  `json:"expiryTime" form:"expiryTime"`
+	Enable     bool   `json:"enable" form:"enable"`
+	TgID       string `json:"tgId" form:"tgId"`
+	SubID      string `json:"subId" form:"subId"`
+	Reset      int    `json:"reset" form:"reset"`
 }
 
 type VLESSSettings struct {

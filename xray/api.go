@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/alireza0/x-ui/config"
@@ -24,6 +25,7 @@ import (
 	"github.com/xtls/xray-core/proxy/trojan"
 	"github.com/xtls/xray-core/proxy/vless"
 	"github.com/xtls/xray-core/proxy/vmess"
+	"github.com/xtls/xray-core/proxy/wireguard"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -259,6 +261,12 @@ func (x *XrayAPI) AddUser(Protocol string, inboundTag string, user map[string]in
 		account = serial.ToTypedMessage(&hysteriaAccount.Account{
 			Auth: user["auth"].(string),
 		})
+	case "wireguard":
+		peer, err := wireguardPeerConfig(user)
+		if err != nil {
+			return err
+		}
+		account = serial.ToTypedMessage(peer)
 	default:
 		return nil
 	}
@@ -275,6 +283,43 @@ func (x *XrayAPI) AddUser(Protocol string, inboundTag string, user map[string]in
 		}),
 	})
 	return err
+}
+
+// wireguardPeerConfig turns a panel client entry into the peer config Xray
+// expects. The panel stores keys base64 while the core wants them hex, and the
+// server matches an incoming address against a peer's allowed IPs, so a peer
+// without them could never be attributed to a user.
+func wireguardPeerConfig(user map[string]interface{}) (*wireguard.PeerConfig, error) {
+	publicKey, _ := user["publicKey"].(string)
+	if publicKey == "" {
+		return nil, common.NewError("wireguard peer without public key")
+	}
+	peer := &wireguard.PeerConfig{}
+
+	var err error
+	peer.PublicKey, err = conf.ParseWireGuardKey(publicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	if preSharedKey, _ := user["preSharedKey"].(string); preSharedKey != "" {
+		peer.PreSharedKey, err = conf.ParseWireGuardKey(preSharedKey)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if allowedIPs, _ := user["allowedIPs"].([]string); len(allowedIPs) > 0 {
+		peer.AllowedIps = allowedIPs
+	} else {
+		return nil, common.NewError("wireguard peer without allowed IPs")
+	}
+
+	if keepAlive, _ := user["keepAlive"].(uint32); keepAlive != 0 {
+		peer.KeepAlive = strconv.FormatUint(uint64(keepAlive), 10)
+	}
+
+	return peer, nil
 }
 
 func (x *XrayAPI) RemoveUser(inboundTag string, email string) error {

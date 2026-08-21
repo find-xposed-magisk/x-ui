@@ -88,22 +88,16 @@
             this.subId = '';
             this.qrcodes = [];
             this.activeKey = [];
-            if (this.inbound.protocol == Protocols.WIREGUARD){
-                this.inbound.genInboundLinks(dbInbound.remark).split('\r\n').forEach((l,index) =>{
-                    this.qrcodes.push({
-                        remark: "Peer " + (index+1),
-                        link: l,
-                        conf: (dbInbound.remark || dbInbound.tag) + '_peer' + (index+1) + '.conf',
-                    });
+            // A wireguard peer gets a config file rather than a URI, so offer it
+            // as a download; everything else is a plain link.
+            const isWireguard = this.inbound.protocol == Protocols.WIREGUARD;
+            this.inbound.genAllLinks(this.dbInbound.remark, app.remarkModel, client).forEach(l => {
+                this.qrcodes.push({
+                    remark: l.remark,
+                    link: l.link,
+                    conf: isWireguard ? (l.remark || dbInbound.tag).replace(/[^\w.-]+/g, '_') + '.conf' : undefined,
                 });
-            } else {
-                this.inbound.genAllLinks(this.dbInbound.remark, app.remarkModel, client).forEach(l => {
-                    this.qrcodes.push({
-                        remark: l.remark,
-                        link: l.link
-                    });
-                });
-            }
+            });
             if (this.qrcodes.length > 0) {
                 this.activeKey = [];
             }

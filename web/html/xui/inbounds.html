@@ -226,7 +226,7 @@
                                             <a-icon type="edit"></a-icon>
                                             {{ i18n "edit" }}
                                         </a-menu-item>
-                                        <a-menu-item key="qrcode" v-if="(dbInbound.isSS && !dbInbound.toInbound().isSSMultiUser) || dbInbound.isWireguard">
+                                        <a-menu-item key="qrcode" v-if="dbInbound.isSS && !dbInbound.toInbound().isSSMultiUser">
                                             <a-icon type="qrcode"></a-icon>
                                             {{ i18n "qrCode" }}
                                         </a-menu-item>
@@ -247,7 +247,7 @@
                                                 <a-icon type="export"></a-icon>
                                                 {{ i18n "pages.inbounds.export"}}
                                             </a-menu-item>
-                                            <a-menu-item key="subs" v-if="subSettings.enable">
+                                            <a-menu-item key="subs" v-if="subSettings.enable && !dbInbound.isWireguard">
                                                 <a-icon type="export"></a-icon>
                                                 {{ i18n "pages.inbounds.export"}} - {{ i18n "pages.settings.subSettings" }}
                                             </a-menu-item>
@@ -713,10 +713,7 @@
                     to_inbound = dbInbound.toInbound()
                     this.inbounds.push(to_inbound);
                     this.dbInbounds.push(dbInbound);
-                    if ([Protocols.VMESS, Protocols.VLESS, Protocols.TROJAN, Protocols.SHADOWSOCKS].includes(inbound.protocol)) {
-                        if (inbound.protocol === Protocols.SHADOWSOCKS && (!to_inbound.isSSMultiUser)) {
-                            continue;
-                        }
+                    if (dbInbound.isMultiUser()) {
                         this.clientCount[inbound.id] = this.getClientCounts(inbound, to_inbound);
                     }
                 }
@@ -1035,6 +1032,8 @@
                     case Protocols.TROJAN:
                     case Protocols.SHADOWSOCKS:
                         return clients.findIndex(item => item.password === client.password && item.email === client.email);
+                    case Protocols.WIREGUARD:
+                        return clients.findIndex(item => item.publicKey === client.publicKey && item.email === client.email);
                     default: return clients.findIndex(item => item.id === client.id && item.email === client.email);
                 }
             },
@@ -1099,6 +1098,7 @@
                     case Protocols.TROJAN: return client.password;
                     case Protocols.SHADOWSOCKS: return client.email;
                     case Protocols.HYSTERIA: return client.auth;
+                    case Protocols.WIREGUARD: return client.email;
                     default: return client.id;
                 }
             },

@@ -40,6 +40,57 @@
         </template>
         <a-input v-model.trim="client.auth"></a-input>
     </a-form-item>
+    <template v-if="inbound.protocol === Protocols.WIREGUARD">
+        <a-form-item>
+            <template slot="label">
+                <a-tooltip>
+                    <template slot="title">
+                        <span>{{ i18n "reset" }}</span>
+                    </template>
+                    {{ i18n "pages.xray.wireguard.secretKey" }}
+                    <a-icon type="sync"
+                        @click="[client.publicKey, client.privateKey] = Object.values(Wireguard.generateKeypair())"></a-icon>
+                </a-tooltip>
+            </template>
+            <a-input v-model.trim="client.privateKey"></a-input>
+        </a-form-item>
+        <a-form-item label='{{ i18n "pages.xray.wireguard.publicKey" }}'>
+            <a-input v-model.trim="client.publicKey"></a-input>
+        </a-form-item>
+        <a-form-item>
+            <template slot="label">
+                <a-tooltip>
+                    <template slot="title">
+                        <span>{{ i18n "reset" }}</span>
+                    </template>
+                    {{ i18n "pages.xray.wireguard.psk" }}
+                    <a-icon type="sync"
+                        @click="client.psk = Wireguard.keyToBase64(Wireguard.generatePresharedKey())"></a-icon>
+                </a-tooltip>
+            </template>
+            <a-input v-model.trim="client.psk"></a-input>
+        </a-form-item>
+        <a-form-item>
+            <template slot="label">
+                <a-tooltip>
+                    <template slot="title">
+                        <span>{{ i18n "pages.xray.wireguard.allowedIPsDesc" }}</span>
+                    </template>
+                    {{ i18n "pages.xray.wireguard.allowedIPs" }}
+                    <a-button type="primary" size="small" @click="client.allowedIPs.push('')">+</a-button>
+                </a-tooltip>
+            </template>
+            <template v-for="(aip, index) in client.allowedIPs">
+                <a-input v-model.trim="client.allowedIPs[index]" style="margin-bottom: 10px;">
+                    <a-button v-if="client.allowedIPs.length>1" slot="addonAfter" size="small"
+                              @click="client.allowedIPs.splice(index, 1)">-</a-button>
+                </a-input>
+            </template>
+        </a-form-item>
+        <a-form-item label='{{ i18n "pages.inbounds.protocols.keepAlive" }}'>
+            <a-input-number v-model.number="client.keepAlive" :min="0"></a-input-number>
+        </a-form-item>
+    </template>
     <a-form-item v-if="inbound.protocol === Protocols.VMESS || inbound.protocol === Protocols.VLESS">
         <template slot="label">
             <a-tooltip>
@@ -51,7 +102,7 @@
         </template>
         <a-input v-model.trim="client.id"></a-input>
     </a-form-item>
-    <a-form-item v-if="client.email && app.subSettings.enable">
+    <a-form-item v-if="client.email && app.subSettings.enable && inbound.protocol !== Protocols.WIREGUARD">
         <template slot="label">
             <a-tooltip>
                 <template slot="title">

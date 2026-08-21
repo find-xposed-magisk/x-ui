@@ -679,6 +679,7 @@
 "secretKey" = "密钥"
 "publicKey" = "公钥"
 "allowedIPs" = "允许的 IP"
+"allowedIPsDesc" = "分配给该对等端的隧道地址。服务器以此识别对等端，因此不能与其他对等端重叠"
 "endpoint" = "终点"
 "psk" = "共享密钥"
 "domainStrategy" = "域策略"
