@@ -1,19 +1,18 @@
 package common
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/alireza0/x-ui/logger"
 )
 
 func NewErrorf(format string, a ...interface{}) error {
-	msg := fmt.Sprintf(format, a...)
-	return fmt.Errorf(msg)
+	return fmt.Errorf(format, a...)
 }
 
 func NewError(a ...interface{}) error {
-	msg := fmt.Sprintln(a...)
-	return fmt.Errorf(msg)
+	return errors.New(fmt.Sprintln(a...))
 }
 
 func Recover(msg string) interface{} {
