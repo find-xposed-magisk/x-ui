@@ -60,6 +60,8 @@ var defaultValueMap = map[string]string{
 	"subJsonURI":         "",
 	"subJsonMux":         "",
 	"subJsonRules":       "",
+	"globalReset":        "",
+	"globalResetLast":    "0",
 	"warp":               "",
 	"ipBlockAfterRemove": "false",
 }
@@ -202,6 +204,18 @@ func (s *SettingService) setBool(key string, value bool) error {
 	return s.setString(key, strconv.FormatBool(value))
 }
 
+func (s *SettingService) getInt64(key string) (int64, error) {
+	str, err := s.getString(key)
+	if err != nil {
+		return 0, err
+	}
+	return strconv.ParseInt(str, 10, 64)
+}
+
+func (s *SettingService) setInt64(key string, value int64) error {
+	return s.setString(key, strconv.FormatInt(value, 10))
+}
+
 func (s *SettingService) getInt(key string) (int, error) {
 	str, err := s.getString(key)
 	if err != nil {
@@ -240,6 +254,25 @@ func (s *SettingService) GetTgBotChatId() (string, error) {
 
 func (s *SettingService) SetTgBotChatId(chatIds string) error {
 	return s.setString("tgBotChatId", chatIds)
+}
+
+// GetGlobalReset returns the cron schedule on which every client's traffic is
+// reset, or an empty string when the feature is off.
+func (s *SettingService) GetGlobalReset() (string, error) {
+	return s.getString("globalReset")
+}
+
+func (s *SettingService) SetGlobalReset(spec string) error {
+	return s.setString("globalReset", spec)
+}
+
+// GetGlobalResetLast returns the next boundary the reset job is waiting for.
+func (s *SettingService) GetGlobalResetLast() (int64, error) {
+	return s.getInt64("globalResetLast")
+}
+
+func (s *SettingService) SetGlobalResetLast(at int64) error {
+	return s.setInt64("globalResetLast", at)
 }
 
 func (s *SettingService) GetTgBotProxy() (string, error) {
@@ -467,6 +500,15 @@ func (s *SettingService) SetWarp(data string) error {
 func (s *SettingService) UpdateAllSetting(allSetting *entity.AllSetting) error {
 	if err := allSetting.CheckValid(); err != nil {
 		return err
+	}
+
+	// The reset job waits for the boundary it recorded last time. Switching to a
+	// different schedule must not be held up by the old schedule's boundary, so
+	// forget it and let the new schedule pick the next one.
+	if previous, err := s.GetGlobalReset(); err == nil && previous != allSetting.GlobalReset {
+		if err := s.SetGlobalResetLast(0); err != nil {
+			return err
+		}
 	}
 
 	v := reflect.ValueOf(allSetting).Elem()

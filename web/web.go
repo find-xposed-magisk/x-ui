@@ -18,6 +18,7 @@ import (
 	"github.com/alireza0/x-ui/iplimit"
 	"github.com/alireza0/x-ui/logger"
 	"github.com/alireza0/x-ui/util/common"
+	"github.com/alireza0/x-ui/util/cronspec"
 	"github.com/alireza0/x-ui/web/controller"
 	"github.com/alireza0/x-ui/web/job"
 	"github.com/alireza0/x-ui/web/locale"
@@ -254,6 +255,18 @@ func (s *Server) startTask() {
 		// Statistics every 10 seconds, start the delay for 5 seconds for the first time, and staggered with the time to restart xray
 		s.cron.AddJob("@every 10s", job.NewXrayTrafficJob())
 	}()
+
+	// Periodic reset of every client's traffic, when the admin configured one.
+	if spec, err := s.settingService.GetGlobalReset(); err != nil {
+		logger.Warning("get global reset schedule failed:", err)
+	} else if schedule, err := cronspec.Parse(spec); err != nil {
+		logger.Warning("global reset schedule ignored:", err)
+	} else if schedule != nil {
+		// The scheduler's own parser demands a seconds field, so hand it the
+		// schedule already parsed rather than the admin's expression.
+		s.cron.Schedule(schedule, job.NewResetTrafficJob(schedule))
+		logger.Info("global traffic reset enabled, schedule: ", spec)
+	}
 
 	// Make a traffic condition every day, 8:30
 	var entry cron.EntryID

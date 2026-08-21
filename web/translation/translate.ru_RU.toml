@@ -537,6 +537,8 @@
 "timeZoneDesc" = "Запланированные задания выполняются в соответствии со временем в данном часовом поясе."
 "outboundTestUrl" = "URL для теста исходящих"
 "outboundTestUrlDesc" = "URL для проверки соединения и задержки исходящих. Рекомендуется лёгкий эндпоинт, возвращающий 204."
+"globalReset" = "Периодический сброс трафика"
+"globalResetDesc" = "Сбрасывает трафик всех клиентов по расписанию, чтобы безлимитный тариф всё же имел честный лимит на период. Исчерпавшие лимит клиенты снова включаются. Оставьте пустым или введите off, чтобы отключить. Принимает @daily, @weekly, @monthly или cron-выражение вида 0 0 * * * . Использует часовой пояс панели, применяется после перезапуска панели."
 "ipBlockAfterRemove" = "Block IPs after Client Removal"
 "ipBlockAfterRemoveDesc" = "Immediately block connected IPs when a client is removed, disabled, or depleted. Requires app restart to take effect."
 "subSettings" = "Подписка"

@@ -537,6 +537,8 @@
 "timeZoneDesc" = "Các tác vụ được lên lịch chạy theo thời gian trong múi giờ này."
 "outboundTestUrl" = "URL kiểm tra outbound"
 "outboundTestUrlDesc" = "URL dùng để kiểm tra kết nối và độ trễ outbound. Nên dùng endpoint nhẹ trả về 204."
+"globalReset" = "Đặt lại lưu lượng định kỳ"
+"globalResetDesc" = "Đặt lại lưu lượng của mọi khách hàng theo lịch, để gói không giới hạn vẫn có hạn mức hợp lý cho mỗi kỳ. Khách hàng đã dùng hết sẽ được bật lại. Để trống hoặc nhập off để tắt. Chấp nhận @daily, @weekly, @monthly hoặc biểu thức cron như 0 0 * * * . Dùng múi giờ của bảng điều khiển và có hiệu lực sau khi khởi động lại bảng điều khiển."
 "ipBlockAfterRemove" = "Block IPs after Client Removal"
 "ipBlockAfterRemoveDesc" = "Immediately block connected IPs when a client is removed, disabled, or depleted. Requires app restart to take effect."
 "subSettings" = "Đăng ký"

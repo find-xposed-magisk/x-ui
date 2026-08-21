@@ -18,6 +18,18 @@ func newSettingService(t *testing.T) *SettingService {
 	return &SettingService{}
 }
 
+// baselineSetting is the smallest settings object UpdateAllSetting accepts.
+func baselineSetting() *entity.AllSetting {
+	return &entity.AllSetting{
+		WebPort:      2053,
+		SubPort:      2096,
+		WebBasePath:  "/",
+		SubPath:      "/sub/",
+		SubJsonPath:  "/json/",
+		TimeLocation: "Asia/Tehran",
+	}
+}
+
 // A panel upgraded from an older version has no row for a newly added setting,
 // so the getter has to fall back to the default instead of erroring out and
 // stopping the bot from starting.
@@ -64,22 +76,76 @@ func TestTgBotProxyRoundTrip(t *testing.T) {
 	}
 }
 
+// The reset job waits on the boundary it stored; keeping that boundary across a
+// schedule change would leave a newly chosen, more frequent schedule inert until
+// the old one's boundary finally passed.
+func TestChangingGlobalResetClearsTheBoundary(t *testing.T) {
+	service := newSettingService(t)
+
+	if err := service.SetGlobalReset("@weekly"); err != nil {
+		t.Fatalf("SetGlobalReset: %v", err)
+	}
+	if err := service.SetGlobalResetLast(4102444800); err != nil { // far in the future
+		t.Fatalf("SetGlobalResetLast: %v", err)
+	}
+
+	setting := baselineSetting()
+	setting.GlobalReset = "@daily"
+	if err := service.UpdateAllSetting(setting); err != nil {
+		t.Fatalf("UpdateAllSetting: %v", err)
+	}
+
+	if got, _ := service.GetGlobalReset(); got != "@daily" {
+		t.Fatalf("schedule = %q, want @daily", got)
+	}
+	if got, _ := service.GetGlobalResetLast(); got != 0 {
+		t.Fatalf("boundary = %d, want it cleared so the new schedule applies", got)
+	}
+}
+
+// An unchanged schedule must keep its boundary, or every unrelated settings save
+// would grant an extra reset.
+func TestSavingSettingsKeepsAnUnchangedResetBoundary(t *testing.T) {
+	service := newSettingService(t)
+
+	if err := service.SetGlobalReset("@daily"); err != nil {
+		t.Fatalf("SetGlobalReset: %v", err)
+	}
+	if err := service.SetGlobalResetLast(4102444800); err != nil {
+		t.Fatalf("SetGlobalResetLast: %v", err)
+	}
+
+	setting := baselineSetting()
+	setting.GlobalReset = "@daily"
+	setting.PageSize = 25 // an unrelated change
+	if err := service.UpdateAllSetting(setting); err != nil {
+		t.Fatalf("UpdateAllSetting: %v", err)
+	}
+
+	if got, _ := service.GetGlobalResetLast(); got != 4102444800 {
+		t.Fatalf("boundary = %d, want it untouched", got)
+	}
+}
+
+func TestUpdateAllSettingRejectsBadResetSchedule(t *testing.T) {
+	service := newSettingService(t)
+
+	setting := baselineSetting()
+	setting.GlobalReset = "every day"
+	if err := service.UpdateAllSetting(setting); err == nil {
+		t.Fatal("an invalid cron schedule was accepted")
+	}
+}
+
 // UpdateAllSetting is what the settings page calls; it must persist the new
 // fields and refuse an invalid one without writing anything.
 func TestUpdateAllSettingPersistsTelegramFields(t *testing.T) {
 	service := newSettingService(t)
 
-	setting := &entity.AllSetting{
-		WebPort:         2053,
-		SubPort:         2096,
-		WebBasePath:     "/",
-		SubPath:         "/sub/",
-		SubJsonPath:     "/json/",
-		TimeLocation:    "Asia/Tehran",
-		TgBotProxy:      "socks5://127.0.0.1:1080",
-		TgBotChatId:     "-1001234567890:42",
-		TgBotNotifyOnly: true,
-	}
+	setting := baselineSetting()
+	setting.TgBotProxy = "socks5://127.0.0.1:1080"
+	setting.TgBotChatId = "-1001234567890:42"
+	setting.TgBotNotifyOnly = true
 	if err := service.UpdateAllSetting(setting); err != nil {
 		t.Fatalf("UpdateAllSetting: %v", err)
 	}

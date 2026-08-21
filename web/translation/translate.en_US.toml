@@ -537,6 +537,8 @@
 "timeZoneDesc" = "Scheduled tasks will run based on this time zone."
 "outboundTestUrl" = "Outbound Test URL"
 "outboundTestUrlDesc" = "URL used to test outbound connectivity and latency. A lightweight endpoint that returns 204 is recommended."
+"globalReset" = "Periodic Traffic Reset"
+"globalResetDesc" = "Reset every client traffic counter on a schedule, so an unlimited plan can still carry a fair per-period budget. Depleted clients are enabled again. Leave empty or type off to disable. Accepts @daily, @weekly, @monthly or a cron expression such as 0 0 * * * . Uses the panel time zone and takes effect after a panel restart."
 "ipBlockAfterRemove" = "Block IPs after Client Removal"
 "ipBlockAfterRemoveDesc" = "Immediately block connected IPs when a client is removed, disabled, or depleted. Requires app restart to take effect."
 "subSettings" = "Subscription"

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/alireza0/x-ui/util/common"
+	"github.com/alireza0/x-ui/util/cronspec"
 	"github.com/alireza0/x-ui/util/proxyclient"
 	"github.com/alireza0/x-ui/util/tgchat"
 )
@@ -56,6 +57,7 @@ type AllSetting struct {
 	SubJsonURI         string `json:"subJsonURI" form:"subJsonURI"`
 	SubJsonMux         string `json:"subJsonMux" form:"subJsonMux"`
 	SubJsonRules       string `json:"subJsonRules" form:"subJsonRules"`
+	GlobalReset        string `json:"globalReset" form:"globalReset"`
 	IpBlockAfterRemove bool   `json:"ipBlockAfterRemove" form:"ipBlockAfterRemove"`
 }
 
@@ -126,6 +128,10 @@ func (s *AllSetting) CheckValid() error {
 	}
 
 	if _, err := tgchat.Parse(s.TgBotChatId); err != nil {
+		return err
+	}
+
+	if _, err := cronspec.Parse(s.GlobalReset); err != nil {
 		return err
 	}
 

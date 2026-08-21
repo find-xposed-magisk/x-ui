@@ -537,6 +537,8 @@
 "timeZoneDesc" = "定时任务按照该时区的时间运行"
 "outboundTestUrl" = "出站测试网址"
 "outboundTestUrlDesc" = "用于测试出站连接和延迟的网址。建议使用返回 204 的轻量级端点。"
+"globalReset" = "定期流量重置"
+"globalResetDesc" = "按计划重置所有客户端的流量，使不限量套餐仍能保有合理的周期额度。已用尽的客户端会被重新启用。留空或填写 off 即可关闭。支持 @daily、@weekly、@monthly 或 0 0 * * * 这样的 cron 表达式。使用面板时区，重启面板后生效。"
 "ipBlockAfterRemove" = "Block IPs after Client Removal"
 "ipBlockAfterRemoveDesc" = "Immediately block connected IPs when a client is removed, disabled, or depleted. Requires app restart to take effect."
 "subSettings" = "订阅"
