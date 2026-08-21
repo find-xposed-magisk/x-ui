@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/alireza0/x-ui/config"
@@ -25,13 +27,39 @@ import (
 	"github.com/go-telegram/bot/models"
 )
 
-var (
-	bot        *tgbotapi.Bot
-	botCancel  context.CancelFunc
+// botState is everything the running bot needs. It is published as one
+// immutable value and replaced wholesale rather than field by field, so a
+// reader - a cron job, the login handler, or one of the library's update
+// workers - always sees a consistent picture instead of a half-written set of
+// variables. A nil state means the bot is not running.
+type botState struct {
+	api        *tgbotapi.Bot
+	stop       context.CancelFunc // nil in notify-only mode, where nothing polls
 	adminChats []tgchat.Chat
-	notifyOnly bool
-	isRunning  bool
-	hostname   string
+}
+
+func (s *botState) isAdmin(chatID int64) bool {
+	for _, chat := range s.adminChats {
+		if chat.ChatID == chatID {
+			return true
+		}
+	}
+	return false
+}
+
+var (
+	state atomic.Pointer[botState]
+
+	// The host name never changes while the process runs, so it is resolved once
+	// on first use instead of being assigned from Start.
+	hostname = sync.OnceValue(func() string {
+		host, err := os.Hostname()
+		if err != nil {
+			logger.Error("get hostname error:", err)
+			return ""
+		}
+		return host
+	})
 )
 
 // pollTimeout is how long a long-polling request waits for an update before
@@ -79,7 +107,6 @@ func (t *Tgbot) Start(i18nFS embed.FS) error {
 		return err
 	}
 
-	t.SetHostname()
 	tgBottoken, err := t.settingService.GetTgBotToken()
 	if err != nil || tgBottoken == "" {
 		logger.Warning("Get TgBotToken failed:", err)
@@ -92,7 +119,7 @@ func (t *Tgbot) Start(i18nFS embed.FS) error {
 		return err
 	}
 
-	adminChats, err = tgchat.Parse(tgBotid)
+	adminChats, err := tgchat.Parse(tgBotid)
 	if err != nil {
 		logger.Warning("Failed to get IDs from GetTgBotChatId:", err)
 		return err
@@ -101,7 +128,7 @@ func (t *Tgbot) Start(i18nFS embed.FS) error {
 	// In notify-only mode the bot never answers anyone. A bot that replies to a
 	// stranger's /start confirms both that the host runs a panel and which one,
 	// so an admin who only wants outgoing reports can close that door entirely.
-	notifyOnly, err = t.settingService.GetTgBotNotifyOnly()
+	notifyOnly, err := t.settingService.GetTgBotNotifyOnly()
 	if err != nil {
 		logger.Warning("Get TgBotNotifyOnly failed:", err)
 		return err
@@ -134,8 +161,9 @@ func (t *Tgbot) Start(i18nFS embed.FS) error {
 		options = []tgbotapi.Option{tgbotapi.WithHTTPClient(pollTimeout, httpClient)}
 	}
 
+	var api *tgbotapi.Bot
 	for {
-		bot, err = tgbotapi.New(tgBottoken, options...)
+		api, err = tgbotapi.New(tgBottoken, options...)
 		if err != nil {
 			fmt.Println("Get tgbot's api error:", err)
 			fmt.Println("Retrying after 10 secound...")
@@ -148,45 +176,33 @@ func (t *Tgbot) Start(i18nFS embed.FS) error {
 
 	if notifyOnly {
 		logger.Info("Tgbot is in notify-only mode, incoming messages are ignored")
-		isRunning = true
+		state.Store(&botState{api: api, adminChats: adminChats})
 		return nil
 	}
 
-	// listen for TG bot income messages
-	if !isRunning {
-		logger.Info("Starting Telegram receiver ...")
-		var ctx context.Context
-		ctx, botCancel = context.WithCancel(context.Background())
-		go bot.Start(ctx)
-		isRunning = true
-	}
+	logger.Info("Starting Telegram receiver ...")
+	ctx, cancel := context.WithCancel(context.Background())
+	// Publish before polling starts: the first update can arrive immediately,
+	// and its handler needs the state to be there already.
+	state.Store(&botState{api: api, stop: cancel, adminChats: adminChats})
+	go api.Start(ctx)
 
 	return nil
 }
 
 func (t *Tgbot) IsRunning() bool {
-	return isRunning
-}
-
-func (t *Tgbot) SetHostname() {
-	host, err := os.Hostname()
-	if err != nil {
-		logger.Error("get hostname error:", err)
-		hostname = ""
-		return
-	}
-	hostname = host
+	return state.Load() != nil
 }
 
 func (t *Tgbot) Stop() {
-	if botCancel != nil {
-		botCancel()
-		botCancel = nil
+	previous := state.Swap(nil)
+	if previous == nil {
+		return
+	}
+	if previous.stop != nil {
+		previous.stop()
 		logger.Info("Stop Telegram receiver ...")
 	}
-	isRunning = false
-	adminChats = nil
-	notifyOnly = false
 }
 
 // onUpdate is called by the library for every incoming update.
@@ -201,8 +217,12 @@ func (t *Tgbot) onUpdate(ctx context.Context, _ *tgbotapi.Bot, update *models.Up
 		return
 	}
 	if isCommand(update.Message) {
+		current := state.Load()
+		if current == nil {
+			return
+		}
 		chatId := update.Message.Chat.ID
-		t.answerCommand(update.Message, chatId, checkAdmin(chatId))
+		t.answerCommand(update.Message, chatId, current.isAdmin(chatId))
 	}
 }
 
@@ -219,7 +239,7 @@ func (t *Tgbot) answerCommand(message *models.Message, chatId int64, isAdmin boo
 	case "start":
 		msg += t.I18nBot("tgbot.commands.start", "Firstname=="+message.From.FirstName)
 		if isAdmin {
-			msg += t.I18nBot("tgbot.commands.welcome", "Hostname=="+hostname)
+			msg += t.I18nBot("tgbot.commands.welcome", "Hostname=="+hostname())
 		}
 		msg += "\n\n" + t.I18nBot("tgbot.commands.pleaseChoose")
 	case "status":
@@ -258,9 +278,14 @@ func (t *Tgbot) answerCommand(message *models.Message, chatId int64, isAdmin boo
 }
 
 func (t *Tgbot) answerCallback(ctx context.Context, callbackQuery *models.CallbackQuery) {
+	current := state.Load()
+	if current == nil {
+		return
+	}
+
 	// Respond to the callback query, telling Telegram to show the user
 	// a message with the data received.
-	_, err := bot.AnswerCallbackQuery(ctx, &tgbotapi.AnswerCallbackQueryParams{
+	_, err := current.api.AnswerCallbackQuery(ctx, &tgbotapi.AnswerCallbackQueryParams{
 		CallbackQueryID: callbackQuery.ID,
 		Text:            callbackQuery.Data,
 	})
@@ -290,15 +315,6 @@ func (t *Tgbot) answerCallback(ctx context.Context, callbackQuery *models.Callba
 			t.searchClient(callbackQuery.From.ID, email)
 		}
 	}
-}
-
-func checkAdmin(tgId int64) bool {
-	for _, chat := range adminChats {
-		if chat.ChatID == tgId {
-			return true
-		}
-	}
-	return false
 }
 
 func (t *Tgbot) SendAnswer(chatId int64, msg string, isAdmin bool) {
@@ -335,7 +351,8 @@ func (t *Tgbot) SendAnswer(chatId int64, msg string, isAdmin bool) {
 }
 
 func (t *Tgbot) SendMsgToTgbot(tgid int64, msg string, replyMarkup ...models.InlineKeyboardMarkup) {
-	if !isRunning {
+	current := state.Load()
+	if current == nil {
 		return
 	}
 
@@ -364,7 +381,7 @@ func (t *Tgbot) SendMsgToTgbot(tgid int64, msg string, replyMarkup ...models.Inl
 		allMessages = append(allMessages, msg)
 	}
 
-	topicId := tgchat.TopicOf(adminChats, tgid)
+	topicId := tgchat.TopicOf(current.adminChats, tgid)
 	for _, message := range allMessages {
 		params := &tgbotapi.SendMessageParams{
 			ChatID:          tgid,
@@ -377,7 +394,7 @@ func (t *Tgbot) SendMsgToTgbot(tgid int64, msg string, replyMarkup ...models.Inl
 		}
 
 		ctx, cancel := botCtx()
-		_, err := bot.SendMessage(ctx, params)
+		_, err := current.api.SendMessage(ctx, params)
 		cancel()
 		if err != nil {
 			logger.Warning("Error sending telegram message :", err)
@@ -388,6 +405,11 @@ func (t *Tgbot) SendMsgToTgbot(tgid int64, msg string, replyMarkup ...models.Inl
 
 // sendFile uploads one local file to a chat, into its topic when it has one.
 func sendFile(chatId int64, path string) error {
+	current := state.Load()
+	if current == nil {
+		return common.NewError("telegram bot is not running")
+	}
+
 	handle, err := os.Open(path)
 	if err != nil {
 		return err
@@ -396,9 +418,9 @@ func sendFile(chatId int64, path string) error {
 
 	ctx, cancel := uploadCtx()
 	defer cancel()
-	_, err = bot.SendDocument(ctx, &tgbotapi.SendDocumentParams{
+	_, err = current.api.SendDocument(ctx, &tgbotapi.SendDocumentParams{
 		ChatID:          chatId,
-		MessageThreadID: tgchat.TopicOf(adminChats, chatId),
+		MessageThreadID: tgchat.TopicOf(current.adminChats, chatId),
 		Document: &models.InputFileUpload{
 			Filename: filepath.Base(path),
 			Data:     handle,
@@ -408,7 +430,11 @@ func sendFile(chatId int64, path string) error {
 }
 
 func (t *Tgbot) SendMsgToTgbotAdmins(msg string) {
-	for _, chat := range adminChats {
+	current := state.Load()
+	if current == nil {
+		return
+	}
+	for _, chat := range current.adminChats {
 		t.SendMsgToTgbot(chat.ChatID, msg)
 	}
 }
@@ -435,17 +461,18 @@ func (t *Tgbot) SendReport() {
 }
 
 func (t *Tgbot) SendBackupToAdmins() {
-	if !t.IsRunning() {
+	current := state.Load()
+	if current == nil {
 		return
 	}
-	for _, chat := range adminChats {
+	for _, chat := range current.adminChats {
 		t.sendBackup(chat.ChatID)
 	}
 }
 
 func (t *Tgbot) getServerUsage() string {
 	info, ipv4, ipv6 := "", "", ""
-	info += t.I18nBot("tgbot.messages.hostname", "Hostname=="+hostname)
+	info += t.I18nBot("tgbot.messages.hostname", "Hostname=="+hostname())
 	info += t.I18nBot("tgbot.messages.version", "Version=="+config.GetVersion())
 
 	// get ip address
@@ -510,7 +537,7 @@ func (t *Tgbot) UserLoginNotify(username string, ip string, time string, status 
 	case LoginFail:
 		msg += t.I18nBot("tgbot.messages.loginFailed")
 	}
-	msg += t.I18nBot("tgbot.messages.hostname", "Hostname=="+hostname)
+	msg += t.I18nBot("tgbot.messages.hostname", "Hostname=="+hostname())
 	msg += t.I18nBot("tgbot.messages.username", "Username=="+username)
 	msg += t.I18nBot("tgbot.messages.ip", "IP=="+ip)
 	msg += t.I18nBot("tgbot.messages.time", "Time=="+time)

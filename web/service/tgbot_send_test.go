@@ -75,16 +75,16 @@ func fakeTelegram(t *testing.T) (*httptest.Server, func() []capturedCall) {
 	}
 }
 
-// withFakeBot points the package-level bot at the fake server for one test and
-// restores the previous state afterwards.
+// withFakeBot publishes a bot state pointing at the fake server for one test and
+// restores the previous one afterwards.
 func withFakeBot(t *testing.T, chats []tgchat.Chat) func() []capturedCall {
 	t.Helper()
 	server, calls := fakeTelegram(t)
 
-	previousBot, previousChats, previousRunning := bot, adminChats, isRunning
+	previous := state.Load()
 	t.Cleanup(func() {
 		server.Close()
-		bot, adminChats, isRunning = previousBot, previousChats, previousRunning
+		state.Store(previous)
 	})
 
 	created, err := tgbotapi.New("test:token",
@@ -94,7 +94,7 @@ func withFakeBot(t *testing.T, chats []tgchat.Chat) func() []capturedCall {
 	if err != nil {
 		t.Fatalf("create bot: %v", err)
 	}
-	bot, adminChats, isRunning = created, chats, true
+	state.Store(&botState{api: created, adminChats: chats})
 	return calls
 }
 
