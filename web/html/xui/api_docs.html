@@ -46,6 +46,9 @@
         background: rgba(128, 128, 128, .12);
     }
     .dark .api-code { background: rgba(255, 255, 255, .06); }
+    .api-endpoints > .ant-collapse-item:last-child {
+        border-bottom: 0;
+    }
     .api-prose { opacity: .85; white-space: pre-line; }
     .api-prose code {
         font-family: monospace;
@@ -93,7 +96,7 @@
                         <a-tag style="float: right;">[[ group.operations.length ]]</a-tag>
                     </template>
 
-                    <a-collapse :bordered="false">
+                    <a-collapse class="api-endpoints" :bordered="false">
                         <a-collapse-panel v-for="op in group.operations" :key="op.key">
                             <template slot="header">
                                 <span class="api-method" :class="'api-method-' + op.method">[[ op.method.toUpperCase() ]]</span>
