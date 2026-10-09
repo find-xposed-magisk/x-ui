@@ -4,6 +4,7 @@ const Protocols = {
     TROJAN: 'trojan',
     SHADOWSOCKS: 'shadowsocks',
     HYSTERIA: 'hysteria',
+    MASQUE: 'masque',
     DOKODEMO: 'dokodemo-door',
     SOCKS: 'socks',
     HTTP: 'http',
@@ -767,6 +768,22 @@ class HysteriaStreamSettings extends XrayCommonClass {
         this.masquerade = value ? new HysteriaMasquerade() : undefined;
     }
 };
+
+// The MASQUE inbound only matches the request path; TLS ALPN picks h3 and/or h2.
+class MasqueStreamSettings extends XrayCommonClass {
+    constructor(path = '') {
+        super();
+        this.path = path;
+    }
+
+    static fromJson(json = {}) {
+        return new MasqueStreamSettings(json.path);
+    }
+
+    toJson() {
+        return { path: XrayCommonClass.shrinkObject(this.path) };
+    }
+}
 
 class HysteriaMasquerade extends XrayCommonClass {
     constructor(
@@ -1663,11 +1680,13 @@ class StreamSettings extends XrayCommonClass {
         hysteriaSettings = new HysteriaStreamSettings(),
         finalmask = new FinalMaskStreamSettings(),
         sockopt = undefined,
+        masqueSettings = new MasqueStreamSettings(),
     ) {
         super();
         this.network = network;
         this.security = security;
         this.externalProxy = externalProxy;
+        this.masque = masqueSettings;
         this.tls = tlsSettings;
         this.reality = realitySettings;
         this.tcp = tcpSettings;
@@ -1756,6 +1775,7 @@ class StreamSettings extends XrayCommonClass {
             HysteriaStreamSettings.fromJson(json.hysteriaSettings),
             FinalMaskStreamSettings.fromJson(json.finalmask),
             SockoptStreamSettings.fromJson(json.sockopt),
+            MasqueStreamSettings.fromJson(json.masqueSettings),
         );
     }
 
@@ -1774,6 +1794,7 @@ class StreamSettings extends XrayCommonClass {
             httpupgradeSettings: network === 'httpupgrade' ? this.httpupgrade.toJson() : undefined,
             xhttpSettings: network === 'xhttp' ? this.xhttp.toJson() : undefined,
             hysteriaSettings: network === 'hysteria' ? this.hysteria.toJson() : undefined,
+            masqueSettings: network === 'masque' ? this.masque.toJson() : undefined,
             finalmask: this.hasFinalMask ? this.finalmask.toJson() : undefined,
             sockopt: this.sockopt != undefined ? this.sockopt.toJson() : undefined,
         };
@@ -1851,6 +1872,7 @@ class Inbound extends XrayCommonClass {
             case Protocols.TROJAN: return this.settings.trojans;
             case Protocols.SHADOWSOCKS: return this.isSSMultiUser ? this.settings.shadowsockses : null;
             case Protocols.HYSTERIA: return this.settings.hysterias;
+            case Protocols.MASQUE: return this.settings.masques;
             case Protocols.WIREGUARD: return this.settings.peers;
             default: return null;
         }
@@ -1871,6 +1893,11 @@ class Inbound extends XrayCommonClass {
             this.stream.network = 'hysteria';
             this.stream.security = 'tls';
             this.stream.tls.alpn = ['h3'];
+        }
+        if (protocol === Protocols.MASQUE) {
+            this.stream.network = 'masque';
+            this.stream.security = 'tls';
+            this.stream.tls.alpn = ['h3', 'h2'];
         }
     }
 
@@ -2000,7 +2027,7 @@ class Inbound extends XrayCommonClass {
     }
 
     canEnableTls() {
-        if (this.protocol === Protocols.HYSTERIA) return true;
+        if ([Protocols.HYSTERIA, Protocols.MASQUE].includes(this.protocol)) return true;
         if (![Protocols.VMESS, Protocols.VLESS, Protocols.TROJAN, Protocols.SHADOWSOCKS].includes(this.protocol)) return false;
         return ["tcp", "ws", "http", "grpc", "httpupgrade", "xhttp"].includes(this.network);
     }
@@ -2026,7 +2053,7 @@ class Inbound extends XrayCommonClass {
     }
 
     canEnableStream() {
-        return [Protocols.VMESS, Protocols.VLESS, Protocols.TROJAN, Protocols.SHADOWSOCKS, Protocols.HYSTERIA].includes(this.protocol);
+        return [Protocols.VMESS, Protocols.VLESS, Protocols.TROJAN, Protocols.SHADOWSOCKS, Protocols.HYSTERIA, Protocols.MASQUE].includes(this.protocol);
     }
 
     reset() {
@@ -2694,6 +2721,7 @@ Inbound.Settings = class extends XrayCommonClass {
             case Protocols.TROJAN: return new Inbound.TrojanSettings(protocol);
             case Protocols.SHADOWSOCKS: return new Inbound.ShadowsocksSettings(protocol);
             case Protocols.HYSTERIA: return new Inbound.HysteriaSettings(protocol);
+            case Protocols.MASQUE: return new Inbound.MasqueSettings(protocol);
             case Protocols.DOKODEMO: return new Inbound.DokodemoSettings(protocol);
             case Protocols.SOCKS: return new Inbound.SocksSettings(protocol);
             case Protocols.HTTP: return new Inbound.HttpSettings(protocol);
@@ -2710,6 +2738,7 @@ Inbound.Settings = class extends XrayCommonClass {
             case Protocols.TROJAN: return Inbound.TrojanSettings.fromJson(json);
             case Protocols.SHADOWSOCKS: return Inbound.ShadowsocksSettings.fromJson(json);
             case Protocols.HYSTERIA: return Inbound.HysteriaSettings.fromJson(json);
+            case Protocols.MASQUE: return Inbound.MasqueSettings.fromJson(json);
             case Protocols.DOKODEMO: return Inbound.DokodemoSettings.fromJson(json);
             case Protocols.SOCKS: return Inbound.SocksSettings.fromJson(json);
             case Protocols.HTTP: return Inbound.HttpSettings.fromJson(json);
@@ -3217,6 +3246,58 @@ Inbound.HysteriaSettings.Hysteria = class extends Inbound.ClientBase {
     static fromJson(json = {}) {
         return new Inbound.HysteriaSettings.Hysteria(
             json.auth,
+            ...Inbound.ClientBase.commonArgsFromJson(json),
+        );
+    }
+};
+
+// Clients log in with HTTP basic auth: the email is the username, so it must
+// not contain ':'. Every tunnel gets one address per family out of "address".
+Inbound.MasqueSettings = class extends Inbound.Settings {
+    constructor(protocol, masques = [new Inbound.MasqueSettings.Masque()], address = ['10.14.0.1/24', 'fd14::1/64'], mtu = 0) {
+        super(protocol);
+        this.masques = masques;
+        this.address = address;
+        this.mtu = mtu;
+    }
+
+    static fromJson(json = {}) {
+        return new Inbound.MasqueSettings(
+            Protocols.MASQUE,
+            (json.clients || json.users || []).map(client => Inbound.MasqueSettings.Masque.fromJson(client)),
+            json.address || [],
+            json.mtu || 0,
+        );
+    }
+
+    toJson() {
+        return {
+            clients: Inbound.MasqueSettings.toJsonArray(this.masques),
+            address: this.address,
+            mtu: this.mtu || undefined,
+        };
+    }
+};
+
+Inbound.MasqueSettings.Masque = class extends Inbound.ClientBase {
+    constructor(
+        pass = RandomUtil.randomSeq(16),
+        email,totalGB,expiryTime,enable,tgId,subId,reset,limitIp
+    ) {
+        super(email, totalGB, expiryTime, enable, tgId, subId, reset, limitIp);
+        this.pass = pass;
+    }
+
+    toJson() {
+        return {
+            pass: this.pass,
+            ...this._clientBaseToJson(),
+        };
+    }
+
+    static fromJson(json = {}) {
+        return new Inbound.MasqueSettings.Masque(
+            json.pass,
             ...Inbound.ClientBase.commonArgsFromJson(json),
         );
     }

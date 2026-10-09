@@ -20,6 +20,7 @@ import (
 	"github.com/xtls/xray-core/common/serial"
 	"github.com/xtls/xray-core/infra/conf"
 	hysteriaAccount "github.com/xtls/xray-core/proxy/hysteria/account"
+	"github.com/xtls/xray-core/proxy/masque"
 	"github.com/xtls/xray-core/proxy/shadowsocks"
 	"github.com/xtls/xray-core/proxy/shadowsocks_2022"
 	"github.com/xtls/xray-core/proxy/trojan"
@@ -281,6 +282,10 @@ func userAccount(Protocol string, user map[string]interface{}) (*serial.TypedMes
 	case "hysteria":
 		account = serial.ToTypedMessage(&hysteriaAccount.Account{
 			Auth: user["auth"].(string),
+		})
+	case "masque":
+		account = serial.ToTypedMessage(&masque.Account{
+			Password: user["pass"].(string),
 		})
 	case "wireguard":
 		peer, err := wireguardPeerConfig(user)

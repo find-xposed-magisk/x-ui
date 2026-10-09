@@ -476,6 +476,10 @@
 "statusCode" = "Код статуса"
 "xForwarded" = "Заголовки X-Forwarded"
 
+[pages.inbounds.masque]
+"address" = "Адреса туннеля"
+"addressDesc" = "Не более одного префикса IPv4 и одного IPv6. Каждый туннель получает из них по одному адресу каждого семейства; когда они заканчиваются, новые клиенты получают HTTP 503"
+
 [pages.inbounds.protocols]
 "flow" = "Flow"
 "authentication" = "Аутентификация"

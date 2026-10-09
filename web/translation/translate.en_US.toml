@@ -476,6 +476,10 @@
 "statusCode" = "Status Code"
 "xForwarded" = "X-Forwarded Headers"
 
+[pages.inbounds.masque]
+"address" = "Tunnel Addresses"
+"addressDesc" = "At most one IPv4 and one IPv6 prefix. Every tunnel gets one address of each family from them; when they run out, new clients get HTTP 503"
+
 [pages.inbounds.protocols]
 "flow" = "Flow"
 "authentication" = "Authentication"

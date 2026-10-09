@@ -476,6 +476,10 @@
 "statusCode" = "Status Code"
 "xForwarded" = "Header X-Forwarded"
 
+[pages.inbounds.masque]
+"address" = "Địa chỉ đường hầm"
+"addressDesc" = "Tối đa một tiền tố IPv4 và một tiền tố IPv6. Mỗi đường hầm nhận một địa chỉ mỗi loại từ đó; khi hết, client mới nhận HTTP 503"
+
 [pages.inbounds.protocols]
 "flow" = "Flow"
 "authentication" = "Xác thực"

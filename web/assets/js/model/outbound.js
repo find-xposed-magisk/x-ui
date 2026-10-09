@@ -10,6 +10,7 @@ const Protocols = {
     HTTP: "http",
     Wireguard: "wireguard",
     Hysteria: "hysteria",
+    Masque: "masque",
     Loopback: "loopback"
 };
 
@@ -1226,6 +1227,50 @@ class FinalMaskStreamSettings extends CommonClass {
     }
 }
 
+// MASQUE (CONNECT-IP) over h3, or h2 when the TLS ALPN offers h2 but not h3.
+class MasqueStreamSettings extends CommonClass {
+    constructor(host = '', path = '', user = '', pass = '', headers = []) {
+        super();
+        this.host = host;
+        this.path = path;
+        this.user = user;
+        this.pass = pass;
+        this.headers = headers;
+    }
+
+    addHeader(name, value) {
+        this.headers.push({ name: name, value: value });
+    }
+
+    removeHeader(index) {
+        this.headers.splice(index, 1);
+    }
+
+    static fromJson(json = {}) {
+        return new MasqueStreamSettings(
+            json.host,
+            json.path,
+            json.user,
+            json.pass,
+            Object.entries(json.headers || {}).map(([name, value]) => ({ name, value })),
+        );
+    }
+
+    toJson() {
+        const headers = {};
+        for (const h of this.headers) {
+            if (h.name && h.value) headers[h.name] = h.value;
+        }
+        return {
+            host: CommonClass.shrinkObject(this.host),
+            path: CommonClass.shrinkObject(this.path),
+            user: CommonClass.shrinkObject(this.user),
+            pass: CommonClass.shrinkObject(this.pass),
+            headers: CommonClass.shrinkObject(headers),
+        };
+    }
+}
+
 class StreamSettings extends CommonClass {
     constructor(
         network = 'tcp',
@@ -1241,10 +1286,12 @@ class StreamSettings extends CommonClass {
         hysteriaSettings = new HysteriaStreamSettings(),
         finalmask = new FinalMaskStreamSettings(),
         sockopt = undefined,
+        masqueSettings = new MasqueStreamSettings(),
     ) {
         super();
         this.network = network;
         this.security = security;
+        this.masque = masqueSettings;
         this.tls = tlsSettings;
         this.reality = realitySettings;
         this.tcp = tcpSettings;
@@ -1315,6 +1362,7 @@ class StreamSettings extends CommonClass {
             HysteriaStreamSettings.fromJson(json.hysteriaSettings),
             FinalMaskStreamSettings.fromJson(json.finalmask),
             SockoptStreamSettings.fromJson(json.sockopt),
+            MasqueStreamSettings.fromJson(json.masqueSettings),
         );
     }
 
@@ -1332,6 +1380,7 @@ class StreamSettings extends CommonClass {
             httpupgradeSettings: network === 'httpupgrade' ? this.httpupgrade.toJson() : undefined,
             xhttpSettings: network === 'xhttp' ? this.xhttp.toJson() : undefined,
             hysteriaSettings: network === 'hysteria' ? this.hysteria.toJson() : undefined,
+            masqueSettings: network === 'masque' ? this.masque.toJson() : undefined,
             finalmask: this.hasFinalMask ? this.finalmask.toJson() : undefined,
             sockopt: this.sockopt != undefined ? this.sockopt.toJson() : undefined,
         };
@@ -1399,10 +1448,14 @@ class Outbound extends CommonClass {
             this.stream.network = 'hysteria';
             this.stream.security = 'tls';
         }
+        if (protocol === Protocols.Masque) {
+            this.stream.network = 'masque';
+            this.stream.security = 'tls';
+        }
     }
 
     canEnableTls() {
-        if (this.protocol === Protocols.Hysteria) return true;
+        if ([Protocols.Hysteria, Protocols.Masque].includes(this.protocol)) return true;
         if (![Protocols.VMess, Protocols.VLESS, Protocols.Trojan, Protocols.Shadowsocks, Protocols.Hysteria].includes(this.protocol)) return false;
         return ["tcp", "ws", "http", "grpc", "httpupgrade", "xhttp"].includes(this.stream.network);
     }
@@ -1427,7 +1480,7 @@ class Outbound extends CommonClass {
     }
 
     canEnableStream() {
-        return [Protocols.VMess, Protocols.VLESS, Protocols.Trojan, Protocols.Shadowsocks, Protocols.Hysteria].includes(this.protocol);
+        return [Protocols.VMess, Protocols.VLESS, Protocols.Trojan, Protocols.Shadowsocks, Protocols.Hysteria, Protocols.Masque].includes(this.protocol);
     }
 
     canEnableMux() {
@@ -1467,7 +1520,8 @@ class Outbound extends CommonClass {
             Protocols.Shadowsocks,
             Protocols.Socks,
             Protocols.HTTP,
-            Protocols.Hysteria
+            Protocols.Hysteria,
+            Protocols.Masque
         ].includes(this.protocol);
     }
 
@@ -1703,6 +1757,7 @@ Outbound.Settings = class extends CommonClass {
             case Protocols.HTTP: return new Outbound.HttpSettings();
             case Protocols.Wireguard: return new Outbound.WireguardSettings();
             case Protocols.Hysteria: return new Outbound.HysteriaSettings();
+            case Protocols.Masque: return new Outbound.MasqueSettings();
             case Protocols.Loopback: return new Outbound.LoopbackSettings();
             default: return null;
         }
@@ -1721,6 +1776,7 @@ Outbound.Settings = class extends CommonClass {
             case Protocols.HTTP: return Outbound.HttpSettings.fromJson(json);
             case Protocols.Wireguard: return Outbound.WireguardSettings.fromJson(json);
             case Protocols.Hysteria: return Outbound.HysteriaSettings.fromJson(json);
+            case Protocols.Masque: return Outbound.MasqueSettings.fromJson(json);
             case Protocols.Loopback: return Outbound.LoopbackSettings.fromJson(json);
             default: return null;
         }
@@ -2262,6 +2318,29 @@ Outbound.HysteriaSettings = class extends CommonClass {
             address: this.address,
             port: this.port,
             version: this.version
+        };
+    }
+};
+
+// Like WireGuard, MASQUE runs a netstack over the tunnel, so domains are
+// resolved inside it through remoteDNS.
+Outbound.MasqueSettings = class extends CommonClass {
+    constructor(address = '', port = 443, remoteDNS = '') {
+        super();
+        this.address = address;
+        this.port = port;
+        this.remoteDNS = remoteDNS instanceof Array ? remoteDNS.join(',') : remoteDNS;
+    }
+
+    static fromJson(json = {}) {
+        return new Outbound.MasqueSettings(json.address, json.port, json.remoteDNS);
+    }
+
+    toJson() {
+        return {
+            address: this.address,
+            port: this.port,
+            remoteDNS: this.remoteDNS ? this.remoteDNS.split(',').map(s => s.trim()).filter(Boolean) : undefined,
         };
     }
 };

@@ -28,6 +28,7 @@ var xrayClientKeys = map[string]struct{}{
 	"flow":     {},
 	"method":   {},
 	"auth":     {},
+	"pass":     {},
 	"reverse":  {},
 }
 

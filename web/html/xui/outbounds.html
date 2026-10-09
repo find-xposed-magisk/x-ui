@@ -422,6 +422,7 @@
                         serverObj = o.settings?.servers;
                         break;
                     case Protocols.Hysteria:
+                    case Protocols.Masque:
                     case Protocols.DNS:
                         return [o.settings?.address + ':' + o.settings?.port];
                     case Protocols.Wireguard:

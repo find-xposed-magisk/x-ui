@@ -165,6 +165,7 @@ func TestUserAccountsBecomeMemoryUsers(t *testing.T) {
 		"trojan":      {"password": "pw"},
 		"shadowsocks": {"cipher": "", "password": "MDEyMzQ1Njc4OWFiY2RlZg=="},
 		"hysteria":    {"auth": "pw"},
+		"masque":      {"pass": "pw"},
 	}
 	for proto, user := range cases {
 		user["email"] = proto + "@test"

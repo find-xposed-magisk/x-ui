@@ -476,6 +476,10 @@
 "statusCode" = "状态码"
 "xForwarded" = "X-Forwarded 头"
 
+[pages.inbounds.masque]
+"address" = "隧道地址"
+"addressDesc" = "最多一个 IPv4 和一个 IPv6 前缀。每条隧道从中各分配一个地址；地址用尽时新客户端会收到 HTTP 503"
+
 [pages.inbounds.protocols]
 "flow" = "Flow"
 "authentication" = "认证"

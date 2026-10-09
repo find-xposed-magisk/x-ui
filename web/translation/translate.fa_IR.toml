@@ -476,6 +476,10 @@
 "statusCode" = "Status Code"
 "xForwarded" = "هدرهای X-Forwarded"
 
+[pages.inbounds.masque]
+"address" = "آدرس‌های تونل"
+"addressDesc" = "حداکثر یک پیشوند IPv4 و یک پیشوند IPv6. هر تونل از هر خانواده یک آدرس می‌گیرد؛ وقتی آدرس‌ها تمام شوند کلاینت‌های جدید خطای HTTP 503 می‌گیرند"
+
 [pages.inbounds.protocols]
 "flow" = "Flow"
 "authentication" = "احراز هویت"

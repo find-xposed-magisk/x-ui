@@ -122,6 +122,7 @@ class DBInbound {
             case Protocols.VLESS:
             case Protocols.TROJAN:
             case Protocols.HYSTERIA:
+            case Protocols.MASQUE:
             case Protocols.WIREGUARD:
                 return true;
             case Protocols.SHADOWSOCKS:

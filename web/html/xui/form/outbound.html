@@ -397,6 +397,20 @@
             <a-switch v-model="outbound.settings.uot"></a-switch>
         </a-form-item>
     </template>
+      <!-- masque settings -->
+      <template v-if="outbound.protocol === Protocols.Masque">
+        <a-form-item>
+          <template slot="label">
+            <a-tooltip>
+              <template slot="title">
+                <span>{{ i18n "pages.xray.wireguard.remoteDNSDesc" }}</span>
+              </template>
+              {{ i18n "pages.xray.wireguard.remoteDNS" }} <a-icon type="question-circle"></a-icon>
+            </a-tooltip>
+          </template>
+          <a-input v-model.trim="outbound.settings.remoteDNS" placeholder="1.1.1.1,2606:4700:4700::1111"></a-input>
+        </a-form-item>
+      </template>
       <!-- hysteria settings -->
       <template v-if="outbound.protocol === Protocols.Hysteria">
         <a-form-item label='{{ i18n "pages.outbounds.version" }}'>
@@ -414,7 +428,10 @@
     <a-form-item label='{{ i18n "transmission" }}'>
         <a-select v-model="outbound.stream.network" @change="streamNetworkChange"
                 :dropdown-class-name="themeSwitcher.currentTheme">
-            <template v-if="outbound.protocol != Protocols.Hysteria">
+            <template v-if="outbound.protocol === Protocols.Masque">
+                <a-select-option value="masque">MASQUE</a-select-option>
+            </template>
+            <template v-else-if="outbound.protocol != Protocols.Hysteria">
                 <a-select-option value="tcp">TCP</a-select-option>
                 <a-select-option value="kcp">mKCP</a-select-option>
                 <a-select-option value="ws">WebSocket</a-select-option>
@@ -699,12 +716,40 @@
             <a-input v-model.trim="outbound.stream.hysteria.auth"></a-input>
         </a-form-item>
     </template>
+    <!-- masque -->
+    <template v-if="outbound.stream.network === 'masque'">
+        <a-form-item label='{{ i18n "username" }}'>
+            <a-input v-model.trim="outbound.stream.masque.user"></a-input>
+        </a-form-item>
+        <a-form-item label='{{ i18n "password" }}'>
+            <a-input v-model.trim="outbound.stream.masque.pass"></a-input>
+        </a-form-item>
+        <a-form-item label='{{ i18n "host" }}'>
+            <a-input v-model.trim="outbound.stream.masque.host"></a-input>
+        </a-form-item>
+        <a-form-item label='{{ i18n "path" }}'>
+            <a-input v-model.trim="outbound.stream.masque.path" placeholder="/.well-known/masque/ip/{target}/{ipproto}/"></a-input>
+        </a-form-item>
+        <a-form-item label='{{ i18n "pages.inbounds.stream.tcp.requestHeader" }}'>
+            <a-button icon="plus" size="small" @click="outbound.stream.masque.addHeader('', '')"></a-button>
+        </a-form-item>
+        <a-form-item :wrapper-col="{span: 24}" v-if="outbound.stream.masque.headers.length > 0">
+            <a-input-group compact v-for="(header, index) in outbound.stream.masque.headers">
+                <a-input style="width: 50%" v-model.trim="header.name" placeholder='{{ i18n "pages.inbounds.stream.general.name" }}'>
+                    <template slot="addonBefore" style="margin: 0;">[[ index+1 ]]</template>
+                </a-input>
+                <a-input style="width: 50%" v-model.trim="header.value" placeholder='{{ i18n "pages.inbounds.stream.general.value" }}'>
+                    <a-button slot="addonAfter" size="small" @click="outbound.stream.masque.removeHeader(index)">-</a-button>
+                </a-input>
+            </a-input-group>
+        </a-form-item>
+    </template>
 </template>
 
 <!-- finalmask settings -->
 <template v-if="outbound.canEnableStream()">
     <!-- TCP Masks (RAW, WS, HTTPUpgrade, gRPC, XHTTP) -->
-    <template v-if="['tcp', 'ws', 'grpc', 'httpupgrade', 'xhttp'].includes(outbound.stream.network)">
+    <template v-if="['tcp', 'ws', 'grpc', 'httpupgrade', 'xhttp', 'masque'].includes(outbound.stream.network)">
         <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.tcpMasks" }}'>
             <a-button icon="plus" type="primary" size="small"
                 @click="outbound.stream.addTcpMask('header-custom')"></a-button>
@@ -815,10 +860,10 @@
     </template>
 
     <!-- UDP Masks (RAW UDP, KCP, Hysteria, XHTTP H3) -->
-    <template v-if="outbound.stream.network === 'kcp' || outbound.stream.network === 'xhttp' || outbound.protocol === Protocols.Hysteria">
+    <template v-if="['kcp', 'xhttp', 'masque'].includes(outbound.stream.network) || outbound.protocol === Protocols.Hysteria">
     <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.udpMasks" }}'>
     <a-button icon="plus" type="primary" size="small"
-        @click="outbound.stream.addUdpMask(outbound.protocol === Protocols.Hysteria ? 'salamander' : 'mkcp-aes128gcm')"></a-button>
+        @click="outbound.stream.addUdpMask([Protocols.Hysteria, Protocols.Masque].includes(outbound.protocol) ? 'salamander' : 'mkcp-aes128gcm')"></a-button>
     </a-form-item>
     <template
     v-if="outbound.stream.finalmask.udp && outbound.stream.finalmask.udp.length > 0">
@@ -1011,7 +1056,7 @@
     </template>
 
     <!-- QUIC Params (XHTTP H3, Hysteria) -->
-    <template v-if="outbound.protocol === Protocols.Hysteria || outbound.stream.network === 'xhttp'">
+    <template v-if="outbound.protocol === Protocols.Hysteria || ['xhttp', 'masque'].includes(outbound.stream.network)">
         <a-divider :style="{ margin: '5px 0 0' }"></a-divider>
         <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.quicParams" }}'>
             <a-switch v-model="outbound.stream.finalmask.quicParamsEnable"></a-switch>
@@ -1106,7 +1151,7 @@
 <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
 <!-- tls settings -->
 <template v-if="outbound.canEnableTls()">
-        <a-form-item label='{{ i18n "security" }}' v-if="outbound.protocol !== Protocols.Hysteria">
+        <a-form-item label='{{ i18n "security" }}' v-if="![Protocols.Hysteria, Protocols.Masque].includes(outbound.protocol)">
             <a-radio-group v-model="outbound.stream.security" button-style="solid">
                 <a-radio-button value="none">{{ i18n "none" }}</a-radio-button>
                 <a-radio-button value="tls">TLS</a-radio-button>
