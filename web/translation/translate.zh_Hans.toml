@@ -476,6 +476,24 @@
 "statusCode" = "状态码"
 "xForwarded" = "X-Forwarded 头"
 
+[pages.inbounds.stream.xdrive]
+"service" = "存储服务"
+"serviceDesc" = "两端通过该存储交换数据，必须使用相同的服务和文件夹。凭据保存在客户端，仅适合自建使用，并请在出站启用 mux"
+"remoteFolder" = "远程文件夹"
+"remoteFolderDesc" = "Google Drive：文件夹 ID。Local：目录路径。Template：可用 {folder} 引用"
+"secrets" = "密钥"
+"secretsDesc" = "在模板中以 {secret0}、{secret1} … 引用"
+"template" = "模板"
+"templateDesc" = "描述服务的 JSON：auth、put、get、delete 和 list（含 namesRegex）请求，以及可选的 retry、flatten 和 concurrency"
+"segmentBytes" = "分段大小（字节）"
+"concurrency" = "并发数"
+"flushIntervalMs" = "刷新间隔（毫秒）"
+"pollIntervalMs" = "轮询间隔（毫秒）"
+"maxPollIntervalMs" = "最大轮询间隔（毫秒）"
+"eagerWindowMs" = "Eager 窗口（毫秒）"
+"holeTimeoutMs" = "Hole 超时（毫秒）"
+"sessionTtlSeconds" = "会话 TTL（秒）"
+
 [pages.inbounds.masque]
 "address" = "隧道地址"
 "addressDesc" = "最多一个 IPv4 和一个 IPv6 前缀。每条隧道从中各分配一个地址；地址用尽时新客户端会收到 HTTP 503"

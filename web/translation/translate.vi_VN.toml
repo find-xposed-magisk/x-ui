@@ -476,6 +476,24 @@
 "statusCode" = "Status Code"
 "xForwarded" = "Header X-Forwarded"
 
+[pages.inbounds.stream.xdrive]
+"service" = "Dịch vụ lưu trữ"
+"serviceDesc" = "Hai đầu trao đổi dữ liệu qua kho lưu trữ này và phải dùng cùng dịch vụ và thư mục. Thông tin xác thực nằm ở client nên chỉ dùng cho mục đích tự host. Hãy bật mux ở outbound"
+"remoteFolder" = "Thư mục từ xa"
+"remoteFolderDesc" = "Google Drive: ID thư mục. Local: đường dẫn thư mục. Template: dùng qua {folder}"
+"secrets" = "Khóa bí mật"
+"secretsDesc" = "Dùng trong template qua {secret0}, {secret1}, ..."
+"template" = "Template"
+"templateDesc" = "JSON mô tả dịch vụ: các yêu cầu auth, put, get, delete và list (kèm namesRegex), cùng retry, flatten và concurrency tùy chọn"
+"segmentBytes" = "Kích thước đoạn (byte)"
+"concurrency" = "Đồng thời"
+"flushIntervalMs" = "Khoảng gửi (ms)"
+"pollIntervalMs" = "Khoảng thăm dò (ms)"
+"maxPollIntervalMs" = "Khoảng thăm dò tối đa (ms)"
+"eagerWindowMs" = "Cửa sổ Eager (ms)"
+"holeTimeoutMs" = "Thời gian chờ Hole (ms)"
+"sessionTtlSeconds" = "TTL phiên (giây)"
+
 [pages.inbounds.masque]
 "address" = "Địa chỉ đường hầm"
 "addressDesc" = "Tối đa một tiền tố IPv4 và một tiền tố IPv6. Mỗi đường hầm nhận một địa chỉ mỗi loại từ đó; khi hết, client mới nhận HTTP 503"

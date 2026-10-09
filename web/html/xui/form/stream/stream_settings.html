@@ -10,6 +10,7 @@
             <a-select-option value="grpc">gRPC</a-select-option>
             <a-select-option value="httpupgrade">HttpUpgrade</a-select-option>
             <a-select-option value="xhttp">XHTTP</a-select-option>
+            <a-select-option value="xdrive">XDRIVE</a-select-option>
         </a-select>
     </a-form-item>
 </a-form>
@@ -37,6 +38,13 @@
 <!-- hysteria -->
 <template v-if="inbound.stream.network === 'hysteria'">
     {{template "form/streamHysteria"}}
+</template>
+
+<!-- xdrive -->
+<template v-if="inbound.stream.network === 'xdrive'">
+    <a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
+        {{template "form/xdriveFields" "inbound.stream.xdrive"}}
+    </a-form>
 </template>
 
 <!-- masque -->

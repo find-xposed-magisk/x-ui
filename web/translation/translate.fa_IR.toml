@@ -476,6 +476,24 @@
 "statusCode" = "Status Code"
 "xForwarded" = "هدرهای X-Forwarded"
 
+[pages.inbounds.stream.xdrive]
+"service" = "سرویس ذخیره‌سازی"
+"serviceDesc" = "دو طرف از طریق این فضای ذخیره‌سازی داده رد و بدل می‌کنند و باید سرویس و پوشه یکسان داشته باشند. اطلاعات ورود روی کلاینت قرار می‌گیرد، پس فقط برای استفاده شخصی مناسب است. روی اوت‌باند mux را فعال کنید"
+"remoteFolder" = "پوشه راه دور"
+"remoteFolderDesc" = "Google Drive: شناسه پوشه. Local: مسیر یک پوشه. Template: با {folder} در دسترس است"
+"secrets" = "کلیدها"
+"secretsDesc" = "در قالب با {secret0}، {secret1} و ... در دسترس‌اند"
+"template" = "قالب"
+"templateDesc" = "JSON توصیف سرویس: درخواست‌های auth، put، get، delete و list (با namesRegex) و در صورت نیاز retry، flatten و concurrency"
+"segmentBytes" = "اندازه هر قطعه (بایت)"
+"concurrency" = "هم‌زمانی"
+"flushIntervalMs" = "فاصله ارسال (ms)"
+"pollIntervalMs" = "فاصله بررسی (ms)"
+"maxPollIntervalMs" = "حداکثر فاصله بررسی (ms)"
+"eagerWindowMs" = "پنجره Eager (ms)"
+"holeTimeoutMs" = "مهلت Hole (ms)"
+"sessionTtlSeconds" = "عمر نشست (ثانیه)"
+
 [pages.inbounds.masque]
 "address" = "آدرس‌های تونل"
 "addressDesc" = "حداکثر یک پیشوند IPv4 و یک پیشوند IPv6. هر تونل از هر خانواده یک آدرس می‌گیرد؛ وقتی آدرس‌ها تمام شوند کلاینت‌های جدید خطای HTTP 503 می‌گیرند"

@@ -438,6 +438,7 @@
                 <a-select-option value="grpc">gRPC</a-select-option>
                 <a-select-option value="httpupgrade">HTTPUpgrade</a-select-option>
                 <a-select-option value="xhttp">XHTTP</a-select-option>
+                <a-select-option value="xdrive">XDRIVE</a-select-option>
             </template>
             <template v-else>
                 <a-select-option value="hysteria">Hysteria2</a-select-option>
@@ -716,6 +717,10 @@
             <a-input v-model.trim="outbound.stream.hysteria.auth"></a-input>
         </a-form-item>
     </template>
+    <!-- xdrive -->
+    <template v-if="outbound.stream.network === 'xdrive'">
+        {{template "form/xdriveFields" "outbound.stream.xdrive"}}
+    </template>
     <!-- masque -->
     <template v-if="outbound.stream.network === 'masque'">
         <a-form-item label='{{ i18n "username" }}'>
@@ -749,7 +754,7 @@
 <!-- finalmask settings -->
 <template v-if="outbound.canEnableStream()">
     <!-- TCP Masks (RAW, WS, HTTPUpgrade, gRPC, XHTTP) -->
-    <template v-if="['tcp', 'ws', 'grpc', 'httpupgrade', 'xhttp', 'masque'].includes(outbound.stream.network)">
+    <template v-if="['tcp', 'ws', 'grpc', 'httpupgrade', 'xhttp', 'masque', 'xdrive'].includes(outbound.stream.network)">
         <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.tcpMasks" }}'>
             <a-button icon="plus" type="primary" size="small"
                 @click="outbound.stream.addTcpMask('header-custom')"></a-button>

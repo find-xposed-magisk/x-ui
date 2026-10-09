@@ -1,11 +1,11 @@
 {{define "form/streamFinalMask"}}
 <a-form :colon="false" :label-col="{ md: {span:8} }"
-    v-if="inbound.protocol == Protocols.HYSTERIA || ['kcp', 'tcp', 'ws', 'grpc', 'httpupgrade', 'xhttp', 'masque'].includes(inbound.stream.network)"
+    v-if="inbound.protocol == Protocols.HYSTERIA || ['kcp', 'tcp', 'ws', 'grpc', 'httpupgrade', 'xhttp', 'masque', 'xdrive'].includes(inbound.stream.network)"
     :wrapper-col="{ md: {span:14} }">
     <a-divider :style="{ margin: '5px 0 0' }"></a-divider>
 
     <!-- TCP Masks (RAW, WS, HTTPUpgrade, gRPC, XHTTP) -->
-    <template v-if="['tcp', 'ws', 'grpc', 'httpupgrade', 'xhttp', 'masque'].includes(inbound.stream.network)">
+    <template v-if="['tcp', 'ws', 'grpc', 'httpupgrade', 'xhttp', 'masque', 'xdrive'].includes(inbound.stream.network)">
         <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.tcpMasks" }}'>
             <a-button icon="plus" type="primary" size="small"
                 @click="inbound.stream.addTcpMask('header-custom')"></a-button>

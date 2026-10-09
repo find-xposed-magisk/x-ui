@@ -1227,6 +1227,73 @@ class FinalMaskStreamSettings extends CommonClass {
     }
 }
 
+// XDRIVE carries the proxy through a remote storage service both ends can
+// reach. The numbers left at 0 fall back to the core defaults.
+class XDriveStreamSettings extends CommonClass {
+    constructor({
+        service = 'Google Drive',
+        remoteFolder = '',
+        secrets = [],
+        segmentBytes = 0,
+        flushIntervalMs = 0,
+        pollIntervalMs = 0,
+        maxPollIntervalMs = 0,
+        sessionTtlSeconds = 0,
+        concurrency = 0,
+        eagerWindowMs = 0,
+        holeTimeoutMs = 0,
+        template = '',
+    } = {}) {
+        super();
+        this.service = service;
+        this.remoteFolder = remoteFolder;
+        this.secrets = secrets;
+        this.segmentBytes = segmentBytes;
+        this.flushIntervalMs = flushIntervalMs;
+        this.pollIntervalMs = pollIntervalMs;
+        this.maxPollIntervalMs = maxPollIntervalMs;
+        this.sessionTtlSeconds = sessionTtlSeconds;
+        this.concurrency = concurrency;
+        this.eagerWindowMs = eagerWindowMs;
+        this.holeTimeoutMs = holeTimeoutMs;
+        this.template = template;
+    }
+
+    static fromJson(json = {}) {
+        const template = json.template;
+        return new XDriveStreamSettings({
+            ...json,
+            secrets: json.secrets || [],
+            template: template && typeof template === 'object' ? JSON.stringify(template, null, 2) : (template || ''),
+        });
+    }
+
+    toJson() {
+        // The template is edited as text; one that does not parse is passed on
+        // as is, so the core reports what is wrong with it.
+        let template;
+        if (this.service === 'template' && this.template.trim()) {
+            try {
+                template = JSON.parse(this.template);
+            } catch (e) {
+                template = this.template;
+            }
+        }
+        const secrets = this.secrets.filter(s => s !== '' && s != null);
+        const result = {
+            service: this.service,
+            remoteFolder: this.remoteFolder,
+            secrets: secrets.length > 0 ? secrets : undefined,
+            template,
+        };
+        for (const key of ['segmentBytes', 'flushIntervalMs', 'pollIntervalMs', 'maxPollIntervalMs',
+            'sessionTtlSeconds', 'concurrency', 'eagerWindowMs', 'holeTimeoutMs']) {
+            if (this[key]) result[key] = this[key];
+        }
+        return result;
+    }
+}
+
 // MASQUE (CONNECT-IP) over h3, or h2 when the TLS ALPN offers h2 but not h3.
 class MasqueStreamSettings extends CommonClass {
     constructor(host = '', path = '', user = '', pass = '', headers = []) {
@@ -1287,11 +1354,13 @@ class StreamSettings extends CommonClass {
         finalmask = new FinalMaskStreamSettings(),
         sockopt = undefined,
         masqueSettings = new MasqueStreamSettings(),
+        xdriveSettings = new XDriveStreamSettings(),
     ) {
         super();
         this.network = network;
         this.security = security;
         this.masque = masqueSettings;
+        this.xdrive = xdriveSettings;
         this.tls = tlsSettings;
         this.reality = realitySettings;
         this.tcp = tcpSettings;
@@ -1363,6 +1432,7 @@ class StreamSettings extends CommonClass {
             FinalMaskStreamSettings.fromJson(json.finalmask),
             SockoptStreamSettings.fromJson(json.sockopt),
             MasqueStreamSettings.fromJson(json.masqueSettings),
+            XDriveStreamSettings.fromJson(json.xdriveSettings),
         );
     }
 
@@ -1381,6 +1451,7 @@ class StreamSettings extends CommonClass {
             xhttpSettings: network === 'xhttp' ? this.xhttp.toJson() : undefined,
             hysteriaSettings: network === 'hysteria' ? this.hysteria.toJson() : undefined,
             masqueSettings: network === 'masque' ? this.masque.toJson() : undefined,
+            xdriveSettings: network === 'xdrive' ? this.xdrive.toJson() : undefined,
             finalmask: this.hasFinalMask ? this.finalmask.toJson() : undefined,
             sockopt: this.sockopt != undefined ? this.sockopt.toJson() : undefined,
         };
@@ -1457,7 +1528,7 @@ class Outbound extends CommonClass {
     canEnableTls() {
         if ([Protocols.Hysteria, Protocols.Masque].includes(this.protocol)) return true;
         if (![Protocols.VMess, Protocols.VLESS, Protocols.Trojan, Protocols.Shadowsocks, Protocols.Hysteria].includes(this.protocol)) return false;
-        return ["tcp", "ws", "http", "grpc", "httpupgrade", "xhttp"].includes(this.stream.network);
+        return ["tcp", "ws", "http", "grpc", "httpupgrade", "xhttp", "xdrive"].includes(this.stream.network);
     }
 
     //this is used for xtls-rprx-vision

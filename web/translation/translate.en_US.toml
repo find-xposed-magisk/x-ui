@@ -476,6 +476,24 @@
 "statusCode" = "Status Code"
 "xForwarded" = "X-Forwarded Headers"
 
+[pages.inbounds.stream.xdrive]
+"service" = "Storage Service"
+"serviceDesc" = "Both ends exchange data through this storage and must use the same service and folder. The credentials sit on the client, so use it for self-hosted setups only, and enable mux on the outbound"
+"remoteFolder" = "Remote Folder"
+"remoteFolderDesc" = "Google Drive: the folder ID. Local: a directory path. Template: available as {folder}"
+"secrets" = "Secrets"
+"secretsDesc" = "Available in the template as {secret0}, {secret1}, ..."
+"template" = "Template"
+"templateDesc" = "JSON describing the service: auth, put, get, delete and list (with namesRegex) requests, plus optional retry, flatten and concurrency"
+"segmentBytes" = "Segment Size (bytes)"
+"concurrency" = "Concurrency"
+"flushIntervalMs" = "Flush Interval (ms)"
+"pollIntervalMs" = "Poll Interval (ms)"
+"maxPollIntervalMs" = "Max Poll Interval (ms)"
+"eagerWindowMs" = "Eager Window (ms)"
+"holeTimeoutMs" = "Hole Timeout (ms)"
+"sessionTtlSeconds" = "Session TTL (s)"
+
 [pages.inbounds.masque]
 "address" = "Tunnel Addresses"
 "addressDesc" = "At most one IPv4 and one IPv6 prefix. Every tunnel gets one address of each family from them; when they run out, new clients get HTTP 503"

@@ -476,6 +476,24 @@
 "statusCode" = "Код статуса"
 "xForwarded" = "Заголовки X-Forwarded"
 
+[pages.inbounds.stream.xdrive]
+"service" = "Сервис хранения"
+"serviceDesc" = "Обе стороны обмениваются данными через это хранилище и должны использовать один сервис и папку. Учётные данные хранятся на клиенте, поэтому подходит только для собственного использования. Включите mux на исходящем"
+"remoteFolder" = "Удалённая папка"
+"remoteFolderDesc" = "Google Drive: ID папки. Local: путь к каталогу. Template: доступна как {folder}"
+"secrets" = "Секреты"
+"secretsDesc" = "Доступны в шаблоне как {secret0}, {secret1}, ..."
+"template" = "Шаблон"
+"templateDesc" = "JSON с описанием сервиса: запросы auth, put, get, delete и list (с namesRegex), а также необязательные retry, flatten и concurrency"
+"segmentBytes" = "Размер сегмента (байт)"
+"concurrency" = "Параллельность"
+"flushIntervalMs" = "Интервал отправки (мс)"
+"pollIntervalMs" = "Интервал опроса (мс)"
+"maxPollIntervalMs" = "Макс. интервал опроса (мс)"
+"eagerWindowMs" = "Окно Eager (мс)"
+"holeTimeoutMs" = "Таймаут Hole (мс)"
+"sessionTtlSeconds" = "TTL сессии (с)"
+
 [pages.inbounds.masque]
 "address" = "Адреса туннеля"
 "addressDesc" = "Не более одного префикса IPv4 и одного IPv6. Каждый туннель получает из них по одному адресу каждого семейства; когда они заканчиваются, новые клиенты получают HTTP 503"
