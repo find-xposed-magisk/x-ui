@@ -81,3 +81,88 @@
     <a-input v-model.trim="{{.}}.delay" placeholder="10-20"></a-input>
 </a-form-item>
 {{end}}
+
+{{define "form/realmFields"}}
+<a-form-item>
+    <template slot="label">
+        <a-tooltip>
+            <template slot="title">
+                <span>{{ i18n "pages.inbounds.stream.finalmask.realmUrlDesc" }}</span>
+            </template>
+            URL <a-icon type="question-circle"></a-icon>
+        </a-tooltip>
+    </template>
+    <a-input v-model.trim="{{.}}.settings.url" placeholder="realm://token@realm.example.com/room-id"></a-input>
+</a-form-item>
+<a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.stunServers" }}'>
+    <a-select mode="tags" v-model="{{.}}.settings.stunServers" :token-separators="[',', ' ']"
+        :dropdown-class-name="themeSwitcher.currentTheme" placeholder="stun.example.com:3478"></a-select>
+</a-form-item>
+<a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.ipMode" }}'>
+    <a-select v-model="{{.}}.settings.ipMode" :dropdown-class-name="themeSwitcher.currentTheme">
+        <a-select-option value="">dual</a-select-option>
+        <a-select-option value="v4">v4</a-select-option>
+        <a-select-option value="v6">v6</a-select-option>
+    </a-select>
+</a-form-item>
+<a-form-item>
+    <template slot="label">
+        <a-tooltip>
+            <template slot="title">
+                <span>{{ i18n "pages.inbounds.stream.finalmask.portMappingDesc" }}</span>
+            </template>
+            {{ i18n "pages.inbounds.stream.finalmask.portMapping" }} <a-icon type="question-circle"></a-icon>
+        </a-tooltip>
+    </template>
+    <a-switch v-model="{{.}}.settings.portMapping.enabled"></a-switch>
+</a-form-item>
+<template v-if="{{.}}.settings.portMapping.enabled">
+    <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.portMappingTimeout" }}'>
+        <a-input-number v-model.number="{{.}}.settings.portMapping.timeout" :min="0" placeholder="10"></a-input-number>
+    </a-form-item>
+    <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.portMappingLifetime" }}'>
+        <a-input-number v-model.number="{{.}}.settings.portMapping.lifetime" :min="0" placeholder="600"></a-input-number>
+    </a-form-item>
+</template>
+<a-form-item>
+    <template slot="label">
+        <a-tooltip>
+            <template slot="title">
+                <span>{{ i18n "pages.inbounds.stream.finalmask.realmTlsDesc" }}</span>
+            </template>
+            TLS <a-icon type="question-circle"></a-icon>
+        </a-tooltip>
+    </template>
+    <a-textarea v-model="{{.}}.settings.tlsConfig" :auto-size="{ minRows: 2, maxRows: 8 }"
+        style="font-family: monospace; direction: ltr; text-align: left;"
+        placeholder='{"serverName": "realm.example.com"}'></a-textarea>
+</a-form-item>
+{{end}}
+
+{{define "form/mkcpLegacyFields"}}
+<a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.mkcpHeader" }}'>
+    <a-select v-model="{{.}}.settings.header" :dropdown-class-name="themeSwitcher.currentTheme">
+        <a-select-option value="">{{ i18n "none" }}</a-select-option>
+        <a-select-option value="dns">DNS</a-select-option>
+        <a-select-option value="dtls">DTLS 1.2</a-select-option>
+        <a-select-option value="srtp">SRTP</a-select-option>
+        <a-select-option value="utp">uTP</a-select-option>
+        <a-select-option value="wechat">WeChat Video</a-select-option>
+        <a-select-option value="wireguard">WireGuard</a-select-option>
+    </a-select>
+</a-form-item>
+<a-form-item v-if="!{{.}}.settings.header">
+    <template slot="label">
+        <a-tooltip>
+            <template slot="title">
+                <span>{{ i18n "pages.inbounds.stream.finalmask.mkcpPasswordDesc" }}</span>
+            </template>
+            {{ i18n "password" }} <a-icon type="question-circle"></a-icon>
+        </a-tooltip>
+    </template>
+    <a-input v-model.trim="{{.}}.settings.value"></a-input>
+</a-form-item>
+<a-form-item v-if="{{.}}.settings.header === 'dns'" label='{{ i18n "pages.xray.outbound.domain" }}'>
+    <a-input v-model.trim="{{.}}.settings.value" placeholder="www.baidu.com"></a-input>
+</a-form-item>
+{{end}}

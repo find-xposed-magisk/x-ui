@@ -462,6 +462,16 @@
 "disableStatelessReset" = "禁用无状态重置"
 "noiseExpDesc" = "每次发送时用以下标签生成新包：<b hex>, <r N-M>, <rc N-M>, <rd N-M>, <t>, <c>, <n>（字节、随机、随机字母、随机数字、时间戳、计数器、nonce）"
 "noisePacketDesc" = "固定包会替代随机字节；留空则使用 Rand。Array：以逗号分隔的字节值"
+"realmUrlDesc" = "UDP 打洞的中转服务器：realm://token@host[:port]/id（明文 HTTP 用 realm+http://）。客户端与服务端使用相同的 id"
+"stunServers" = "STUN 服务器"
+"ipMode" = "IP 模式"
+"portMapping" = "端口映射"
+"portMappingDesc" = "通过 UPnP / NAT-PMP 向本地路由器申请端口映射，有助于穿透严格 NAT"
+"portMappingTimeout" = "映射超时（秒）"
+"portMappingLifetime" = "映射有效期（秒）"
+"realmTlsDesc" = "中转服务器的可选 TLS 设置，JSON 格式，同 tlsSettings"
+"mkcpHeader" = "伪装头"
+"mkcpPasswordDesc" = "设置后使用 AES-128-GCM 加密；留空则为 mKCP 原始格式"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "认证密码"

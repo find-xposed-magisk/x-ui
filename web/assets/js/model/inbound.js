@@ -1367,28 +1367,37 @@ class UdpMask extends XrayCommonClass {
         this.settings = this._getDefaultSettings(type, settings);
     }
 
+
     _getDefaultSettings(type, settings = {}) {
         switch (type) {
             case 'salamander':
-            case 'mkcp-aes128gcm':
                 return { password: settings.password || '' };
-            case 'header-dns':
-                return { domain: settings.domain || '' };
+            case 'mkcp-legacy':
+                // no header: "value" is the AES-128-GCM password, empty for the
+                // original mKCP format; header "dns": "value" is the domain
+                return { header: settings.header || '', value: settings.value || '' };
             case 'xdns':
                 return { domains: UdpMask.xdnsDomains(settings) };
             case 'xicmp':
                 return { dgram: !!settings.dgram, ips: settings.ips || [] };
-            case 'mkcp-original':
-            case 'header-dtls':
-            case 'header-srtp':
-            case 'header-utp':
-            case 'header-wechat':
-            case 'header-wireguard':
-                return {};
             case 'header-custom':
                 return { client: settings.client || [], server: settings.server || [] };
             case 'noise':
                 return { reset: settings.reset ?? 0, noise: settings.noise || [] };
+            case 'realm':
+                return {
+                    url: settings.url || '',
+                    stunServers: settings.stunServers || ['stun.nextcloud.com:3478', 'global.stun.twilio.com:3478'],
+                    ipMode: settings.ipMode || '',
+                    portMapping: {
+                        enabled: !!settings.portMapping?.enabled,
+                        timeout: settings.portMapping?.timeout || 0,
+                        lifetime: settings.portMapping?.lifetime || 0,
+                    },
+                    // edited as JSON text, see realmToJson
+                    tlsConfig: settings.tlsConfig && typeof settings.tlsConfig === 'object'
+                        ? JSON.stringify(settings.tlsConfig, null, 2) : (settings.tlsConfig || ''),
+                };
             case 'sudoku':
                 return {
                     password: settings.password || '',
@@ -1409,6 +1418,31 @@ class UdpMask extends XrayCommonClass {
         return [].concat(settings.domain || [], settings.domains || [])
             .map(d => typeof d === 'string' ? { name: d, types: [16] } : d)
             .filter(d => d && d.name !== undefined);
+    }
+
+    // Realm settings without the parts left at their defaults. The TLS config for
+    // the rendezvous server is edited as text; text that does not parse is passed
+    // on as is, so the core reports what is wrong with it.
+    static realmToJson(settings = {}) {
+        const out = { url: settings.url, stunServers: settings.stunServers };
+        if (settings.ipMode) out.ipMode = settings.ipMode;
+        const pm = settings.portMapping || {};
+        if (pm.enabled) {
+            out.portMapping = { enabled: true };
+            if (pm.timeout) out.portMapping.timeout = pm.timeout;
+            if (pm.lifetime) out.portMapping.lifetime = pm.lifetime;
+        }
+        const tls = typeof settings.tlsConfig === 'string' ? settings.tlsConfig.trim() : settings.tlsConfig;
+        if (tls && typeof tls === 'object') {
+            out.tlsConfig = tls;
+        } else if (tls) {
+            try {
+                out.tlsConfig = JSON.parse(tls);
+            } catch (e) {
+                out.tlsConfig = tls;
+            }
+        }
+        return out;
     }
 
     // A Header Custom item is exactly one of: a fixed "packet", "rand" random
@@ -1470,6 +1504,12 @@ class UdpMask extends XrayCommonClass {
         return this.type === 'xicmp';
     }
 
+    // Save order: masks with their own sockets first, then Realm, which needs
+    // the raw socket for STUN and hole punching, then everything else.
+    get order() {
+        return this.dialsItself ? 2 : this.type === 'realm' ? 1 : 0;
+    }
+
     static fromJson(json = {}) {
         return new UdpMask(
             json.type || 'salamander',
@@ -1479,6 +1519,15 @@ class UdpMask extends XrayCommonClass {
 
     toJson() {
         let settings = this.settings;
+        if (this.type === 'mkcp-legacy') {
+            const legacy = {};
+            if (settings.header) legacy.header = settings.header;
+            if (['', 'dns'].includes(settings.header || '') && settings.value) legacy.value = settings.value;
+            settings = legacy;
+        }
+        if (this.type === 'realm') {
+            settings = UdpMask.realmToJson(settings);
+        }
         if (this.type === 'header-custom') {
             settings = {
                 ...settings,
@@ -1698,7 +1747,7 @@ class FinalMaskStreamSettings extends XrayCommonClass {
         const result = {};
         if (this.udp && this.udp.length > 0) {
             result.udp = [...this.udp]
-                .sort((a, b) => b.dialsItself - a.dialsItself)
+                .sort((a, b) => b.order - a.order)
                 .map(udp => udp.toJson());
         }
         if (this.tcp && this.tcp.length > 0) result.tcp = this.tcp.map(tcp => tcp.toJson());

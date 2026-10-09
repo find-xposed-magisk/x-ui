@@ -462,6 +462,16 @@
 "disableStatelessReset" = "Tắt Stateless Reset"
 "noiseExpDesc" = "Tạo gói mới mỗi lần gửi từ các thẻ: <b hex>, <r N-M>, <rc N-M>, <rd N-M>, <t>, <c>, <n> (byte, ngẫu nhiên, chữ ngẫu nhiên, số ngẫu nhiên, dấu thời gian, bộ đếm, nonce)"
 "noisePacketDesc" = "Gói cố định thay cho byte ngẫu nhiên; để trống để dùng Rand. Array: các giá trị byte phân tách bằng dấu phẩy"
+"realmUrlDesc" = "Máy chủ trung gian cho UDP hole punching: realm://token@host[:port]/id (realm+http:// cho HTTP thường). Client và server dùng cùng id"
+"stunServers" = "Máy chủ STUN"
+"ipMode" = "Chế độ IP"
+"portMapping" = "Ánh xạ cổng"
+"portMappingDesc" = "Yêu cầu router cục bộ ánh xạ cổng qua UPnP / NAT-PMP, hữu ích khi ở sau NAT nghiêm ngặt"
+"portMappingTimeout" = "Thời gian chờ ánh xạ (giây)"
+"portMappingLifetime" = "Thời hạn ánh xạ (giây)"
+"realmTlsDesc" = "Cấu hình TLS tùy chọn cho máy chủ trung gian, dạng JSON như tlsSettings"
+"mkcpHeader" = "Header"
+"mkcpPasswordDesc" = "Đặt để mã hóa bằng AES-128-GCM; để trống cho định dạng mKCP gốc"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "Mật khẩu xác thực"

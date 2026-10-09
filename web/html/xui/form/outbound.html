@@ -868,7 +868,7 @@
     <template v-if="['kcp', 'xhttp', 'masque'].includes(outbound.stream.network) || outbound.protocol === Protocols.Hysteria">
     <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.udpMasks" }}'>
     <a-button icon="plus" type="primary" size="small"
-        @click="outbound.stream.addUdpMask([Protocols.Hysteria, Protocols.Masque].includes(outbound.protocol) ? 'salamander' : 'mkcp-aes128gcm')"></a-button>
+        @click="outbound.stream.addUdpMask([Protocols.Hysteria, Protocols.Masque].includes(outbound.protocol) ? 'salamander' : 'mkcp-legacy')"></a-button>
     </a-form-item>
     <template
     v-if="outbound.stream.finalmask.udp && outbound.stream.finalmask.udp.length > 0">
@@ -887,17 +887,11 @@
             <a-select-option value="udphop">UDP Hop</a-select-option>
             <template v-if="outbound.protocol === Protocols.Hysteria">
                 <a-select-option value="salamander">Salamander (Hysteria2)</a-select-option>
+                <a-select-option value="realm">Realm</a-select-option>
             </template>
             <template v-else>
-                <a-select-option value="mkcp-aes128gcm">mKCP AES-128-GCM</a-select-option>
-                <a-select-option value="header-dns">Header DNS</a-select-option>
-                <a-select-option value="header-dtls">Header DTLS 1.2</a-select-option>
-                <a-select-option value="header-srtp">Header SRTP</a-select-option>
-                <a-select-option value="header-utp">Header uTP</a-select-option>
-                <a-select-option value="header-wechat">Header WeChat Video</a-select-option>
-                <a-select-option value="header-wireguard">Header WireGuard</a-select-option>
-                <a-select-option value="mkcp-original">mKCP Original</a-select-option>
-                <a-select-option value="xdns">xDNS</a-select-option>
+                <a-select-option value="mkcp-legacy">mKCP Legacy</a-select-option>
+                <a-select-option v-if="outbound.stream.network === 'kcp'" value="xdns">xDNS</a-select-option>
                 <a-select-option value="xicmp">xICMP</a-select-option>
                 <a-select-option value="header-custom">Header Custom</a-select-option>
                 <a-select-option value="noise">Noise</a-select-option>
@@ -907,15 +901,13 @@
         </a-select>
         </a-form-item>
         <a-form-item label='{{ i18n "password" }}'
-        v-if="['salamander', 'mkcp-aes128gcm', 'sudoku'].includes(mask.type)">
+        v-if="['salamander', 'sudoku'].includes(mask.type)">
         <a-input v-model.trim="mask.settings.password"
             placeholder='{{ i18n "pages.inbounds.stream.finalmask.obfuscationPassword" }}'></a-input>
         </a-form-item>
-        <a-form-item label='{{ i18n "pages.xray.outbound.domain" }}'
-        v-if="mask.type === 'header-dns'">
-        <a-input v-model.trim="mask.settings.domain"
-            placeholder="e.g., www.example.com"></a-input>
-        </a-form-item>
+        <template v-if="mask.type === 'mkcp-legacy'">
+            {{template "form/mkcpLegacyFields" "mask"}}
+        </template>
         <template v-if="mask.type === 'xdns'">
             {{template "form/xdnsDomains" "mask"}}
             <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.resolvers" }}'>
@@ -1055,6 +1047,9 @@
         </template>
         <template v-if="mask.type === 'xicmp'">
             {{template "form/xicmpFields" "mask"}}
+        </template>
+        <template v-if="mask.type === 'realm'">
+            {{template "form/realmFields" "mask"}}
         </template>
     </a-form>
     </template>

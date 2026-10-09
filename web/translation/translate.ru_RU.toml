@@ -462,6 +462,16 @@
 "disableStatelessReset" = "Отключить Stateless Reset"
 "noiseExpDesc" = "При каждой отправке собирает новый пакет из тегов: <b hex>, <r N-M>, <rc N-M>, <rd N-M>, <t>, <c>, <n> (байты, случайные, случайные буквы, случайные цифры, метка времени, счётчик, nonce)"
 "noisePacketDesc" = "Фиксированный пакет заменяет случайные байты; оставьте пустым, чтобы использовать Rand. Array: байты через запятую"
+"realmUrlDesc" = "Сервер-посредник для UDP hole punching: realm://token@host[:port]/id (realm+http:// для обычного HTTP). Клиент и сервер используют один id"
+"stunServers" = "STUN-серверы"
+"ipMode" = "Режим IP"
+"portMapping" = "Проброс порта"
+"portMappingDesc" = "Запрашивает у локального роутера проброс порта через UPnP / NAT-PMP, что помогает за строгим NAT"
+"portMappingTimeout" = "Таймаут проброса (с)"
+"portMappingLifetime" = "Время жизни проброса (с)"
+"realmTlsDesc" = "Необязательные настройки TLS для сервера-посредника в формате JSON, как tlsSettings"
+"mkcpHeader" = "Заголовок"
+"mkcpPasswordDesc" = "Задайте для шифрования AES-128-GCM; оставьте пустым для исходного формата mKCP"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "Пароль аутентификации"

@@ -462,6 +462,16 @@
 "disableStatelessReset" = "Disable Stateless Reset"
 "noiseExpDesc" = "Builds a fresh packet on every send from tags: <b hex>, <r N-M>, <rc N-M>, <rd N-M>, <t>, <c>, <n> (bytes, random, random letters, random digits, timestamp, counter, nonce)"
 "noisePacketDesc" = "A fixed packet replaces the random bytes; leave it empty to use Rand. Array: comma-separated byte values"
+"realmUrlDesc" = "Rendezvous server for UDP hole punching: realm://token@host[:port]/id (realm+http:// for plain HTTP). Client and server use the same id"
+"stunServers" = "STUN Servers"
+"ipMode" = "IP Mode"
+"portMapping" = "Port Mapping"
+"portMappingDesc" = "Asks the local router for a port mapping through UPnP / NAT-PMP, which helps behind a strict NAT"
+"portMappingTimeout" = "Mapping Timeout (s)"
+"portMappingLifetime" = "Mapping Lifetime (s)"
+"realmTlsDesc" = "Optional TLS settings for the rendezvous server, in JSON like tlsSettings"
+"mkcpHeader" = "Header"
+"mkcpPasswordDesc" = "Set it to encrypt with AES-128-GCM; leave it empty for the original mKCP format"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "Auth Password"
