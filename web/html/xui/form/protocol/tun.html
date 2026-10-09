@@ -85,5 +85,49 @@
         <a-input v-model.trim="inbound.settings.autoOutboundsInterface"
             placeholder="auto"></a-input>
     </a-form-item>
+    <a-form-item>
+        <template slot="label">
+            <a-tooltip>
+                <template slot="title">
+                    <span>{{ i18n "pages.xray.tun.autoSystemRoutingTableDesc" }}</span>
+                </template>
+                {{ i18n "pages.xray.tun.autoSystemRoutingTable" }}
+                <a-icon type="question-circle"></a-icon>
+            </a-tooltip>
+        </template>
+        <a-select mode="tags" v-model="inbound.settings.autoSystemRoutingTable"
+            placeholder="0.0.0.0/0, ::/0"
+            :dropdown-class-name="themeSwitcher.currentTheme"
+            :token-separators="[',', ' ']" style="width: 100%;">
+        </a-select>
+    </a-form-item>
+    <a-form-item>
+        <template slot="label">
+            <a-tooltip>
+                <template slot="title">
+                    <span>{{ i18n "pages.xray.tun.autoSystemDnsToGatewayDesc" }}</span>
+                </template>
+                {{ i18n "pages.xray.tun.autoSystemDnsToGateway" }}
+                <a-icon type="question-circle"></a-icon>
+            </a-tooltip>
+        </template>
+        <a-switch v-model="inbound.settings.autoSystemDnsToGateway"></a-switch>
+    </a-form-item>
+    <a-form-item>
+        <template slot="label">
+            <a-tooltip>
+                <template slot="title">
+                    <span>{{ i18n "pages.xray.tun.autoSystemWfpBlockLeakDesc" }}</span>
+                </template>
+                {{ i18n "pages.xray.tun.autoSystemWfpBlockLeak" }}
+                <a-icon type="question-circle"></a-icon>
+            </a-tooltip>
+        </template>
+        <a-select mode="multiple" v-model="inbound.settings.autoSystemWfpBlockLeak"
+            :dropdown-class-name="themeSwitcher.currentTheme" style="width: 100%;">
+            <a-select-option value="dns">dns</a-select-option>
+            <a-select-option value="misconfigtun">misconfigtun</a-select-option>
+        </a-select>
+    </a-form-item>
 </a-form>
 {{end}}

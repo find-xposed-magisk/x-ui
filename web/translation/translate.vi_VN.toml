@@ -723,6 +723,12 @@
 "dnsDesc" = "Danh sách máy chủ DNS được gán cho giao diện TUN. Ví dụ: 1.1.1.1"
 "outboundInterface" = "Giao diện Outbound"
 "outboundInterfaceDesc" = "Tự động gắn outbound với giao diện mạng vật lý để tránh vòng lặp lưu lượng. Dùng 'auto' để chọn tự động"
+"autoSystemRoutingTable" = "Tuyến hệ thống"
+"autoSystemRoutingTableDesc" = "Các tuyến qua TUN được thêm vào bảng định tuyến hệ thống, ví dụ 0.0.0.0/0 và ::/0. Khi đó outbound tự động gắn vào giao diện vật lý"
+"autoSystemDnsToGateway" = "DNS hệ thống tới Gateway"
+"autoSystemDnsToGatewayDesc" = "Chỉ Linux: trỏ DNS hệ thống tới địa chỉ gateway của TUN. Cần có gateway"
+"autoSystemWfpBlockLeak" = "Chặn rò rỉ (WFP)"
+"autoSystemWfpBlockLeakDesc" = "Chỉ Windows, cần Tuyến hệ thống: \"dns\" chỉ cho DNS đi qua TUN (cần DNS), \"misconfigtun\" chặn phiên bản IP không có tuyến tới TUN"
 
 [pages.xray.metrics]
 "title" = "Số liệu"

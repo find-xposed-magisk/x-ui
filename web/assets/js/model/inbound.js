@@ -3467,7 +3467,10 @@ Inbound.TunSettings = class extends Inbound.Settings {
         gateway = ['10.0.0.1/16'],
         dns = [],
         userLevel = 0,
-        autoOutboundsInterface = 'auto'
+        autoOutboundsInterface = 'auto',
+        autoSystemRoutingTable = [],
+        autoSystemDnsToGateway = false,
+        autoSystemWfpBlockLeak = [],
     ) {
         super(protocol);
         this.name = name;
@@ -3476,6 +3479,9 @@ Inbound.TunSettings = class extends Inbound.Settings {
         this.dns = dns;
         this.userLevel = userLevel;
         this.autoOutboundsInterface = autoOutboundsInterface;
+        this.autoSystemRoutingTable = autoSystemRoutingTable;
+        this.autoSystemDnsToGateway = autoSystemDnsToGateway;
+        this.autoSystemWfpBlockLeak = autoSystemWfpBlockLeak;
     }
 
     static fromJson(json = {}) {
@@ -3486,7 +3492,10 @@ Inbound.TunSettings = class extends Inbound.Settings {
             json.gateway ?? [],
             json.dns ?? [],
             json.userLevel ?? 0,
-            json.autoOutboundsInterface ?? ''
+            json.autoOutboundsInterface ?? '',
+            json.autoSystemRoutingTable ?? [],
+            !!json.autoSystemDnsToGateway,
+            json.autoSystemWfpBlockLeak ?? [],
         );
     }
 
@@ -3498,6 +3507,9 @@ Inbound.TunSettings = class extends Inbound.Settings {
             dns: this.dns.length > 0 ? this.dns : undefined,
             userLevel: this.userLevel || 0,
             autoOutboundsInterface: this.autoOutboundsInterface.length > 0 ? this.autoOutboundsInterface : undefined,
+            autoSystemRoutingTable: this.autoSystemRoutingTable.length > 0 ? this.autoSystemRoutingTable : undefined,
+            autoSystemDnsToGateway: this.autoSystemDnsToGateway ? true : undefined,
+            autoSystemWfpBlockLeak: this.autoSystemWfpBlockLeak.length > 0 ? this.autoSystemWfpBlockLeak : undefined,
         };
     }
 };

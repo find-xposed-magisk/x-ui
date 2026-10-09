@@ -723,6 +723,12 @@
 "dnsDesc" = "The list of DNS servers assigned to the TUN interface. Example: 1.1.1.1"
 "outboundInterface" = "Outbounds Interface"
 "outboundInterfaceDesc" = "Automatically binds outbounds to the physical network interface to prevent traffic loops. Use 'auto' for automatic selection"
+"autoSystemRoutingTable" = "System Routes"
+"autoSystemRoutingTableDesc" = "Routes added to the system routing table through the TUN, e.g. 0.0.0.0/0 and ::/0. Outbounds are then bound to the physical interface automatically"
+"autoSystemDnsToGateway" = "System DNS to Gateway"
+"autoSystemDnsToGatewayDesc" = "Linux only: points the system DNS at the TUN gateway address. Needs a gateway"
+"autoSystemWfpBlockLeak" = "Block Leaks (WFP)"
+"autoSystemWfpBlockLeakDesc" = "Windows only, needs System Routes: \"dns\" lets DNS only through the TUN (needs DNS), \"misconfigtun\" blocks the IP version that has no route to the TUN"
 
 [pages.xray.metrics]
 "title" = "Metrics"

@@ -723,6 +723,12 @@
 "dnsDesc" = "لیست سرورهای DNS اختصاص‌یافته به رابط TUN. مثال: 1.1.1.1"
 "outboundInterface" = "رابط خروجی‌ها"
 "outboundInterfaceDesc" = "اتصال خودکار خروجی‌ها به رابط شبکه فیزیکی برای جلوگیری از حلقه ترافیک. برای انتخاب خودکار از 'auto' استفاده کنید"
+"autoSystemRoutingTable" = "مسیرهای سیستم"
+"autoSystemRoutingTableDesc" = "مسیرهایی که از طریق TUN به جدول مسیریابی سیستم اضافه می‌شوند، مثل 0.0.0.0/0 و ::/0. در این حالت اوت‌باندها خودکار به رابط فیزیکی متصل می‌شوند"
+"autoSystemDnsToGateway" = "DNS سیستم به Gateway"
+"autoSystemDnsToGatewayDesc" = "فقط لینوکس: DNS سیستم را روی آدرس Gateway رابط TUN تنظیم می‌کند. Gateway لازم است"
+"autoSystemWfpBlockLeak" = "جلوگیری از نشت (WFP)"
+"autoSystemWfpBlockLeakDesc" = "فقط ویندوز و نیازمند مسیرهای سیستم: \"dns\" فقط اجازه DNS از طریق TUN را می‌دهد (DNS لازم است)، \"misconfigtun\" نسخه IP بدون مسیر به TUN را مسدود می‌کند"
 
 [pages.xray.metrics]
 "title" = "متریک‌ها"

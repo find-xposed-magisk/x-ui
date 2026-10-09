@@ -723,6 +723,12 @@
 "dnsDesc" = "Список DNS-серверов, назначенных интерфейсу TUN. Пример: 1.1.1.1"
 "outboundInterface" = "Интерфейс исходящих"
 "outboundInterfaceDesc" = "Автоматически привязывает исходящие соединения к физическому сетевому интерфейсу для предотвращения петель трафика. Используйте 'auto' для автоматического выбора"
+"autoSystemRoutingTable" = "Системные маршруты"
+"autoSystemRoutingTableDesc" = "Маршруты через TUN, добавляемые в системную таблицу маршрутизации, например 0.0.0.0/0 и ::/0. Исходящие тогда автоматически привязываются к физическому интерфейсу"
+"autoSystemDnsToGateway" = "Системный DNS на шлюз"
+"autoSystemDnsToGatewayDesc" = "Только Linux: направляет системный DNS на адрес шлюза TUN. Требуется шлюз"
+"autoSystemWfpBlockLeak" = "Блокировка утечек (WFP)"
+"autoSystemWfpBlockLeakDesc" = "Только Windows, нужны системные маршруты: \"dns\" пропускает DNS только через TUN (нужен DNS), \"misconfigtun\" блокирует версию IP без маршрута в TUN"
 
 [pages.xray.metrics]
 "title" = "Метрики"
