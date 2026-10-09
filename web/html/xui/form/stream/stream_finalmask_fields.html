@@ -32,3 +32,52 @@
         :dropdown-class-name="themeSwitcher.currentTheme"></a-select>
 </a-form-item>
 {{end}}
+
+{{define "form/noiseItem"}}
+<a-form-item label='{{ i18n "pages.xray.outbound.type" }}'>
+    <a-select v-model="{{.}}.type" :dropdown-class-name="themeSwitcher.currentTheme">
+        <a-select-option value="array">Array</a-select-option>
+        <a-select-option value="str">String</a-select-option>
+        <a-select-option value="hex">Hex</a-select-option>
+        <a-select-option value="base64">Base64</a-select-option>
+        <a-select-option value="exp">Exp</a-select-option>
+    </a-select>
+</a-form-item>
+<template v-if="{{.}}.type === 'exp'">
+    <a-form-item>
+        <template slot="label">
+            <a-tooltip>
+                <template slot="title">
+                    <span>{{ i18n "pages.inbounds.stream.finalmask.noiseExpDesc" }}</span>
+                </template>
+                {{ i18n "pages.inbounds.stream.finalmask.packet" }} <a-icon type="question-circle"></a-icon>
+            </a-tooltip>
+        </template>
+        <a-input v-model.trim="{{.}}.packet" placeholder="<b 0d0a0d0a><t><rc 20-40>"></a-input>
+    </a-form-item>
+</template>
+<template v-else>
+    <a-form-item>
+        <template slot="label">
+            <a-tooltip>
+                <template slot="title">
+                    <span>{{ i18n "pages.inbounds.stream.finalmask.noisePacketDesc" }}</span>
+                </template>
+                {{ i18n "pages.inbounds.stream.finalmask.packet" }} <a-icon type="question-circle"></a-icon>
+            </a-tooltip>
+        </template>
+        <a-input v-model.trim="{{.}}.packet" placeholder='{{ i18n "pages.inbounds.stream.finalmask.binaryData" }}'></a-input>
+    </a-form-item>
+    <template v-if="!({{.}}.packet && {{.}}.packet.length)">
+        <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.rand" }}'>
+            <a-input v-model.trim="{{.}}.rand" placeholder="1-8192"></a-input>
+        </a-form-item>
+        <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.randRange" }}'>
+            <a-input v-model.trim="{{.}}.randRange" placeholder="0-255"></a-input>
+        </a-form-item>
+    </template>
+</template>
+<a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.delay" }}'>
+    <a-input v-model.trim="{{.}}.delay" placeholder="10-20"></a-input>
+</a-form-item>
+{{end}}

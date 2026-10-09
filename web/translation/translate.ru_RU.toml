@@ -454,6 +454,12 @@
 "remoteIPs" = "Удалённые IP"
 "remotePorts" = "Удалённые порты"
 "udpHopLinkDesc" = "Используется только в ссылках и подписках. На сервере перенаправьте этот диапазон портов на порт входящего через iptables"
+"brutalDisableLossCompensation" = "Brutal: отключить компенсацию потерь"
+"disableChromeParrot" = "Отключить имитацию Chrome"
+"disableGSO" = "Отключить GSO"
+"disableStatelessReset" = "Отключить Stateless Reset"
+"noiseExpDesc" = "При каждой отправке собирает новый пакет из тегов: <b hex>, <r N-M>, <rc N-M>, <rd N-M>, <t>, <c>, <n> (байты, случайные, случайные буквы, случайные цифры, метка времени, счётчик, nonce)"
+"noisePacketDesc" = "Фиксированный пакет заменяет случайные байты; оставьте пустым, чтобы использовать Rand. Array: байты через запятую"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "Пароль аутентификации"
@@ -466,6 +472,7 @@
 "insecure" = "Небезопасный"
 "content" = "Контент"
 "statusCode" = "Код статуса"
+"xForwarded" = "Заголовки X-Forwarded"
 
 [pages.inbounds.protocols]
 "flow" = "Flow"

@@ -454,6 +454,12 @@
 "remoteIPs" = "آی‌پی‌های مقصد"
 "remotePorts" = "پورت‌های مقصد"
 "udpHopLinkDesc" = "فقط در لینک‌های اشتراک و سابسکریپشن قرار می‌گیرد. روی سرور این بازه پورت را با iptables به پورت اینباند هدایت کنید"
+"brutalDisableLossCompensation" = "Brutal: غیرفعال‌سازی جبران Loss"
+"disableChromeParrot" = "غیرفعال‌سازی تقلید Chrome"
+"disableGSO" = "غیرفعال‌سازی GSO"
+"disableStatelessReset" = "غیرفعال‌سازی Stateless Reset"
+"noiseExpDesc" = "در هر ارسال یک پکت تازه از این تگ‌ها می‌سازد: <b hex>, <r N-M>, <rc N-M>, <rd N-M>, <t>, <c>, <n> (بایت، تصادفی، حروف تصادفی، ارقام تصادفی، زمان، شمارنده، nonce)"
+"noisePacketDesc" = "پکت ثابت جای بایت‌های تصادفی را می‌گیرد؛ برای استفاده از Rand خالی بگذارید. Array: مقادیر بایت جداشده با کاما"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "رمز احراز هویت"
@@ -466,6 +472,7 @@
 "insecure" = "ناامن"
 "content" = "محتوا"
 "statusCode" = "Status Code"
+"xForwarded" = "هدرهای X-Forwarded"
 
 [pages.inbounds.protocols]
 "flow" = "Flow"

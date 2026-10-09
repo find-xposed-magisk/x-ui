@@ -234,7 +234,7 @@
                 </template>
                 <template v-if="mask.type === 'noise'">
                     <a-form-item label='{{ i18n "reset" }}'>
-                        <a-input-number v-model.number="mask.settings.reset" :min="0" />
+                        <a-input v-model.trim="mask.settings.reset" placeholder="60-120" />
                     </a-form-item>
                     <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.noise" }}'>
                         <a-icon type="plus" type="primary" size="small" @click="mask.settings.noise.push({rand: '1-8192', randRange: '0-255', type: 'array', packet: '', delay: ''})" />
@@ -245,26 +245,7 @@
                                 @click="() => mask.settings.noise.splice(index, 1)"
                                 :style="{ color: 'rgb(255, 77, 79)', cursor: 'pointer' }"></a-icon>
                         </a-divider>
-                        <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.rand" }}'>
-                            <a-input v-model.trim="n.rand" placeholder="1-8192" />
-                        </a-form-item>
-                        <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.randRange" }}'>
-                            <a-input v-model.trim="n.randRange" placeholder="0-255" />
-                        </a-form-item>
-                        <a-form-item label='{{ i18n "pages.xray.outbound.type" }}'>
-                            <a-select v-model="n.type" :dropdown-class-name="themeSwitcher.currentTheme">
-                                <a-select-option value="array">Array</a-select-option>
-                                <a-select-option value="str">String</a-select-option>
-                                <a-select-option value="hex">Hex</a-select-option>
-                                <a-select-option value="base64">Base64</a-select-option>
-                            </a-select>
-                        </a-form-item>
-                        <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.packet" }}'>
-                            <a-input v-model.trim="n.packet" placeholder='{{ i18n "pages.inbounds.stream.finalmask.binaryData" }}' />
-                        </a-form-item>
-                        <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.delay" }}'>
-                            <a-input v-model.trim="n.delay" placeholder="10-20" />
-                        </a-form-item>
+                        {{template "form/noiseItem" "n"}}
                     </template>
                 </template>
                 <template v-if="mask.type === 'sudoku'">
@@ -354,6 +335,18 @@
             </a-form-item>
             <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.maxIncomingStreams" }}'>
                 <a-input-number v-model.number="inbound.stream.finalmask.quicParams.maxIncomingStreams" :min="0" />
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.brutalDisableLossCompensation" }}'>
+                <a-switch v-model="inbound.stream.finalmask.quicParams.brutalDisableLossCompensation"></a-switch>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.disableChromeParrot" }}'>
+                <a-switch v-model="inbound.stream.finalmask.quicParams.disableChromeParrot"></a-switch>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.disableGSO" }}'>
+                <a-switch v-model="inbound.stream.finalmask.quicParams.disableGSO"></a-switch>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.disableStatelessReset" }}'>
+                <a-switch v-model="inbound.stream.finalmask.quicParams.disableStatelessReset"></a-switch>
             </a-form-item>
         </template>
     </template>

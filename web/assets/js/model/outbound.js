@@ -924,6 +924,31 @@ class UdpMask extends CommonClass {
         return { domains, resolvers, extraPoll: settings.extraPoll ?? 0 };
     }
 
+    // Xray-core takes either random bytes ("rand") or a fixed "packet" per noise
+    // item, never both, and an "array" packet must be a real JSON array. "exp"
+    // builds the packet from tags such as <b 0d0a><t><rc 20-40>.
+    static noiseItemToJson(item = {}) {
+        const out = {};
+        const packet = item.packet ?? '';
+        if (item.type === 'exp') {
+            out.type = 'exp';
+            out.packet = String(packet);
+        } else if (Array.isArray(packet) ? packet.length > 0 : String(packet) !== '') {
+            if (!item.type || item.type === 'array') {
+                out.packet = Array.isArray(packet) ? packet
+                    : String(packet).split(/[\s,]+/).filter(Boolean).map(Number);
+            } else {
+                out.type = item.type;
+                out.packet = packet;
+            }
+        } else {
+            if (item.rand !== '' && item.rand != null) out.rand = item.rand;
+            if (item.randRange) out.randRange = item.randRange;
+        }
+        if (item.delay !== '' && item.delay != null && item.delay !== 0) out.delay = item.delay;
+        return out;
+    }
+
     // Masks that open their own sockets, so Xray-core only accepts them first.
     get dialsItself() {
         return ['udphop', 'xicmp'].includes(this.type);
@@ -938,6 +963,10 @@ class UdpMask extends CommonClass {
 
     toJson() {
         let settings = this.settings;
+        if (this.type === 'noise') {
+            settings = { ...settings, noise: (settings.noise || []).map(n => UdpMask.noiseItemToJson(n)) };
+            if (!settings.reset) delete settings.reset;
+        }
         if (['xdns', 'xicmp', 'udphop'].includes(this.type)) {
             settings = Object.fromEntries(Object.entries(settings).filter(([, v]) =>
                 !(v === '' || v === 0 || v === false || (Array.isArray(v) && v.length === 0))));
@@ -1015,6 +1044,10 @@ class QuicParams extends CommonClass {
         maxIdleTimeout = 0,
         keepAlivePeriod = 0,
         disablePathMTUDiscovery = false,
+        brutalDisableLossCompensation = false,
+        disableChromeParrot = false,
+        disableGSO = false,
+        disableStatelessReset = false,
         maxIncomingStreams = 0,
     } = {}) {
         super();
@@ -1029,6 +1062,10 @@ class QuicParams extends CommonClass {
         this.maxIdleTimeout = maxIdleTimeout;
         this.keepAlivePeriod = keepAlivePeriod;
         this.disablePathMTUDiscovery = disablePathMTUDiscovery;
+        this.brutalDisableLossCompensation = brutalDisableLossCompensation;
+        this.disableChromeParrot = disableChromeParrot;
+        this.disableGSO = disableGSO;
+        this.disableStatelessReset = disableStatelessReset;
         this.maxIncomingStreams = maxIncomingStreams;
     }
 
@@ -1038,7 +1075,7 @@ class QuicParams extends CommonClass {
             'initStreamReceiveWindow', 'maxStreamReceiveWindow',
             'initConnectionReceiveWindow', 'maxConnectionReceiveWindow',
             'maxIdleTimeout', 'keepAlivePeriod', 'disablePathMTUDiscovery',
-            'maxIncomingStreams'];
+            'maxIncomingStreams', 'brutalDisableLossCompensation', 'disableChromeParrot', 'disableGSO', 'disableStatelessReset'];
         return keys.some(k => json[k] !== undefined && json[k] !== '' && json[k] !== 0 && json[k] !== false);
     }
 
@@ -1067,6 +1104,10 @@ class QuicParams extends CommonClass {
             maxIdleTimeout: json.maxIdleTimeout || 0,
             keepAlivePeriod: json.keepAlivePeriod || 0,
             disablePathMTUDiscovery: !!json.disablePathMTUDiscovery,
+            brutalDisableLossCompensation: !!json.brutalDisableLossCompensation,
+            disableChromeParrot: !!json.disableChromeParrot,
+            disableGSO: !!json.disableGSO,
+            disableStatelessReset: !!json.disableStatelessReset,
             maxIncomingStreams: json.maxIncomingStreams || 0,
         });
     }
@@ -1099,6 +1140,10 @@ class QuicParams extends CommonClass {
         if (this.maxIdleTimeout) result.maxIdleTimeout = this.maxIdleTimeout;
         if (this.keepAlivePeriod) result.keepAlivePeriod = this.keepAlivePeriod;
         if (this.disablePathMTUDiscovery) result.disablePathMTUDiscovery = this.disablePathMTUDiscovery;
+        if (this.brutalDisableLossCompensation) result.brutalDisableLossCompensation = true;
+        if (this.disableChromeParrot) result.disableChromeParrot = true;
+        if (this.disableGSO) result.disableGSO = true;
+        if (this.disableStatelessReset) result.disableStatelessReset = true;
         if (this.maxIncomingStreams) result.maxIncomingStreams = this.maxIncomingStreams;
         return Object.keys(result).length > 0 ? result : undefined;
     }

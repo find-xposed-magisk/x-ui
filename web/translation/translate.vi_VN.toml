@@ -454,6 +454,12 @@
 "remoteIPs" = "IP từ xa"
 "remotePorts" = "Cổng từ xa"
 "udpHopLinkDesc" = "Chỉ dùng trong liên kết chia sẻ và gói đăng ký. Trên máy chủ, chuyển tiếp dải cổng này tới cổng inbound bằng iptables"
+"brutalDisableLossCompensation" = "Brutal: Tắt bù mất gói"
+"disableChromeParrot" = "Tắt giả lập Chrome"
+"disableGSO" = "Tắt GSO"
+"disableStatelessReset" = "Tắt Stateless Reset"
+"noiseExpDesc" = "Tạo gói mới mỗi lần gửi từ các thẻ: <b hex>, <r N-M>, <rc N-M>, <rd N-M>, <t>, <c>, <n> (byte, ngẫu nhiên, chữ ngẫu nhiên, số ngẫu nhiên, dấu thời gian, bộ đếm, nonce)"
+"noisePacketDesc" = "Gói cố định thay cho byte ngẫu nhiên; để trống để dùng Rand. Array: các giá trị byte phân tách bằng dấu phẩy"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "Mật khẩu xác thực"
@@ -466,6 +472,7 @@
 "insecure" = "Không bảo mật"
 "content" = "Nội dung"
 "statusCode" = "Status Code"
+"xForwarded" = "Header X-Forwarded"
 
 [pages.inbounds.protocols]
 "flow" = "Flow"
