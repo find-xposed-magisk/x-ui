@@ -3,14 +3,18 @@ package logger
 import (
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/op/go-logging"
 )
 
 var (
-	logger    *logging.Logger
-	logBuffer []struct {
+	logger *logging.Logger
+	// Every goroutine logs, and the panel reads the buffer back for its log
+	// viewer, so it is only touched under the lock.
+	logBufferMu sync.Mutex
+	logBuffer   []struct {
 		time  string
 		level logging.Level
 		log   string
@@ -89,11 +93,13 @@ func Errorf(format string, args ...interface{}) {
 
 func addToBuffer(level string, newLog string) {
 	t := time.Now()
+	logLevel, _ := logging.LogLevel(level)
+
+	logBufferMu.Lock()
+	defer logBufferMu.Unlock()
 	if len(logBuffer) >= 10240 {
 		logBuffer = logBuffer[1:]
 	}
-
-	logLevel, _ := logging.LogLevel(level)
 	logBuffer = append(logBuffer, struct {
 		time  string
 		level logging.Level
@@ -109,6 +115,8 @@ func GetLogs(c int, level string) []string {
 	var output []string
 	logLevel, _ := logging.LogLevel(level)
 
+	logBufferMu.Lock()
+	defer logBufferMu.Unlock()
 	for i := len(logBuffer) - 1; i >= 0 && len(output) <= c; i-- {
 		if logBuffer[i].level <= logLevel {
 			output = append(output, fmt.Sprintf("%s %s - %s", logBuffer[i].time, logBuffer[i].level, logBuffer[i].log))
