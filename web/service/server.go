@@ -87,6 +87,7 @@ type Status struct {
 
 type Release struct {
 	TagName string `json:"tag_name"`
+	Id      uint   `json:"id"`
 }
 
 type ServerService struct {
@@ -246,8 +247,10 @@ func (s *ServerService) GetXrayVersions() ([]string, error) {
 	}
 	var versions []string
 	for _, release := range releases {
-		if release.TagName >= "v26.7.28" {
-			versions = append(versions, release.TagName)
+		versions = append(versions, release.TagName)
+		// Limit: v26.7.28
+		if release.Id <= 360920780 {
+			break
 		}
 	}
 	return versions, nil
