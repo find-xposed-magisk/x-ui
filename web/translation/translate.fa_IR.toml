@@ -435,7 +435,6 @@
 "customTables" = "جدول‌های سفارشی"
 "paddingMin" = "حداقل Padding"
 "paddingMax" = "حداکثر Padding"
-"listenIp" = "IP گوش‌دهنده"
 "round" = "دور"
 "quicParams" = "پارامترهای QUIC"
 "debug" = "اشکال‌زدایی"
@@ -444,6 +443,17 @@
 "udpHopPorts" = "پورت‌های UDP Hop"
 "udpHopInterval" = "بازه UDP Hop"
 "maxIncomingStreams" = "حداکثر استریم‌های ورودی"
+"domains" = "دامنه‌ها"
+"resolvers" = "ریزالورها"
+"recordTypes" = "نوع رکوردها"
+"edns0" = "EDNS0"
+"extraPoll" = "Poll اضافی"
+"dgram" = "ICMP بدون دسترسی روت (DGRAM)"
+"ips" = "آی‌پی‌ها"
+"hopMode" = "حالت پرش"
+"remoteIPs" = "آی‌پی‌های مقصد"
+"remotePorts" = "پورت‌های مقصد"
+"udpHopLinkDesc" = "فقط در لینک‌های اشتراک و سابسکریپشن قرار می‌گیرد. روی سرور این بازه پورت را با iptables به پورت اینباند هدایت کنید"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "رمز احراز هویت"
@@ -670,6 +680,7 @@
 "advanced" = "پیشرفته"
 "linkConverter" = "تبدیل لینک"
 "jsonFreeEditor" = "ویرایشگر آزاد JSON"
+"targetStrategy" = "استراتژی مقصد"
 
 [pages.xray.balancer]
 "addBalancer" = "افزودن بالانسر"
@@ -688,7 +699,8 @@
 "allowedIPsDesc" = "آدرس‌های تونل که به این کاربر اختصاص می‌یابد. سرور کاربر را با همین آدرس‌ها شناسایی می‌کند، پس نباید با کاربر دیگری هم‌پوشانی داشته باشد"
 "endpoint" = "نقطه پایانی"
 "psk" = "کلید مشترک"
-"domainStrategy" = "استراتژی حل دامنه"
+"remoteDNS" = "DNS داخل تونل"
+"remoteDNSDesc" = "سرورهای DNS که داخل تونل پرسیده می‌شوند، جدا شده با کاما. پیش‌فرض: 1.1.1.1، 1.0.0.1 و معادل IPv6 آن‌ها"
 
 [pages.xray.tun]
 "nameDesc" = "نام رابط TUN. مقدار پیش‌فرض 'xrayN', N یک عدد است"

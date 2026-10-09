@@ -435,7 +435,6 @@
 "customTables" = "Custom Tables"
 "paddingMin" = "Padding Min"
 "paddingMax" = "Padding Max"
-"listenIp" = "Listen IP"
 "round" = "Round"
 "quicParams" = "QUIC Parameters"
 "debug" = "Debug"
@@ -444,6 +443,17 @@
 "udpHopPorts" = "UDP Hop Ports"
 "udpHopInterval" = "UDP Hop Interval"
 "maxIncomingStreams" = "Max Incoming Streams"
+"domains" = "Domains"
+"resolvers" = "Resolvers"
+"recordTypes" = "Record Types"
+"edns0" = "EDNS0"
+"extraPoll" = "Extra Poll"
+"dgram" = "Unprivileged ICMP (DGRAM)"
+"ips" = "IPs"
+"hopMode" = "Hop Mode"
+"remoteIPs" = "Remote IPs"
+"remotePorts" = "Remote Ports"
+"udpHopLinkDesc" = "Only written into share links and subscriptions. On the server, forward this port range to the inbound port with iptables"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "Auth Password"
@@ -670,6 +680,7 @@
 "advanced" = "Advanced"
 "linkConverter" = "Link converter"
 "jsonFreeEditor" = "JSON free editor"
+"targetStrategy" = "Target Strategy"
 
 [pages.xray.balancer]
 "addBalancer" = "Add Balancer"
@@ -688,7 +699,8 @@
 "allowedIPsDesc" = "Tunnel addresses assigned to this peer. The server identifies a peer by them, so they must not overlap with another peer"
 "endpoint" = "Endpoint"
 "psk" = "PreShared Key"
-"domainStrategy" = "Domain Strategy"
+"remoteDNS" = "Remote DNS"
+"remoteDNSDesc" = "DNS servers queried inside the tunnel, comma separated. Default: 1.1.1.1, 1.0.0.1 and their IPv6 addresses"
 
 [pages.xray.tun]
 "nameDesc" = "The name of the TUN interface. Default is 'xrayN', where N is some number"

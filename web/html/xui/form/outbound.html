@@ -14,6 +14,12 @@
         <a-form-item label='{{ i18n "pages.xray.outbound.sendThrough" }}'>
             <a-input v-model="outbound.sendThrough"></a-input>
         </a-form-item>
+        <a-form-item label='{{ i18n "pages.xray.outbound.targetStrategy" }}'>
+            <a-select v-model="outbound.targetStrategy" :dropdown-class-name="themeSwitcher.currentTheme">
+                <a-select-option value="">{{ i18n "none" }}</a-select-option>
+                <a-select-option v-for="s in OutboundDomainStrategies" :value="s">[[ s ]]</a-select-option>
+            </a-select>
+        </a-form-item>
 </a-form>
 </a-tab-pane>
 <a-tab-pane key="ob-protocol" tab="{{ i18n "protocol" }}">
@@ -183,10 +189,16 @@
     <a-form-item label='{{ i18n "pages.xray.wireguard.publicKey" }}'>
         <a-input disabled v-model="outbound.settings.pubKey"></a-input>
     </a-form-item>
-    <a-form-item label='{{ i18n "pages.xray.wireguard.domainStrategy" }}'>
-        <a-select v-model="outbound.settings.domainStrategy" :dropdown-class-name="themeSwitcher.currentTheme">
-            <a-select-option v-for="wds in ['', ...WireguardDomainStrategy]" :value="wds">[[ wds ]]</a-select-option>
-        </a-select>
+    <a-form-item>
+        <template slot="label">
+            <a-tooltip>
+                <template slot="title">
+                    <span>{{ i18n "pages.xray.wireguard.remoteDNSDesc" }}</span>
+                </template>
+                {{ i18n "pages.xray.wireguard.remoteDNS" }} <a-icon type="question-circle"></a-icon>
+            </a-tooltip>
+        </template>
+        <a-input v-model.trim="outbound.settings.remoteDNS" placeholder="1.1.1.1,1.0.0.1"></a-input>
     </a-form-item>
     <a-form-item label='{{ i18n "mtu" }}'>
         <a-input-number v-model.number="outbound.settings.mtu"></a-input-number>
@@ -810,6 +822,7 @@
         <a-select v-model="mask.type"
             @change="(type) => mask.settings = mask._getDefaultSettings(type, {})"
             :dropdown-class-name="themeSwitcher.currentTheme">
+            <a-select-option value="udphop">UDP Hop</a-select-option>
             <template v-if="outbound.protocol === Protocols.Hysteria">
                 <a-select-option value="salamander">Salamander (Hysteria2)</a-select-option>
             </template>
@@ -837,10 +850,57 @@
             placeholder='{{ i18n "pages.inbounds.stream.finalmask.obfuscationPassword" }}'></a-input>
         </a-form-item>
         <a-form-item label='{{ i18n "pages.xray.outbound.domain" }}'
-        v-if="['header-dns', 'xdns'].includes(mask.type)">
+        v-if="mask.type === 'header-dns'">
         <a-input v-model.trim="mask.settings.domain"
             placeholder="e.g., www.example.com"></a-input>
         </a-form-item>
+        <template v-if="mask.type === 'xdns'">
+            {{template "form/xdnsDomains" "mask"}}
+            <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.resolvers" }}'>
+                <a-icon type="plus" type="primary" size="small"
+                    @click="mask.settings.resolvers.push({type: 'udp', settings: {addr: ''}})" />
+            </a-form-item>
+            <template v-for="(r, rIdx) in mask.settings.resolvers" :key="'resolver-' + rIdx">
+                <a-divider :style="{ margin: '0' }"> {{ i18n "pages.inbounds.stream.finalmask.resolvers" }} [[ rIdx + 1 ]]
+                    <a-icon type="delete"
+                        @click="() => mask.settings.resolvers.splice(rIdx, 1)"
+                        :style="{ color: 'rgb(255, 77, 79)', cursor: 'pointer' }"></a-icon>
+                </a-divider>
+                <a-form-item label='{{ i18n "pages.inbounds.stream.hysteria.type" }}'>
+                    <a-select v-model="r.type" :dropdown-class-name="themeSwitcher.currentTheme">
+                        <a-select-option value="udp">UDP</a-select-option>
+                        <a-select-option value="tcp">TCP</a-select-option>
+                    </a-select>
+                </a-form-item>
+                <a-form-item label='{{ i18n "address" }}'>
+                    <a-input v-model.trim="r.settings.addr" placeholder="1.1.1.1:53"></a-input>
+                </a-form-item>
+            </template>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.extraPoll" }}'>
+                <a-input-number v-model.number="mask.settings.extraPoll" :min="0" :max="3"></a-input-number>
+            </a-form-item>
+        </template>
+        <template v-if="mask.type === 'udphop'">
+            <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.hopMode" }}'>
+                <a-select mode="multiple" :dropdown-class-name="themeSwitcher.currentTheme"
+                    :value="mask.settings.mode ? mask.settings.mode.split(',') : []"
+                    @change="(v) => mask.settings.mode = v.join(',')">
+                    <a-select-option value="intervalLocal">intervalLocal</a-select-option>
+                    <a-select-option value="intervalRemote">intervalRemote</a-select-option>
+                    <a-select-option value="perConnRemote">perConnRemote</a-select-option>
+                </a-select>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.outbounds.interval" }}'>
+                <a-input v-model.trim="mask.settings.interval" placeholder="30"></a-input>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.remotePorts" }}'>
+                <a-input v-model.trim="mask.settings.remotePorts" placeholder="20000-50000"></a-input>
+            </a-form-item>
+            <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.remoteIPs" }}'>
+                <a-select mode="tags" v-model="mask.settings.remoteIPs" :token-separators="[',', ' ']"
+                    :dropdown-class-name="themeSwitcher.currentTheme" placeholder="203.0.113.0/24"></a-select>
+            </a-form-item>
+        </template>
         <template v-if="mask.type === 'header-custom'">
             <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.client" }}'>
                 <a-icon type="plus" type="primary" size="small" @click="mask.settings.client.push({rand: 0, randRange: '0-255', type: 'array', packet: []})" />
@@ -951,12 +1011,7 @@
             </template>
         </template>
         <template v-if="mask.type === 'xicmp'">
-            <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.listenIp" }}'>
-                <a-input v-model.trim="mask.settings.listenIp" placeholder="0.0.0.0"></a-input>
-            </a-form-item>
-            <a-form-item label='ID'>
-                <a-input-number v-model.number="mask.settings.id" :min="0"></a-input-number>
-            </a-form-item>
+            {{template "form/xicmpFields" "mask"}}
         </template>
     </a-form>
     </template>
@@ -987,12 +1042,6 @@
             </a-form-item>
             <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.brutalDown" }} Mbps'>
                 <a-input-number v-model.number="outbound.stream.finalmask.quicParams.brutalDown" :min="0" />
-            </a-form-item>
-            <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.udpHopPorts" }}'>
-                <a-input v-model.trim="outbound.stream.finalmask.quicParams.udpHopPorts" placeholder="20000-50000" />
-            </a-form-item>
-            <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.udpHopInterval" }}'>
-                <a-input v-model.trim="outbound.stream.finalmask.quicParams.udpHopInterval" placeholder="5-10" />
             </a-form-item>
             <a-form-item label='{{ i18n "pages.outbounds.initStreamReceive" }}'>
                 <a-input-number v-model.number="outbound.stream.finalmask.quicParams.initStreamReceiveWindow" :min="0" />

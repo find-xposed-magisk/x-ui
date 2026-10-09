@@ -228,6 +228,7 @@ func (s *SubJsonService) streamData(stream string) map[string]any {
 		streamSettings["realitySettings"] = s.realityData(mapAt(streamSettings, "realitySettings"))
 	}
 	delete(streamSettings, "sockopt")
+	xray.MoveUDPHopToMask(streamSettings)
 
 	// remove proxy protocol
 	network, _ := streamSettings["network"].(string)

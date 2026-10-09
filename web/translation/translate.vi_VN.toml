@@ -435,7 +435,6 @@
 "customTables" = "Custom Tables"
 "paddingMin" = "Padding Min"
 "paddingMax" = "Padding Max"
-"listenIp" = "Listen IP"
 "round" = "Round"
 "quicParams" = "Tham số QUIC"
 "debug" = "Debug"
@@ -444,6 +443,17 @@
 "udpHopPorts" = "Cổng UDP Hop"
 "udpHopInterval" = "Khoảng UDP Hop"
 "maxIncomingStreams" = "Max Incoming Streams"
+"domains" = "Tên miền"
+"resolvers" = "Trình phân giải"
+"recordTypes" = "Loại bản ghi"
+"edns0" = "EDNS0"
+"extraPoll" = "Thăm dò bổ sung"
+"dgram" = "ICMP không đặc quyền (DGRAM)"
+"ips" = "Địa chỉ IP"
+"hopMode" = "Chế độ nhảy"
+"remoteIPs" = "IP từ xa"
+"remotePorts" = "Cổng từ xa"
+"udpHopLinkDesc" = "Chỉ dùng trong liên kết chia sẻ và gói đăng ký. Trên máy chủ, chuyển tiếp dải cổng này tới cổng inbound bằng iptables"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "Mật khẩu xác thực"
@@ -670,6 +680,7 @@
 "advanced" = "Nâng cao"
 "linkConverter" = "Chuyển đổi liên kết"
 "jsonFreeEditor" = "Trình soạn JSON tự do"
+"targetStrategy" = "Chiến lược đích"
 
 [pages.xray.balancer]
 "addBalancer" = "Thêm cân bằng"
@@ -688,7 +699,8 @@
 "allowedIPsDesc" = "Địa chỉ đường hầm được gán cho peer này. Máy chủ nhận diện peer bằng chúng, nên không được trùng với peer khác"
 "endpoint" = "Điểm cuối"
 "psk" = "Khóa chia sẻ"
-"domainStrategy" = "Chiến lược tên miền"
+"remoteDNS" = "DNS từ xa"
+"remoteDNSDesc" = "Máy chủ DNS được truy vấn bên trong đường hầm, phân tách bằng dấu phẩy. Mặc định: 1.1.1.1, 1.0.0.1 và địa chỉ IPv6 của chúng"
 
 [pages.xray.tun]
 "nameDesc" = "Tên của giao diện TUN. Giá trị mặc định là 'xrayN', với N là số nguyen."

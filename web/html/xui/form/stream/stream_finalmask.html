@@ -168,10 +168,13 @@
                         placeholder='{{ i18n "pages.inbounds.stream.finalmask.obfuscationPassword" }}'></a-input>
                 </a-form-item>
                 <a-form-item label='{{ i18n "pages.xray.outbound.domain" }}'
-                    v-if="['header-dns', 'xdns'].includes(mask.type)">
+                    v-if="mask.type === 'header-dns'">
                     <a-input v-model.trim="mask.settings.domain"
                         placeholder="e.g., www.example.com"></a-input>
                 </a-form-item>
+                <template v-if="mask.type === 'xdns'">
+                    {{template "form/xdnsDomains" "mask"}}
+                </template>
                 <template v-if="mask.type === 'header-custom'">
                     <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.client" }}'>
                         <a-icon type="plus" type="primary" size="small" @click="mask.settings.client.push({rand: 0, randRange: '0-255', type: 'array', packet: []})" />
@@ -282,12 +285,7 @@
                     </a-form-item>
                 </template>
                 <template v-if="mask.type === 'xicmp'">
-                    <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.listenIp" }}'>
-                        <a-input v-model.trim="mask.settings.listenIp" placeholder="0.0.0.0" />
-                    </a-form-item>
-                    <a-form-item label='ID'>
-                        <a-input-number v-model.number="mask.settings.id" :min="0" />
-                    </a-form-item>
+                    {{template "form/xicmpFields" "mask"}}
                 </template>
             </a-form>
         </template>
@@ -319,7 +317,15 @@
             <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.brutalDown" }} Mbps'>
                 <a-input-number v-model.number="inbound.stream.finalmask.quicParams.brutalDown" :min="0" />
             </a-form-item>
-            <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.udpHopPorts" }}'>
+            <a-form-item>
+                <template slot="label">
+                    <a-tooltip>
+                        <template slot="title">
+                            <span>{{ i18n "pages.inbounds.stream.finalmask.udpHopLinkDesc" }}</span>
+                        </template>
+                        {{ i18n "pages.inbounds.stream.finalmask.udpHopPorts" }} <a-icon type="question-circle"></a-icon>
+                    </a-tooltip>
+                </template>
                 <a-input v-model.trim="inbound.stream.finalmask.quicParams.udpHopPorts" placeholder="20000-50000" />
             </a-form-item>
             <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.udpHopInterval" }}'>

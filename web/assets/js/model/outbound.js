@@ -70,13 +70,6 @@ const OutboundDomainStrategies = [
     "ForceIPv4"
 ];
 
-const WireguardDomainStrategy = [
-    "ForceIP",
-    "ForceIPv4",
-    "ForceIPv4v6",
-    "ForceIPv6",
-    "ForceIPv6v4"
-];
 
 const USERS_SECURITY = {
     AES_128_GCM: "aes-128-gcm",
@@ -110,7 +103,6 @@ Object.freeze(UTLS_FINGERPRINT);
 Object.freeze(ALPN_OPTION);
 Object.freeze(SNIFFING_OPTION);
 Object.freeze(OutboundDomainStrategies);
-Object.freeze(WireguardDomainStrategy);
 Object.freeze(USERS_SECURITY);
 Object.freeze(MODE_OPTION);
 Object.freeze(Address_Port_Strategy);
@@ -866,10 +858,18 @@ class UdpMask extends CommonClass {
             case 'mkcp-aes128gcm':
                 return { password: settings.password || '' };
             case 'header-dns':
-            case 'xdns':
                 return { domain: settings.domain || '' };
+            case 'xdns':
+                return UdpMask.xdnsSettings(settings);
             case 'xicmp':
-                return { listenIp: settings.listenIp || settings.ip || '0.0.0.0', id: settings.id ?? 0 };
+                return { dgram: !!settings.dgram, ips: settings.ips || [] };
+            case 'udphop':
+                return {
+                    mode: settings.mode || 'intervalLocal,intervalRemote',
+                    interval: settings.interval ?? '30',
+                    remoteIPs: settings.remoteIPs || [],
+                    remotePorts: settings.remotePorts ?? '',
+                };
             case 'mkcp-original':
             case 'header-dtls':
             case 'header-srtp':
@@ -895,6 +895,40 @@ class UdpMask extends CommonClass {
         }
     }
 
+    // Xray-core v26.9.30 turned xDNS domains and resolvers into objects. Older
+    // configs carry a bare "domain", or plain string lists where a resolver reads
+    // "name[:type]+udp://addr".
+    static xdnsSettings(settings = {}) {
+        const domains = [];
+        const resolvers = [];
+        const addDomain = (name, types = [16]) => {
+            const known = domains.find(d => d.name === name);
+            if (known) known.types = [...new Set([...(known.types || []), ...types])];
+            else if (name) domains.push({ name, types });
+        };
+        for (const d of [].concat(settings.domain || [], settings.domains || [])) {
+            if (typeof d === 'string') addDomain(d);
+            else if (d && typeof d === 'object') domains.push(d);
+        }
+        for (const r of settings.resolvers || []) {
+            if (typeof r === 'string') {
+                const [head, addr] = r.split('+udp://');
+                if (!addr) continue;
+                const [name, type] = head.split(':');
+                addDomain(name, [UdpMask.XdnsTypes[(type || 'txt').toUpperCase()] || 16]);
+                resolvers.push({ type: 'udp', settings: { addr } });
+            } else if (r && typeof r === 'object') {
+                resolvers.push({ type: r.type || 'udp', settings: { addr: r.settings?.addr || '' } });
+            }
+        }
+        return { domains, resolvers, extraPoll: settings.extraPoll ?? 0 };
+    }
+
+    // Masks that open their own sockets, so Xray-core only accepts them first.
+    get dialsItself() {
+        return ['udphop', 'xicmp'].includes(this.type);
+    }
+
     static fromJson(json = {}) {
         return new UdpMask(
             json.type || 'salamander',
@@ -903,12 +937,19 @@ class UdpMask extends CommonClass {
     }
 
     toJson() {
+        let settings = this.settings;
+        if (['xdns', 'xicmp', 'udphop'].includes(this.type)) {
+            settings = Object.fromEntries(Object.entries(settings).filter(([, v]) =>
+                !(v === '' || v === 0 || v === false || (Array.isArray(v) && v.length === 0))));
+        }
         return {
             type: this.type,
-            settings: CommonClass.shrinkObject(this.settings)
+            settings: CommonClass.shrinkObject(settings)
         };
     }
 }
+
+UdpMask.XdnsTypes = { A: 1, CNAME: 5, TXT: 16, AAAA: 28 };
 
 class TcpMask extends CommonClass {
     constructor(type = 'header-custom', settings = {}) {
@@ -967,8 +1008,6 @@ class QuicParams extends CommonClass {
         debug = false,
         brutalUp = 0,
         brutalDown = 0,
-        udpHopPorts = '',
-        udpHopInterval = '',
         initStreamReceiveWindow = 0,
         maxStreamReceiveWindow = 0,
         initConnectionReceiveWindow = 0,
@@ -983,8 +1022,6 @@ class QuicParams extends CommonClass {
         this.debug = debug;
         this.brutalUp = brutalUp;
         this.brutalDown = brutalDown;
-        this.udpHopPorts = udpHopPorts;
-        this.udpHopInterval = udpHopInterval;
         this.initStreamReceiveWindow = initStreamReceiveWindow;
         this.maxStreamReceiveWindow = maxStreamReceiveWindow;
         this.initConnectionReceiveWindow = initConnectionReceiveWindow;
@@ -997,7 +1034,7 @@ class QuicParams extends CommonClass {
 
     static hasAnyMeaningfulValue(json) {
         if (!json || typeof json !== 'object') return false;
-        const keys = ['congestion', 'debug', 'brutalUp', 'brutalDown', 'udpHop',
+        const keys = ['congestion', 'debug', 'brutalUp', 'brutalDown',
             'initStreamReceiveWindow', 'maxStreamReceiveWindow',
             'initConnectionReceiveWindow', 'maxConnectionReceiveWindow',
             'maxIdleTimeout', 'keepAlivePeriod', 'disablePathMTUDiscovery',
@@ -1018,14 +1055,11 @@ class QuicParams extends CommonClass {
     }
 
     static fromJson(json = {}) {
-        const udpHop = json.udpHop || {};
         return new QuicParams({
             congestion: json.congestion || '',
             debug: !!json.debug,
             brutalUp: QuicParams.getMbpsInt(json.brutalUp),
             brutalDown: QuicParams.getMbpsInt(json.brutalDown),
-            udpHopPorts: udpHop.ports || '',
-            udpHopInterval: udpHop.interval !== undefined ? String(udpHop.interval) : '',
             initStreamReceiveWindow: json.initStreamReceiveWindow || 0,
             maxStreamReceiveWindow: json.maxStreamReceiveWindow || 0,
             initConnectionReceiveWindow: json.initConnectionReceiveWindow || 0,
@@ -1042,8 +1076,6 @@ class QuicParams extends CommonClass {
             congestion: params.get('congestion') ?? '',
             brutalUp: QuicParams.getMbpsInt(params.get('upmbps') ?? params.get('up')),
             brutalDown: QuicParams.getMbpsInt(params.get('downmbps') ?? params.get('down')),
-            udpHopPorts: params.get('mport') ?? params.get('udphopPort') ?? '',
-            udpHopInterval: params.get('udphopInterval') ?? '',
             initStreamReceiveWindow: parseInt(params.get('initStreamReceiveWindow')) || 0,
             maxStreamReceiveWindow: parseInt(params.get('maxStreamReceiveWindow')) || 0,
             initConnectionReceiveWindow: parseInt(params.get('initConnectionReceiveWindow')) || 0,
@@ -1060,10 +1092,6 @@ class QuicParams extends CommonClass {
         if (this.debug) result.debug = this.debug;
         if (this.brutalUp) result.brutalUp = QuicParams.getMbpsStr(this.brutalUp);
         if (this.brutalDown) result.brutalDown = QuicParams.getMbpsStr(this.brutalDown);
-        if (this.udpHopPorts) {
-            result.udpHop = { ports: this.udpHopPorts };
-            if (this.udpHopInterval !== '') result.udpHop.interval = this.udpHopInterval;
-        }
         if (this.initStreamReceiveWindow) result.initStreamReceiveWindow = this.initStreamReceiveWindow;
         if (this.maxStreamReceiveWindow) result.maxStreamReceiveWindow = this.maxStreamReceiveWindow;
         if (this.initConnectionReceiveWindow) result.initConnectionReceiveWindow = this.initConnectionReceiveWindow;
@@ -1087,8 +1115,14 @@ class FinalMaskStreamSettings extends CommonClass {
     static fromJson(json = {}) {
         const quicParams = QuicParams.hasAnyMeaningfulValue(json.quicParams)
             ? QuicParams.fromJson(json.quicParams) : undefined;
+        const udp = [...(json.udp || [])];
+        // Xray-core v26.9.30 moved port hopping from quicParams.udpHop to a mask.
+        const udpHop = json.quicParams?.udpHop;
+        if (udpHop?.ports && !udp.some(m => m.type === 'udphop')) {
+            udp.unshift(FinalMaskStreamSettings.udpHopMask(udpHop.ports, udpHop.interval));
+        }
         return new FinalMaskStreamSettings(
-            json.udp || [],
+            udp,
             json.tcp || [],
             quicParams,
         );
@@ -1097,6 +1131,10 @@ class FinalMaskStreamSettings extends CommonClass {
     static fromLinkParams(params) {
         const qp = QuicParams.fromLinkParams(params);
         const udpMasks = [];
+        const mport = params.get('mport') ?? params.get('udphopPort');
+        if (mport) {
+            udpMasks.push(FinalMaskStreamSettings.udpHopMask(mport, params.get('udphopInterval')));
+        }
         if (params.has('obfs')) {
             udpMasks.push({
                 type: params.get('obfs'),
@@ -1106,9 +1144,26 @@ class FinalMaskStreamSettings extends CommonClass {
         return new FinalMaskStreamSettings(udpMasks, [], qp.toJson() ? qp : undefined);
     }
 
+    // Hysteria-style port hopping: a fresh local socket to another server port
+    // every interval.
+    static udpHopMask(ports, interval) {
+        return {
+            type: 'udphop',
+            settings: {
+                mode: 'intervalLocal,intervalRemote',
+                interval: interval ? String(interval) : undefined,
+                remotePorts: String(ports),
+            },
+        };
+    }
+
     toJson() {
         const result = {};
-        if (this.udp && this.udp.length > 0) result.udp = this.udp.map(udp => udp.toJson());
+        if (this.udp && this.udp.length > 0) {
+            result.udp = [...this.udp]
+                .sort((a, b) => b.dialsItself - a.dialsItself)
+                .map(udp => udp.toJson());
+        }
         if (this.tcp && this.tcp.length > 0) result.tcp = this.tcp.map(tcp => tcp.toJson());
         if (this.quicParams) {
             const qp = this.quicParams.toJson();
@@ -1275,6 +1330,7 @@ class Outbound extends CommonClass {
         streamSettings = new StreamSettings(),
         sendThrough,
         mux = new Mux(),
+        targetStrategy = '',
     ) {
         super();
         this.tag = tag;
@@ -1283,6 +1339,7 @@ class Outbound extends CommonClass {
         this.stream = streamSettings;
         this.sendThrough = sendThrough;
         this.mux = mux;
+        this.targetStrategy = targetStrategy;
     }
 
     get protocol() {
@@ -1374,6 +1431,12 @@ class Outbound extends CommonClass {
     }
 
     static fromJson(json = {}) {
+        let targetStrategy = json.targetStrategy || '';
+        // Xray-core v26.9.30 dropped WireGuard's domainStrategy; resolving the
+        // destination inside the tunnel is now up to targetStrategy.
+        if (json.protocol === Protocols.Wireguard && !targetStrategy) {
+            targetStrategy = json.settings?.domainStrategy || '';
+        }
         return new Outbound(
             json.tag,
             json.protocol,
@@ -1381,6 +1444,7 @@ class Outbound extends CommonClass {
             StreamSettings.fromJson(json.streamSettings),
             json.sendThrough,
             Mux.fromJson(json.mux),
+            targetStrategy,
         )
     }
 
@@ -1405,6 +1469,7 @@ class Outbound extends CommonClass {
             ...(stream ? { streamSettings: stream } : {}),
             ...(this.sendThrough ? { sendThrough: this.sendThrough } : {}),
             ...(this.mux?.enabled ? { mux: this.mux } : {}),
+            ...(this.targetStrategy && this.targetStrategy !== 'AsIs' ? { targetStrategy: this.targetStrategy } : {}),
         };
     }
 
@@ -2038,7 +2103,7 @@ Outbound.WireguardSettings = class extends CommonClass {
         secretKey = '',
         address = [''],
         workers = 2,
-        domainStrategy = '',
+        remoteDNS = '',
         reserved = '',
         peers = [new Outbound.WireguardSettings.Peer()],
         noKernelTun = false,
@@ -2049,7 +2114,7 @@ Outbound.WireguardSettings = class extends CommonClass {
         this.pubKey = secretKey.length>0 ? Wireguard.generateKeypair(secretKey).publicKey : '';
         this.address = address instanceof Array ? address.join(',') : address;
         this.workers = workers;
-        this.domainStrategy = domainStrategy;
+        this.remoteDNS = remoteDNS instanceof Array ? remoteDNS.join(',') : remoteDNS;
         this.reserved = reserved instanceof Array ? reserved.join(',') : reserved;
         this.peers = peers;
         this.noKernelTun = noKernelTun;
@@ -2069,7 +2134,7 @@ Outbound.WireguardSettings = class extends CommonClass {
             json.secretKey,
             json.address,
             json.workers,
-            json.domainStrategy,
+            json.remoteDNS,
             json.reserved,
             json.peers.map(peer => Outbound.WireguardSettings.Peer.fromJson(peer)),
             json.noKernelTun,
@@ -2082,7 +2147,7 @@ Outbound.WireguardSettings = class extends CommonClass {
             secretKey: this.secretKey,
             address: this.address ? this.address.split(",") : [],
             workers: this.workers ?? undefined,
-            domainStrategy: WireguardDomainStrategy.includes(this.domainStrategy) ? this.domainStrategy : undefined,
+            remoteDNS: this.remoteDNS ? this.remoteDNS.split(',').map(s => s.trim()).filter(Boolean) : undefined,
             reserved: this.reserved ? this.reserved.split(",").map(Number) : undefined,
             peers: Outbound.WireguardSettings.Peer.toJsonArray(this.peers),
             noKernelTun: this.noKernelTun ? true : undefined,

@@ -1,0 +1,34 @@
+{{define "form/xdnsDomains"}}
+<a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.domains" }}'>
+    <a-icon type="plus" type="primary" size="small"
+        @click="{{.}}.settings.domains.push({name: '', types: [16], edns0: 1232})" />
+</a-form-item>
+<template v-for="(d, dIdx) in {{.}}.settings.domains" :key="'xdns-domain-' + dIdx">
+    <a-divider :style="{ margin: '0' }"> {{ i18n "pages.inbounds.stream.finalmask.domains" }} [[ dIdx + 1 ]]
+        <a-icon type="delete"
+            @click="() => {{.}}.settings.domains.splice(dIdx, 1)"
+            :style="{ color: 'rgb(255, 77, 79)', cursor: 'pointer' }"></a-icon>
+    </a-divider>
+    <a-form-item label='{{ i18n "pages.xray.outbound.domain" }}'>
+        <a-input v-model.trim="d.name" placeholder="t.example.com"></a-input>
+    </a-form-item>
+    <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.recordTypes" }}'>
+        <a-select mode="multiple" v-model="d.types" :dropdown-class-name="themeSwitcher.currentTheme">
+            <a-select-option v-for="(code, name) in UdpMask.XdnsTypes" :value="code">[[ name ]]</a-select-option>
+        </a-select>
+    </a-form-item>
+    <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.edns0" }}'>
+        <a-input-number v-model.number="d.edns0" :min="0" :max="4096" placeholder="1232"></a-input-number>
+    </a-form-item>
+</template>
+{{end}}
+
+{{define "form/xicmpFields"}}
+<a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.dgram" }}'>
+    <a-switch v-model="{{.}}.settings.dgram"></a-switch>
+</a-form-item>
+<a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.ips" }}'>
+    <a-select mode="tags" v-model="{{.}}.settings.ips" :token-separators="[',', ' ']"
+        :dropdown-class-name="themeSwitcher.currentTheme"></a-select>
+</a-form-item>
+{{end}}

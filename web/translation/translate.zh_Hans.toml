@@ -435,7 +435,6 @@
 "customTables" = "自定义表组"
 "paddingMin" = "最小填充"
 "paddingMax" = "最大填充"
-"listenIp" = "监听 IP"
 "round" = "轮次"
 "quicParams" = "QUIC 参数"
 "debug" = "调试"
@@ -444,6 +443,17 @@
 "udpHopPorts" = "UDP 端口跳跃范围"
 "udpHopInterval" = "UDP 端口跳跃间隔"
 "maxIncomingStreams" = "最大入站流"
+"domains" = "域名"
+"resolvers" = "解析器"
+"recordTypes" = "记录类型"
+"edns0" = "EDNS0"
+"extraPoll" = "额外轮询"
+"dgram" = "非特权 ICMP (DGRAM)"
+"ips" = "IP 地址"
+"hopMode" = "跳跃模式"
+"remoteIPs" = "远程 IP"
+"remotePorts" = "远程端口"
+"udpHopLinkDesc" = "仅写入分享链接和订阅。服务端需用 iptables 将该端口范围转发到入站端口"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "认证密码"
@@ -670,6 +680,7 @@
 "advanced" = "高级"
 "linkConverter" = "链接转换"
 "jsonFreeEditor" = "JSON 自由编辑"
+"targetStrategy" = "目标策略"
 
 [pages.xray.balancer]
 "addBalancer" = "添加平衡器"
@@ -688,7 +699,8 @@
 "allowedIPsDesc" = "分配给该对等端的隧道地址。服务器以此识别对等端，因此不能与其他对等端重叠"
 "endpoint" = "终点"
 "psk" = "共享密钥"
-"domainStrategy" = "域策略"
+"remoteDNS" = "远程 DNS"
+"remoteDNSDesc" = "在隧道内查询的 DNS 服务器，以逗号分隔。默认：1.1.1.1、1.0.0.1 及其 IPv6 地址"
 
 [pages.xray.tun]
 "nameDesc" = "TUN 接口的名称。默认值为 'xrayN', 其中 N 是接口的编号。"

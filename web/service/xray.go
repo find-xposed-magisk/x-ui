@@ -203,6 +203,8 @@ func (s *XrayService) GetXrayConfig() (*xray.Config, error) {
 			}
 
 			delete(stream, "externalProxy")
+			// Port hopping is client-only now; the range only feeds share links.
+			xray.TakeUDPHop(stream)
 
 			newStream, err := json.MarshalIndent(stream, "", "  ")
 			if err != nil {

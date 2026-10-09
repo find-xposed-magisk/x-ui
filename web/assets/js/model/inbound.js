@@ -1285,10 +1285,11 @@ class UdpMask extends XrayCommonClass {
             case 'mkcp-aes128gcm':
                 return { password: settings.password || '' };
             case 'header-dns':
-            case 'xdns':
                 return { domain: settings.domain || '' };
+            case 'xdns':
+                return { domains: UdpMask.xdnsDomains(settings) };
             case 'xicmp':
-                return { listenIp: settings.listenIp || settings.ip || '0.0.0.0', id: settings.id ?? 0 };
+                return { dgram: !!settings.dgram, ips: settings.ips || [] };
             case 'mkcp-original':
             case 'header-dtls':
             case 'header-srtp':
@@ -1314,6 +1315,19 @@ class UdpMask extends XrayCommonClass {
         }
     }
 
+    // Xray-core v26.9.30 turned xDNS domains into objects; older configs carry a
+    // bare "domain" or a list of names.
+    static xdnsDomains(settings = {}) {
+        return [].concat(settings.domain || [], settings.domains || [])
+            .map(d => typeof d === 'string' ? { name: d, types: [16] } : d)
+            .filter(d => d && d.name !== undefined);
+    }
+
+    // Masks that open their own sockets, so Xray-core only accepts them first.
+    get dialsItself() {
+        return this.type === 'xicmp';
+    }
+
     static fromJson(json = {}) {
         return new UdpMask(
             json.type || 'salamander',
@@ -1322,12 +1336,18 @@ class UdpMask extends XrayCommonClass {
     }
 
     toJson() {
+        let settings = this.settings;
+        if (this.type === 'xicmp') {
+            settings = { dgram: settings.dgram || undefined, ips: settings.ips?.length ? settings.ips : undefined };
+        }
         return {
             type: this.type,
-            settings: (this.settings && Object.keys(this.settings).length > 0) ? this.settings : undefined
+            settings: (settings && Object.values(settings).some(v => v !== undefined)) ? settings : undefined
         };
     }
 }
+
+UdpMask.XdnsTypes = { A: 1, CNAME: 5, TXT: 16, AAAA: 28 };
 
 class TcpMask extends XrayCommonClass {
     constructor(type = 'header-custom', settings = {}) {
@@ -1498,7 +1518,11 @@ class FinalMaskStreamSettings extends XrayCommonClass {
 
     toJson() {
         const result = {};
-        if (this.udp && this.udp.length > 0) result.udp = this.udp.map(udp => udp.toJson());
+        if (this.udp && this.udp.length > 0) {
+            result.udp = [...this.udp]
+                .sort((a, b) => b.dialsItself - a.dialsItself)
+                .map(udp => udp.toJson());
+        }
         if (this.tcp && this.tcp.length > 0) result.tcp = this.tcp.map(tcp => tcp.toJson());
         if (this.quicParams) {
             const qp = this.quicParams.toJson();
