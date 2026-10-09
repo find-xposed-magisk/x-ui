@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    # A version bump or a docs change does not need the suite, and running it
+    # would only cancel the run of the merge it follows.
+    paths-ignore:
+      - 'config/version'
+      - '**.md'
   pull_request:
   workflow_dispatch:
 
@@ -16,7 +21,7 @@ concurrency:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
