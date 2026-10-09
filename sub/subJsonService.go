@@ -228,6 +228,7 @@ func (s *SubJsonService) streamData(stream string) map[string]any {
 		streamSettings["realitySettings"] = s.realityData(mapAt(streamSettings, "realitySettings"))
 	}
 	delete(streamSettings, "sockopt")
+	xray.MoveUDPHopToMask(streamSettings)
 
 	// remove proxy protocol
 	network, _ := streamSettings["network"].(string)
@@ -304,7 +305,8 @@ func (s *SubJsonService) genOutbound(inbound *model.Inbound, streamSettings map[
 	outbound.Protocol = string(inbound.Protocol)
 	outbound.Tag = "proxy"
 
-	if s.mux != "" {
+	// The core rejects mux on a MASQUE outbound.
+	if s.mux != "" && inbound.Protocol != model.Masque {
 		outbound.Mux = json_util.RawMessage(s.mux)
 	}
 
@@ -350,6 +352,18 @@ func (s *SubJsonService) genOutbound(inbound *model.Inbound, streamSettings map[
 		streamSettings["hysteriaSettings"] = outHyStream
 
 		streamSettings["network"] = "hysteria"
+		streamSettings["security"] = "tls"
+	case model.Masque:
+		delete(settings, "level")
+		masqueStream := map[string]any{
+			"user": client.Email,
+			"pass": client.Pass,
+		}
+		if path, _ := mapAt(streamSettings, "masqueSettings")["path"].(string); path != "" {
+			masqueStream["path"] = path
+		}
+		streamSettings["masqueSettings"] = masqueStream
+		streamSettings["network"] = "masque"
 		streamSettings["security"] = "tls"
 	}
 

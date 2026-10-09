@@ -260,6 +260,8 @@
 "xudpUDP443" = "xudp UDP 443"
 "pinnedSha256" = "Enter SHA256 fingerprints (base64)"
 "obtain" = "Failed to load outbounds"
+"customResponseData" = "Custom Response"
+"customResponseDataDesc" = "Base64 of the bytes written back before the connection is closed, e.g. a raw HTTP response"
 
 [pages.client]
 "add" = "Add Client"
@@ -435,7 +437,6 @@
 "customTables" = "Custom Tables"
 "paddingMin" = "Padding Min"
 "paddingMax" = "Padding Max"
-"listenIp" = "Listen IP"
 "round" = "Round"
 "quicParams" = "QUIC Parameters"
 "debug" = "Debug"
@@ -444,6 +445,37 @@
 "udpHopPorts" = "UDP Hop Ports"
 "udpHopInterval" = "UDP Hop Interval"
 "maxIncomingStreams" = "Max Incoming Streams"
+"domains" = "Domains"
+"resolvers" = "Resolvers"
+"recordTypes" = "Record Types"
+"edns0" = "EDNS0"
+"extraPoll" = "Extra Poll"
+"dgram" = "Unprivileged ICMP (DGRAM)"
+"ips" = "IPs"
+"hopMode" = "Hop Mode"
+"remoteIPs" = "Remote IPs"
+"remotePorts" = "Remote Ports"
+"udpHopLinkDesc" = "Only written into share links and subscriptions. On the server, forward this port range to the inbound port with iptables"
+"brutalDisableLossCompensation" = "Brutal: Disable Loss Compensation"
+"disableChromeParrot" = "Disable Chrome Parrot"
+"disableGSO" = "Disable GSO"
+"disableStatelessReset" = "Disable Stateless Reset"
+"noiseExpDesc" = "Builds a fresh packet on every send from tags: <b hex>, <r N-M>, <rc N-M>, <rd N-M>, <t>, <c>, <n> (bytes, random, random letters, random digits, timestamp, counter, nonce)"
+"noisePacketDesc" = "A fixed packet replaces the random bytes; leave it empty to use Rand. Array: comma-separated byte values"
+"realmUrlDesc" = "Rendezvous server for UDP hole punching: realm://token@host[:port]/id (realm+http:// for plain HTTP). Client and server use the same id"
+"stunServers" = "STUN Servers"
+"ipMode" = "IP Mode"
+"portMapping" = "Port Mapping"
+"portMappingDesc" = "Asks the local router for a port mapping through UPnP / NAT-PMP, which helps behind a strict NAT"
+"portMappingTimeout" = "Mapping Timeout (s)"
+"portMappingLifetime" = "Mapping Lifetime (s)"
+"realmTlsDesc" = "Optional TLS settings for the rendezvous server, in JSON like tlsSettings"
+"mkcpHeader" = "Header"
+"mkcpPasswordDesc" = "Set it to encrypt with AES-128-GCM; leave it empty for the original mKCP format"
+"xmcProfiles" = "Minecraft Profiles"
+"xmcProfilesDesc" = "Signed Minecraft profiles; both ends need the same list, and the client logs in with a random one. Enter a username and fetch the rest from Mojang"
+"xmcFetch" = "Fetch"
+"xmcHostnameDesc" = "The server address the client puts in its Minecraft handshake; empty uses the real one"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "Auth Password"
@@ -456,6 +488,29 @@
 "insecure" = "Insecure"
 "content" = "Content"
 "statusCode" = "Status Code"
+"xForwarded" = "X-Forwarded Headers"
+
+[pages.inbounds.stream.xdrive]
+"service" = "Storage Service"
+"serviceDesc" = "Both ends exchange data through this storage and must use the same service and folder. The credentials sit on the client, so use it for self-hosted setups only, and enable mux on the outbound"
+"remoteFolder" = "Remote Folder"
+"remoteFolderDesc" = "Google Drive: the folder ID. Local: a directory path. Template: available as {folder}"
+"secrets" = "Secrets"
+"secretsDesc" = "Available in the template as {secret0}, {secret1}, ..."
+"template" = "Template"
+"templateDesc" = "JSON describing the service: auth, put, get, delete and list (with namesRegex) requests, plus optional retry, flatten and concurrency"
+"segmentBytes" = "Segment Size (bytes)"
+"concurrency" = "Concurrency"
+"flushIntervalMs" = "Flush Interval (ms)"
+"pollIntervalMs" = "Poll Interval (ms)"
+"maxPollIntervalMs" = "Max Poll Interval (ms)"
+"eagerWindowMs" = "Eager Window (ms)"
+"holeTimeoutMs" = "Hole Timeout (ms)"
+"sessionTtlSeconds" = "Session TTL (s)"
+
+[pages.inbounds.masque]
+"address" = "Tunnel Addresses"
+"addressDesc" = "At most one IPv4 and one IPv6 prefix. Every tunnel gets one address of each family from them; when they run out, new clients get HTTP 503"
 
 [pages.inbounds.protocols]
 "flow" = "Flow"
@@ -479,6 +534,8 @@
 "attributes" = "Attributes"
 "inboundTags" = "Inbound Tags"
 "outboundTag" = "Outbound Tag"
+"localOS" = "Local OS"
+"localOSDesc" = "The rule only applies when Xray itself runs on one of these operating systems (runtime.GOOS). Useful for configs shared between client platforms"
 
 [pages.settings]
 "title" = "Panel Settings"
@@ -670,6 +727,7 @@
 "advanced" = "Advanced"
 "linkConverter" = "Link converter"
 "jsonFreeEditor" = "JSON free editor"
+"targetStrategy" = "Target Strategy"
 
 [pages.xray.balancer]
 "addBalancer" = "Add Balancer"
@@ -688,7 +746,8 @@
 "allowedIPsDesc" = "Tunnel addresses assigned to this peer. The server identifies a peer by them, so they must not overlap with another peer"
 "endpoint" = "Endpoint"
 "psk" = "PreShared Key"
-"domainStrategy" = "Domain Strategy"
+"remoteDNS" = "Remote DNS"
+"remoteDNSDesc" = "DNS servers queried inside the tunnel, comma separated. Default: 1.1.1.1, 1.0.0.1 and their IPv6 addresses"
 
 [pages.xray.tun]
 "nameDesc" = "The name of the TUN interface. Default is 'xrayN', where N is some number"
@@ -700,6 +759,12 @@
 "dnsDesc" = "The list of DNS servers assigned to the TUN interface. Example: 1.1.1.1"
 "outboundInterface" = "Outbounds Interface"
 "outboundInterfaceDesc" = "Automatically binds outbounds to the physical network interface to prevent traffic loops. Use 'auto' for automatic selection"
+"autoSystemRoutingTable" = "System Routes"
+"autoSystemRoutingTableDesc" = "Routes added to the system routing table through the TUN, e.g. 0.0.0.0/0 and ::/0. Outbounds are then bound to the physical interface automatically"
+"autoSystemDnsToGateway" = "System DNS to Gateway"
+"autoSystemDnsToGatewayDesc" = "Linux only: points the system DNS at the TUN gateway address. Needs a gateway"
+"autoSystemWfpBlockLeak" = "Block Leaks (WFP)"
+"autoSystemWfpBlockLeakDesc" = "Windows only, needs System Routes: \"dns\" lets DNS only through the TUN (needs DNS), \"misconfigtun\" blocks the IP version that has no route to the TUN"
 
 [pages.xray.metrics]
 "title" = "Metrics"

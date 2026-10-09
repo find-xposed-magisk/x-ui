@@ -260,6 +260,8 @@
 "xudpConcurrency" = "xudp параллелизм"
 "xudpUDP443" = "xudp UDP 443"
 "pinnedSha256" = "Введите SHA256 отпечатки (base64)"
+"customResponseData" = "Свой ответ"
+"customResponseDataDesc" = "Base64 байтов, отправляемых перед закрытием соединения, например «сырой» HTTP-ответ"
 
 [pages.client]
 "add" = "Добавить клиента"
@@ -435,7 +437,6 @@
 "customTables" = "Custom Tables"
 "paddingMin" = "Padding Min"
 "paddingMax" = "Padding Max"
-"listenIp" = "IP прослушивания"
 "round" = "Раунд"
 "quicParams" = "Параметры QUIC"
 "debug" = "Отладка"
@@ -444,6 +445,37 @@
 "udpHopPorts" = "Порты UDP Hop"
 "udpHopInterval" = "Интервал UDP Hop"
 "maxIncomingStreams" = "Макс. входящих потоков"
+"domains" = "Домены"
+"resolvers" = "Резолверы"
+"recordTypes" = "Типы записей"
+"edns0" = "EDNS0"
+"extraPoll" = "Доп. опрос"
+"dgram" = "Непривилегированный ICMP (DGRAM)"
+"ips" = "IP-адреса"
+"hopMode" = "Режим прыжков"
+"remoteIPs" = "Удалённые IP"
+"remotePorts" = "Удалённые порты"
+"udpHopLinkDesc" = "Используется только в ссылках и подписках. На сервере перенаправьте этот диапазон портов на порт входящего через iptables"
+"brutalDisableLossCompensation" = "Brutal: отключить компенсацию потерь"
+"disableChromeParrot" = "Отключить имитацию Chrome"
+"disableGSO" = "Отключить GSO"
+"disableStatelessReset" = "Отключить Stateless Reset"
+"noiseExpDesc" = "При каждой отправке собирает новый пакет из тегов: <b hex>, <r N-M>, <rc N-M>, <rd N-M>, <t>, <c>, <n> (байты, случайные, случайные буквы, случайные цифры, метка времени, счётчик, nonce)"
+"noisePacketDesc" = "Фиксированный пакет заменяет случайные байты; оставьте пустым, чтобы использовать Rand. Array: байты через запятую"
+"realmUrlDesc" = "Сервер-посредник для UDP hole punching: realm://token@host[:port]/id (realm+http:// для обычного HTTP). Клиент и сервер используют один id"
+"stunServers" = "STUN-серверы"
+"ipMode" = "Режим IP"
+"portMapping" = "Проброс порта"
+"portMappingDesc" = "Запрашивает у локального роутера проброс порта через UPnP / NAT-PMP, что помогает за строгим NAT"
+"portMappingTimeout" = "Таймаут проброса (с)"
+"portMappingLifetime" = "Время жизни проброса (с)"
+"realmTlsDesc" = "Необязательные настройки TLS для сервера-посредника в формате JSON, как tlsSettings"
+"mkcpHeader" = "Заголовок"
+"mkcpPasswordDesc" = "Задайте для шифрования AES-128-GCM; оставьте пустым для исходного формата mKCP"
+"xmcProfiles" = "Профили Minecraft"
+"xmcProfilesDesc" = "Подписанные профили Minecraft; у обеих сторон должен быть одинаковый список, клиент входит со случайным из них. Введите имя пользователя и получите остальное у Mojang"
+"xmcFetch" = "Получить"
+"xmcHostnameDesc" = "Адрес сервера, который клиент указывает в рукопожатии Minecraft; пусто — реальный адрес"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "Пароль аутентификации"
@@ -456,6 +488,29 @@
 "insecure" = "Небезопасный"
 "content" = "Контент"
 "statusCode" = "Код статуса"
+"xForwarded" = "Заголовки X-Forwarded"
+
+[pages.inbounds.stream.xdrive]
+"service" = "Сервис хранения"
+"serviceDesc" = "Обе стороны обмениваются данными через это хранилище и должны использовать один сервис и папку. Учётные данные хранятся на клиенте, поэтому подходит только для собственного использования. Включите mux на исходящем"
+"remoteFolder" = "Удалённая папка"
+"remoteFolderDesc" = "Google Drive: ID папки. Local: путь к каталогу. Template: доступна как {folder}"
+"secrets" = "Секреты"
+"secretsDesc" = "Доступны в шаблоне как {secret0}, {secret1}, ..."
+"template" = "Шаблон"
+"templateDesc" = "JSON с описанием сервиса: запросы auth, put, get, delete и list (с namesRegex), а также необязательные retry, flatten и concurrency"
+"segmentBytes" = "Размер сегмента (байт)"
+"concurrency" = "Параллельность"
+"flushIntervalMs" = "Интервал отправки (мс)"
+"pollIntervalMs" = "Интервал опроса (мс)"
+"maxPollIntervalMs" = "Макс. интервал опроса (мс)"
+"eagerWindowMs" = "Окно Eager (мс)"
+"holeTimeoutMs" = "Таймаут Hole (мс)"
+"sessionTtlSeconds" = "TTL сессии (с)"
+
+[pages.inbounds.masque]
+"address" = "Адреса туннеля"
+"addressDesc" = "Не более одного префикса IPv4 и одного IPv6. Каждый туннель получает из них по одному адресу каждого семейства; когда они заканчиваются, новые клиенты получают HTTP 503"
 
 [pages.inbounds.protocols]
 "flow" = "Flow"
@@ -479,6 +534,8 @@
 "attributes" = "Атрибуты"
 "inboundTags" = "Теги входящих"
 "outboundTag" = "Тег исходящего"
+"localOS" = "Локальная ОС"
+"localOSDesc" = "Правило применяется, только если сам Xray работает на одной из этих ОС (runtime.GOOS). Полезно для конфигов, общих для разных клиентских платформ"
 
 [pages.settings]
 "title" = "Настройки"
@@ -670,6 +727,7 @@
 "advanced" = "Дополнительно"
 "linkConverter" = "Конвертер ссылок"
 "jsonFreeEditor" = "Свободный редактор JSON"
+"targetStrategy" = "Стратегия цели"
 
 [pages.xray.balancer]
 "addBalancer" = "Добавить балансир"
@@ -688,7 +746,8 @@
 "allowedIPsDesc" = "Адреса туннеля, назначенные этому пиру. Сервер определяет пира именно по ним, поэтому они не должны пересекаться с другим пиром"
 "endpoint" = "Конечная точка"
 "psk" = "Общий ключ"
-"domainStrategy" = "Стратегия домена"
+"remoteDNS" = "Удалённый DNS"
+"remoteDNSDesc" = "DNS-серверы, к которым обращаются внутри туннеля, через запятую. По умолчанию: 1.1.1.1, 1.0.0.1 и их IPv6-адреса"
 
 [pages.xray.tun]
 "nameDesc" = "Имя интерфейса TUN. Значение по умолчанию - 'xrayN', где N - номер интерфейса."
@@ -700,6 +759,12 @@
 "dnsDesc" = "Список DNS-серверов, назначенных интерфейсу TUN. Пример: 1.1.1.1"
 "outboundInterface" = "Интерфейс исходящих"
 "outboundInterfaceDesc" = "Автоматически привязывает исходящие соединения к физическому сетевому интерфейсу для предотвращения петель трафика. Используйте 'auto' для автоматического выбора"
+"autoSystemRoutingTable" = "Системные маршруты"
+"autoSystemRoutingTableDesc" = "Маршруты через TUN, добавляемые в системную таблицу маршрутизации, например 0.0.0.0/0 и ::/0. Исходящие тогда автоматически привязываются к физическому интерфейсу"
+"autoSystemDnsToGateway" = "Системный DNS на шлюз"
+"autoSystemDnsToGatewayDesc" = "Только Linux: направляет системный DNS на адрес шлюза TUN. Требуется шлюз"
+"autoSystemWfpBlockLeak" = "Блокировка утечек (WFP)"
+"autoSystemWfpBlockLeakDesc" = "Только Windows, нужны системные маршруты: \"dns\" пропускает DNS только через TUN (нужен DNS), \"misconfigtun\" блокирует версию IP без маршрута в TUN"
 
 [pages.xray.metrics]
 "title" = "Метрики"

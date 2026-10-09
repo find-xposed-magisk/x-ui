@@ -133,6 +133,14 @@
                     </a-tooltip>
                 </td>
             </tr>
+            <tr v-if="infoModal.clientSettings.pass">
+                <td>{{ i18n "password" }}</td>
+                <td>
+                    <a-tooltip :title="[[ infoModal.clientSettings.pass ]]">
+                        <a-tag class="info-large-tag">[[ infoModal.clientSettings.pass ]]</a-tag>
+                    </a-tooltip>
+                </td>
+            </tr>
             <template v-if="dbInbound.isWireguard">
                 <tr>
                     <td>{{ i18n "pages.xray.wireguard.publicKey" }}</td>

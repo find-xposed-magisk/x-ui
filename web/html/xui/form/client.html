@@ -22,11 +22,23 @@
                     <span>{{ i18n "reset" }}</span>
                 </template>
                 {{ i18n "password" }}
-                <a-icon v-if="inbound.protocol === Protocols.SHADOWSOCKS" @click="client.password = RandomUtil.randomShadowsocksPassword()" type="sync"></a-icon>
+                <a-icon v-if="inbound.protocol === Protocols.SHADOWSOCKS" @click="client.password = RandomUtil.randomShadowsocksPassword(inbound.settings.method)" type="sync"></a-icon>
                 <a-icon v-if="inbound.protocol === Protocols.TROJAN" @click="client.password = RandomUtil.randomSeq(10)" type="sync"></a-icon>
             </a-tooltip>
         </template>
         <a-input v-model.trim="client.password"></a-input>
+    </a-form-item>
+    <a-form-item v-if="inbound.protocol === Protocols.MASQUE">
+        <template slot="label">
+            <a-tooltip>
+                <template slot="title">
+                    <span>{{ i18n "reset" }}</span>
+                </template>
+                {{ i18n "password" }}
+                <a-icon @click="client.pass = RandomUtil.randomSeq(16)" type="sync"></a-icon>
+            </a-tooltip>
+        </template>
+        <a-input v-model.trim="client.pass"></a-input>
     </a-form-item>
     <a-form-item v-if="inbound.protocol === Protocols.HYSTERIA">
         <template slot="label">

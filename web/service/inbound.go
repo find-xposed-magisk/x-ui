@@ -171,6 +171,9 @@ func (s *InboundService) AddInbound(inbound *model.Inbound) (*model.Inbound, boo
 	if existEmail != "" {
 		return inbound, false, common.NewError("Duplicate email:", existEmail)
 	}
+	if err = xray.CheckShadowsocks2022Keys(string(inbound.Protocol), inbound.Settings); err != nil {
+		return inbound, false, err
+	}
 
 	clients, err := s.GetClients(inbound)
 	if err != nil {
@@ -194,6 +197,10 @@ func (s *InboundService) AddInbound(inbound *model.Inbound) (*model.Inbound, boo
 			}
 		case "wireguard":
 			if client.PublicKey == "" || client.Email == "" {
+				return inbound, false, common.NewError("empty client ID")
+			}
+		case "masque":
+			if client.Pass == "" || client.Email == "" {
 				return inbound, false, common.NewError("empty client ID")
 			}
 		default:
@@ -308,6 +315,9 @@ func (s *InboundService) UpdateInbound(inbound *model.Inbound) (*model.Inbound, 
 	}
 	if exist {
 		return inbound, false, common.NewError("Port already exists:", inbound.Port)
+	}
+	if err = xray.CheckShadowsocks2022Keys(string(inbound.Protocol), inbound.Settings); err != nil {
+		return inbound, false, err
 	}
 
 	oldInbound, err := s.GetInbound(inbound.Id)
@@ -446,6 +456,7 @@ func xrayUserPayload(settings map[string]interface{}, client *model.Client) map[
 		"email":        client.Email,
 		"id":           client.ID,
 		"auth":         client.Auth,
+		"pass":         client.Pass,
 		"flow":         client.Flow,
 		"password":     client.Password,
 		"cipher":       cipher,
@@ -501,6 +512,10 @@ func (s *InboundService) AddInboundClient(data *model.Inbound) (bool, error) {
 			if client.PublicKey == "" || client.Email == "" {
 				return false, common.NewError("empty client ID")
 			}
+		case "masque":
+			if client.Pass == "" || client.Email == "" {
+				return false, common.NewError("empty client ID")
+			}
 		default:
 			if client.ID == "" {
 				return false, common.NewError("empty client ID")
@@ -525,6 +540,9 @@ func (s *InboundService) AddInboundClient(data *model.Inbound) (bool, error) {
 	}
 
 	oldInbound.Settings = string(newSettings)
+	if err = xray.CheckShadowsocks2022Keys(string(oldInbound.Protocol), oldInbound.Settings); err != nil {
+		return false, err
+	}
 
 	db := database.GetDB()
 	tx := db.Begin()
@@ -585,7 +603,7 @@ func (s *InboundService) DelInboundClient(inboundId int, clientId string) (bool,
 		client_key = "email"
 	case "hysteria":
 		client_key = "auth"
-	case "wireguard":
+	case "wireguard", "masque":
 		client_key = "email"
 	}
 
@@ -695,7 +713,7 @@ func (s *InboundService) UpdateInboundClient(data *model.Inbound, clientId strin
 		case "hysteria":
 			oldClientId = oldClient.Auth
 			newClientId = clients[0].Auth
-		case "wireguard":
+		case "wireguard", "masque":
 			oldClientId = oldClient.Email
 			newClientId = clients[0].Email
 		default:
@@ -739,6 +757,9 @@ func (s *InboundService) UpdateInboundClient(data *model.Inbound, clientId strin
 	}
 
 	oldInbound.Settings = string(newSettings)
+	if err = xray.CheckShadowsocks2022Keys(string(oldInbound.Protocol), oldInbound.Settings); err != nil {
+		return false, err
+	}
 	db := database.GetDB()
 	tx := db.Begin()
 

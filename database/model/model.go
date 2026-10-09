@@ -19,6 +19,7 @@ const (
 	Shadowsocks Protocol = "shadowsocks"
 	Hysteria    Protocol = "hysteria"
 	Wireguard   Protocol = "wireguard"
+	Masque      Protocol = "masque"
 )
 
 type User struct {
@@ -163,6 +164,7 @@ type Client struct {
 	ID       string         `json:"id,omitempty"`
 	Password string         `json:"password,omitempty"`
 	Auth     string         `json:"auth,omitempty"`
+	Pass     string         `json:"pass,omitempty"` // MASQUE; the email is the username
 	Flow     string         `json:"flow,omitempty"`
 	Reverse  *ClientReverse `json:"reverse,omitempty"`
 

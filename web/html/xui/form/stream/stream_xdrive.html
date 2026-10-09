@@ -1,0 +1,90 @@
+{{define "form/xdriveFields"}}
+<a-form-item>
+    <template slot="label">
+        <a-tooltip>
+            <template slot="title">
+                <span>{{ i18n "pages.inbounds.stream.xdrive.serviceDesc" }}</span>
+            </template>
+            {{ i18n "pages.inbounds.stream.xdrive.service" }} <a-icon type="question-circle"></a-icon>
+        </a-tooltip>
+    </template>
+    <a-select v-model="{{.}}.service" :dropdown-class-name="themeSwitcher.currentTheme">
+        <a-select-option value="Google Drive">Google Drive</a-select-option>
+        <a-select-option value="template">Template</a-select-option>
+        <a-select-option value="local">Local</a-select-option>
+    </a-select>
+</a-form-item>
+<a-form-item>
+    <template slot="label">
+        <a-tooltip>
+            <template slot="title">
+                <span>{{ i18n "pages.inbounds.stream.xdrive.remoteFolderDesc" }}</span>
+            </template>
+            {{ i18n "pages.inbounds.stream.xdrive.remoteFolder" }} <a-icon type="question-circle"></a-icon>
+        </a-tooltip>
+    </template>
+    <a-input v-model.trim="{{.}}.remoteFolder"></a-input>
+</a-form-item>
+<template v-if="{{.}}.service === 'Google Drive'">
+    <a-form-item label="Client ID">
+        <a-input v-model.trim="{{.}}.secrets[0]"></a-input>
+    </a-form-item>
+    <a-form-item label="Client Secret">
+        <a-input-password v-model.trim="{{.}}.secrets[1]"></a-input-password>
+    </a-form-item>
+    <a-form-item label="Refresh Token">
+        <a-input-password v-model.trim="{{.}}.secrets[2]"></a-input-password>
+    </a-form-item>
+</template>
+<template v-if="{{.}}.service === 'template'">
+    <a-form-item>
+        <template slot="label">
+            <a-tooltip>
+                <template slot="title">
+                    <span>{{ i18n "pages.inbounds.stream.xdrive.secretsDesc" }}</span>
+                </template>
+                {{ i18n "pages.inbounds.stream.xdrive.secrets" }} <a-icon type="question-circle"></a-icon>
+            </a-tooltip>
+        </template>
+        <a-select mode="tags" v-model="{{.}}.secrets" :token-separators="[',']"
+            :dropdown-class-name="themeSwitcher.currentTheme"></a-select>
+    </a-form-item>
+    <a-form-item>
+        <template slot="label">
+            <a-tooltip>
+                <template slot="title">
+                    <span>{{ i18n "pages.inbounds.stream.xdrive.templateDesc" }}</span>
+                </template>
+                {{ i18n "pages.inbounds.stream.xdrive.template" }} <a-icon type="question-circle"></a-icon>
+            </a-tooltip>
+        </template>
+        <a-textarea v-model="{{.}}.template" :auto-size="{ minRows: 4, maxRows: 14 }"
+            style="font-family: monospace; direction: ltr; text-align: left;"
+            placeholder='{"auth": {...}, "put": {...}, "get": {...}, "delete": {...}, "list": {"namesRegex": "..."}}'></a-textarea>
+    </a-form-item>
+</template>
+<a-form-item label='{{ i18n "pages.inbounds.stream.xdrive.segmentBytes" }}'>
+    <a-input-number v-model.number="{{.}}.segmentBytes" :min="0" :max="16777216" placeholder="524288"></a-input-number>
+</a-form-item>
+<a-form-item label='{{ i18n "pages.inbounds.stream.xdrive.concurrency" }}'>
+    <a-input-number v-model.number="{{.}}.concurrency" :min="0" :max="64" placeholder="8"></a-input-number>
+</a-form-item>
+<a-form-item label='{{ i18n "pages.inbounds.stream.xdrive.flushIntervalMs" }}'>
+    <a-input-number v-model.number="{{.}}.flushIntervalMs" :min="0" placeholder="20"></a-input-number>
+</a-form-item>
+<a-form-item label='{{ i18n "pages.inbounds.stream.xdrive.pollIntervalMs" }}'>
+    <a-input-number v-model.number="{{.}}.pollIntervalMs" :min="0" placeholder="50"></a-input-number>
+</a-form-item>
+<a-form-item label='{{ i18n "pages.inbounds.stream.xdrive.maxPollIntervalMs" }}'>
+    <a-input-number v-model.number="{{.}}.maxPollIntervalMs" :min="0" placeholder="500"></a-input-number>
+</a-form-item>
+<a-form-item label='{{ i18n "pages.inbounds.stream.xdrive.eagerWindowMs" }}'>
+    <a-input-number v-model.number="{{.}}.eagerWindowMs" :min="0" placeholder="2000"></a-input-number>
+</a-form-item>
+<a-form-item label='{{ i18n "pages.inbounds.stream.xdrive.holeTimeoutMs" }}'>
+    <a-input-number v-model.number="{{.}}.holeTimeoutMs" :min="0" placeholder="30000"></a-input-number>
+</a-form-item>
+<a-form-item label='{{ i18n "pages.inbounds.stream.xdrive.sessionTtlSeconds" }}'>
+    <a-input-number v-model.number="{{.}}.sessionTtlSeconds" :min="0" placeholder="300"></a-input-number>
+</a-form-item>
+{{end}}

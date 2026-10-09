@@ -52,6 +52,7 @@ func (a *ServerController) initRouter(g *gin.RouterGroup) {
 	g.POST("/getNewSelfSignedCert", a.getNewSelfSignedCert)
 	g.POST("/getCertHash", a.getCertHash)
 	g.POST("/getTlsPing", a.getTlsPing)
+	g.POST("/getMinecraftProfile", a.getMinecraftProfile)
 	g.POST("/stopXrayService", a.stopXrayService)
 	g.POST("/restartXrayService", a.restartXrayService)
 	g.POST("/installXray/:version", a.installXray)
@@ -233,6 +234,15 @@ func (a *ServerController) getCertHash(c *gin.Context) {
 		return
 	}
 	jsonObj(c, hashes, nil)
+}
+
+func (a *ServerController) getMinecraftProfile(c *gin.Context) {
+	profile, err := a.serverService.GetMinecraftProfile(c.PostForm("username"))
+	if err != nil {
+		jsonMsg(c, "get Minecraft profile", err)
+		return
+	}
+	jsonObj(c, profile, nil)
 }
 
 func (a *ServerController) getTlsPing(c *gin.Context) {

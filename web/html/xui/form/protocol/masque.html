@@ -1,0 +1,40 @@
+{{define "form/masque"}}
+<a-form :colon="false" :label-col="{ md: {span:8} }" :wrapper-col="{ md: {span:14} }">
+    <a-form-item>
+        <template slot="label">
+            <a-tooltip>
+                <template slot="title">
+                    <span>{{ i18n "pages.inbounds.masque.addressDesc" }}</span>
+                </template>
+                {{ i18n "pages.inbounds.masque.address" }}
+                <a-icon type="question-circle"></a-icon>
+            </a-tooltip>
+        </template>
+        <a-select mode="tags" v-model="inbound.settings.address" placeholder="10.14.0.1/24, fd14::1/64"
+            :dropdown-class-name="themeSwitcher.currentTheme" :token-separators="[',', ' ']" style="width: 100%;">
+        </a-select>
+    </a-form-item>
+    <a-form-item label='{{ i18n "mtu" }}'>
+        <a-input-number v-model.number="inbound.settings.mtu" :min="0" :max="65535" placeholder="1280-65535"></a-input-number>
+    </a-form-item>
+</a-form>
+<a-collapse activeKey="0" v-for="(client, index) in inbound.settings.masques.slice(0,1)" v-if="!isEdit">
+    <a-collapse-panel header='{{ i18n "pages.inbounds.client" }}'>
+        {{template "form/client"}}
+    </a-collapse-panel>
+</a-collapse>
+<a-collapse v-else>
+    <a-collapse-panel :header="'{{ i18n "pages.client.clientCount"}} : ' + inbound.settings.masques.length">
+        <table width="100%">
+            <tr class="client-table-header">
+                <th>{{ i18n "pages.inbounds.email" }}</th>
+                <th>{{ i18n "password" }}</th>
+            </tr>
+            <tr v-for="(client, index) in inbound.settings.masques" :class="index % 2 == 1 ? 'client-table-odd-row' : ''">
+                <td>[[ client.email ]]</td>
+                <td>[[ client.pass ]]</td>
+            </tr>
+        </table>
+    </a-collapse-panel>
+</a-collapse>
+{{end}}

@@ -4,6 +4,7 @@
 .sync*
 *.tar.gz
 *.log
+.code*
 access.log
 error.log
 tmp

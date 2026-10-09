@@ -260,6 +260,8 @@
 "xudpConcurrency" = "xudp Đồng thời"
 "xudpUDP443" = "xudp UDP 443"
 "pinnedSha256" = "Nhập SHA256 fingerprint (base64)"
+"customResponseData" = "Phản hồi tùy chỉnh"
+"customResponseDataDesc" = "Base64 của các byte được gửi lại trước khi đóng kết nối, ví dụ một phản hồi HTTP thô"
 
 [pages.client]
 "add" = "Thêm máy khách"
@@ -435,7 +437,6 @@
 "customTables" = "Custom Tables"
 "paddingMin" = "Padding Min"
 "paddingMax" = "Padding Max"
-"listenIp" = "Listen IP"
 "round" = "Round"
 "quicParams" = "Tham số QUIC"
 "debug" = "Debug"
@@ -444,6 +445,37 @@
 "udpHopPorts" = "Cổng UDP Hop"
 "udpHopInterval" = "Khoảng UDP Hop"
 "maxIncomingStreams" = "Max Incoming Streams"
+"domains" = "Tên miền"
+"resolvers" = "Trình phân giải"
+"recordTypes" = "Loại bản ghi"
+"edns0" = "EDNS0"
+"extraPoll" = "Thăm dò bổ sung"
+"dgram" = "ICMP không đặc quyền (DGRAM)"
+"ips" = "Địa chỉ IP"
+"hopMode" = "Chế độ nhảy"
+"remoteIPs" = "IP từ xa"
+"remotePorts" = "Cổng từ xa"
+"udpHopLinkDesc" = "Chỉ dùng trong liên kết chia sẻ và gói đăng ký. Trên máy chủ, chuyển tiếp dải cổng này tới cổng inbound bằng iptables"
+"brutalDisableLossCompensation" = "Brutal: Tắt bù mất gói"
+"disableChromeParrot" = "Tắt giả lập Chrome"
+"disableGSO" = "Tắt GSO"
+"disableStatelessReset" = "Tắt Stateless Reset"
+"noiseExpDesc" = "Tạo gói mới mỗi lần gửi từ các thẻ: <b hex>, <r N-M>, <rc N-M>, <rd N-M>, <t>, <c>, <n> (byte, ngẫu nhiên, chữ ngẫu nhiên, số ngẫu nhiên, dấu thời gian, bộ đếm, nonce)"
+"noisePacketDesc" = "Gói cố định thay cho byte ngẫu nhiên; để trống để dùng Rand. Array: các giá trị byte phân tách bằng dấu phẩy"
+"realmUrlDesc" = "Máy chủ trung gian cho UDP hole punching: realm://token@host[:port]/id (realm+http:// cho HTTP thường). Client và server dùng cùng id"
+"stunServers" = "Máy chủ STUN"
+"ipMode" = "Chế độ IP"
+"portMapping" = "Ánh xạ cổng"
+"portMappingDesc" = "Yêu cầu router cục bộ ánh xạ cổng qua UPnP / NAT-PMP, hữu ích khi ở sau NAT nghiêm ngặt"
+"portMappingTimeout" = "Thời gian chờ ánh xạ (giây)"
+"portMappingLifetime" = "Thời hạn ánh xạ (giây)"
+"realmTlsDesc" = "Cấu hình TLS tùy chọn cho máy chủ trung gian, dạng JSON như tlsSettings"
+"mkcpHeader" = "Header"
+"mkcpPasswordDesc" = "Đặt để mã hóa bằng AES-128-GCM; để trống cho định dạng mKCP gốc"
+"xmcProfiles" = "Hồ sơ Minecraft"
+"xmcProfilesDesc" = "Hồ sơ Minecraft đã ký; hai đầu cần cùng danh sách, client đăng nhập bằng một hồ sơ ngẫu nhiên. Nhập tên người dùng và lấy phần còn lại từ Mojang"
+"xmcFetch" = "Lấy"
+"xmcHostnameDesc" = "Địa chỉ máy chủ client gửi trong handshake Minecraft; để trống dùng địa chỉ thật"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "Mật khẩu xác thực"
@@ -456,6 +488,29 @@
 "insecure" = "Không bảo mật"
 "content" = "Nội dung"
 "statusCode" = "Status Code"
+"xForwarded" = "Header X-Forwarded"
+
+[pages.inbounds.stream.xdrive]
+"service" = "Dịch vụ lưu trữ"
+"serviceDesc" = "Hai đầu trao đổi dữ liệu qua kho lưu trữ này và phải dùng cùng dịch vụ và thư mục. Thông tin xác thực nằm ở client nên chỉ dùng cho mục đích tự host. Hãy bật mux ở outbound"
+"remoteFolder" = "Thư mục từ xa"
+"remoteFolderDesc" = "Google Drive: ID thư mục. Local: đường dẫn thư mục. Template: dùng qua {folder}"
+"secrets" = "Khóa bí mật"
+"secretsDesc" = "Dùng trong template qua {secret0}, {secret1}, ..."
+"template" = "Template"
+"templateDesc" = "JSON mô tả dịch vụ: các yêu cầu auth, put, get, delete và list (kèm namesRegex), cùng retry, flatten và concurrency tùy chọn"
+"segmentBytes" = "Kích thước đoạn (byte)"
+"concurrency" = "Đồng thời"
+"flushIntervalMs" = "Khoảng gửi (ms)"
+"pollIntervalMs" = "Khoảng thăm dò (ms)"
+"maxPollIntervalMs" = "Khoảng thăm dò tối đa (ms)"
+"eagerWindowMs" = "Cửa sổ Eager (ms)"
+"holeTimeoutMs" = "Thời gian chờ Hole (ms)"
+"sessionTtlSeconds" = "TTL phiên (giây)"
+
+[pages.inbounds.masque]
+"address" = "Địa chỉ đường hầm"
+"addressDesc" = "Tối đa một tiền tố IPv4 và một tiền tố IPv6. Mỗi đường hầm nhận một địa chỉ mỗi loại từ đó; khi hết, client mới nhận HTTP 503"
 
 [pages.inbounds.protocols]
 "flow" = "Flow"
@@ -479,6 +534,8 @@
 "attributes" = "Thuộc tính"
 "inboundTags" = "Tag Inbound"
 "outboundTag" = "Tag Outbound"
+"localOS" = "Hệ điều hành cục bộ"
+"localOSDesc" = "Quy tắc chỉ áp dụng khi chính Xray chạy trên một trong các hệ điều hành này (runtime.GOOS). Hữu ích cho cấu hình dùng chung giữa các nền tảng client"
 
 [pages.settings]
 "title" = "Cài đặt"
@@ -670,6 +727,7 @@
 "advanced" = "Nâng cao"
 "linkConverter" = "Chuyển đổi liên kết"
 "jsonFreeEditor" = "Trình soạn JSON tự do"
+"targetStrategy" = "Chiến lược đích"
 
 [pages.xray.balancer]
 "addBalancer" = "Thêm cân bằng"
@@ -688,7 +746,8 @@
 "allowedIPsDesc" = "Địa chỉ đường hầm được gán cho peer này. Máy chủ nhận diện peer bằng chúng, nên không được trùng với peer khác"
 "endpoint" = "Điểm cuối"
 "psk" = "Khóa chia sẻ"
-"domainStrategy" = "Chiến lược tên miền"
+"remoteDNS" = "DNS từ xa"
+"remoteDNSDesc" = "Máy chủ DNS được truy vấn bên trong đường hầm, phân tách bằng dấu phẩy. Mặc định: 1.1.1.1, 1.0.0.1 và địa chỉ IPv6 của chúng"
 
 [pages.xray.tun]
 "nameDesc" = "Tên của giao diện TUN. Giá trị mặc định là 'xrayN', với N là số nguyen."
@@ -700,6 +759,12 @@
 "dnsDesc" = "Danh sách máy chủ DNS được gán cho giao diện TUN. Ví dụ: 1.1.1.1"
 "outboundInterface" = "Giao diện Outbound"
 "outboundInterfaceDesc" = "Tự động gắn outbound với giao diện mạng vật lý để tránh vòng lặp lưu lượng. Dùng 'auto' để chọn tự động"
+"autoSystemRoutingTable" = "Tuyến hệ thống"
+"autoSystemRoutingTableDesc" = "Các tuyến qua TUN được thêm vào bảng định tuyến hệ thống, ví dụ 0.0.0.0/0 và ::/0. Khi đó outbound tự động gắn vào giao diện vật lý"
+"autoSystemDnsToGateway" = "DNS hệ thống tới Gateway"
+"autoSystemDnsToGatewayDesc" = "Chỉ Linux: trỏ DNS hệ thống tới địa chỉ gateway của TUN. Cần có gateway"
+"autoSystemWfpBlockLeak" = "Chặn rò rỉ (WFP)"
+"autoSystemWfpBlockLeakDesc" = "Chỉ Windows, cần Tuyến hệ thống: \"dns\" chỉ cho DNS đi qua TUN (cần DNS), \"misconfigtun\" chặn phiên bản IP không có tuyến tới TUN"
 
 [pages.xray.metrics]
 "title" = "Số liệu"

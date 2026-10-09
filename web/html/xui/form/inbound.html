@@ -85,6 +85,10 @@
             {{template "form/hysteria"}}
         </template>
 
+        <template v-if="inbound.protocol === Protocols.MASQUE">
+            {{template "form/masque"}}
+        </template>
+
         <template v-if="inbound.protocol === Protocols.DOKODEMO">
             {{template "form/dokodemo"}}
         </template>

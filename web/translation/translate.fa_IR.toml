@@ -260,6 +260,8 @@
 "xudpConcurrency" = "تعداد همزمان xudp"
 "xudpUDP443" = "xudp UDP 443"
 "pinnedSha256" = "اثرانگشت SHA256 را وارد کنید (base64)"
+"customResponseData" = "پاسخ دلخواه"
+"customResponseDataDesc" = "Base64 بایت‌هایی که پیش از بستن اتصال برگردانده می‌شوند، مثلاً یک پاسخ خام HTTP"
 
 [pages.client]
 "add" = "کاربر جدید"
@@ -435,7 +437,6 @@
 "customTables" = "جدول‌های سفارشی"
 "paddingMin" = "حداقل Padding"
 "paddingMax" = "حداکثر Padding"
-"listenIp" = "IP گوش‌دهنده"
 "round" = "دور"
 "quicParams" = "پارامترهای QUIC"
 "debug" = "اشکال‌زدایی"
@@ -444,6 +445,37 @@
 "udpHopPorts" = "پورت‌های UDP Hop"
 "udpHopInterval" = "بازه UDP Hop"
 "maxIncomingStreams" = "حداکثر استریم‌های ورودی"
+"domains" = "دامنه‌ها"
+"resolvers" = "ریزالورها"
+"recordTypes" = "نوع رکوردها"
+"edns0" = "EDNS0"
+"extraPoll" = "Poll اضافی"
+"dgram" = "ICMP بدون دسترسی روت (DGRAM)"
+"ips" = "آی‌پی‌ها"
+"hopMode" = "حالت پرش"
+"remoteIPs" = "آی‌پی‌های مقصد"
+"remotePorts" = "پورت‌های مقصد"
+"udpHopLinkDesc" = "فقط در لینک‌های اشتراک و سابسکریپشن قرار می‌گیرد. روی سرور این بازه پورت را با iptables به پورت اینباند هدایت کنید"
+"brutalDisableLossCompensation" = "Brutal: غیرفعال‌سازی جبران Loss"
+"disableChromeParrot" = "غیرفعال‌سازی تقلید Chrome"
+"disableGSO" = "غیرفعال‌سازی GSO"
+"disableStatelessReset" = "غیرفعال‌سازی Stateless Reset"
+"noiseExpDesc" = "در هر ارسال یک پکت تازه از این تگ‌ها می‌سازد: <b hex>, <r N-M>, <rc N-M>, <rd N-M>, <t>, <c>, <n> (بایت، تصادفی، حروف تصادفی، ارقام تصادفی، زمان، شمارنده، nonce)"
+"noisePacketDesc" = "پکت ثابت جای بایت‌های تصادفی را می‌گیرد؛ برای استفاده از Rand خالی بگذارید. Array: مقادیر بایت جداشده با کاما"
+"realmUrlDesc" = "سرور واسط برای UDP hole punching: realm://token@host[:port]/id (برای HTTP ساده realm+http://). کلاینت و سرور باید id یکسان داشته باشند"
+"stunServers" = "سرورهای STUN"
+"ipMode" = "حالت IP"
+"portMapping" = "نگاشت پورت"
+"portMappingDesc" = "از روتر محلی با UPnP / NAT-PMP نگاشت پورت می‌خواهد که پشت NAT سخت‌گیر کمک می‌کند"
+"portMappingTimeout" = "مهلت نگاشت (ثانیه)"
+"portMappingLifetime" = "عمر نگاشت (ثانیه)"
+"realmTlsDesc" = "تنظیمات اختیاری TLS برای سرور واسط، به شکل JSON مثل tlsSettings"
+"mkcpHeader" = "هدر"
+"mkcpPasswordDesc" = "برای رمزنگاری AES-128-GCM مقدار بدهید؛ برای قالب اصلی mKCP خالی بگذارید"
+"xmcProfiles" = "پروفایل‌های Minecraft"
+"xmcProfilesDesc" = "پروفایل‌های امضاشده Minecraft؛ هر دو طرف باید لیست یکسان داشته باشند و کلاینت با یکی از آن‌ها به‌صورت تصادفی وارد می‌شود. نام کاربری را وارد کنید و بقیه را از Mojang بگیرید"
+"xmcFetch" = "دریافت"
+"xmcHostnameDesc" = "آدرس سروری که کلاینت در handshake ماینکرافت می‌فرستد؛ خالی یعنی آدرس واقعی"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "رمز احراز هویت"
@@ -456,6 +488,29 @@
 "insecure" = "ناامن"
 "content" = "محتوا"
 "statusCode" = "Status Code"
+"xForwarded" = "هدرهای X-Forwarded"
+
+[pages.inbounds.stream.xdrive]
+"service" = "سرویس ذخیره‌سازی"
+"serviceDesc" = "دو طرف از طریق این فضای ذخیره‌سازی داده رد و بدل می‌کنند و باید سرویس و پوشه یکسان داشته باشند. اطلاعات ورود روی کلاینت قرار می‌گیرد، پس فقط برای استفاده شخصی مناسب است. روی اوت‌باند mux را فعال کنید"
+"remoteFolder" = "پوشه راه دور"
+"remoteFolderDesc" = "Google Drive: شناسه پوشه. Local: مسیر یک پوشه. Template: با {folder} در دسترس است"
+"secrets" = "کلیدها"
+"secretsDesc" = "در قالب با {secret0}، {secret1} و ... در دسترس‌اند"
+"template" = "قالب"
+"templateDesc" = "JSON توصیف سرویس: درخواست‌های auth، put، get، delete و list (با namesRegex) و در صورت نیاز retry، flatten و concurrency"
+"segmentBytes" = "اندازه هر قطعه (بایت)"
+"concurrency" = "هم‌زمانی"
+"flushIntervalMs" = "فاصله ارسال (ms)"
+"pollIntervalMs" = "فاصله بررسی (ms)"
+"maxPollIntervalMs" = "حداکثر فاصله بررسی (ms)"
+"eagerWindowMs" = "پنجره Eager (ms)"
+"holeTimeoutMs" = "مهلت Hole (ms)"
+"sessionTtlSeconds" = "عمر نشست (ثانیه)"
+
+[pages.inbounds.masque]
+"address" = "آدرس‌های تونل"
+"addressDesc" = "حداکثر یک پیشوند IPv4 و یک پیشوند IPv6. هر تونل از هر خانواده یک آدرس می‌گیرد؛ وقتی آدرس‌ها تمام شوند کلاینت‌های جدید خطای HTTP 503 می‌گیرند"
 
 [pages.inbounds.protocols]
 "flow" = "Flow"
@@ -479,6 +534,8 @@
 "attributes" = "صفات"
 "inboundTags" = "تگ‌های ورودی"
 "outboundTag" = "تگ خروجی"
+"localOS" = "سیستم‌عامل محلی"
+"localOSDesc" = "این قانون فقط وقتی اعمال می‌شود که خود Xray روی یکی از این سیستم‌عامل‌ها اجرا شود (runtime.GOOS). برای کانفیگ‌های مشترک بین پلتفرم‌های کلاینت مفید است"
 
 [pages.settings]
 "title" = "تنظیمات پنل"
@@ -670,6 +727,7 @@
 "advanced" = "پیشرفته"
 "linkConverter" = "تبدیل لینک"
 "jsonFreeEditor" = "ویرایشگر آزاد JSON"
+"targetStrategy" = "استراتژی مقصد"
 
 [pages.xray.balancer]
 "addBalancer" = "افزودن بالانسر"
@@ -688,7 +746,8 @@
 "allowedIPsDesc" = "آدرس‌های تونل که به این کاربر اختصاص می‌یابد. سرور کاربر را با همین آدرس‌ها شناسایی می‌کند، پس نباید با کاربر دیگری هم‌پوشانی داشته باشد"
 "endpoint" = "نقطه پایانی"
 "psk" = "کلید مشترک"
-"domainStrategy" = "استراتژی حل دامنه"
+"remoteDNS" = "DNS داخل تونل"
+"remoteDNSDesc" = "سرورهای DNS که داخل تونل پرسیده می‌شوند، جدا شده با کاما. پیش‌فرض: 1.1.1.1، 1.0.0.1 و معادل IPv6 آن‌ها"
 
 [pages.xray.tun]
 "nameDesc" = "نام رابط TUN. مقدار پیش‌فرض 'xrayN', N یک عدد است"
@@ -700,6 +759,12 @@
 "dnsDesc" = "لیست سرورهای DNS اختصاص‌یافته به رابط TUN. مثال: 1.1.1.1"
 "outboundInterface" = "رابط خروجی‌ها"
 "outboundInterfaceDesc" = "اتصال خودکار خروجی‌ها به رابط شبکه فیزیکی برای جلوگیری از حلقه ترافیک. برای انتخاب خودکار از 'auto' استفاده کنید"
+"autoSystemRoutingTable" = "مسیرهای سیستم"
+"autoSystemRoutingTableDesc" = "مسیرهایی که از طریق TUN به جدول مسیریابی سیستم اضافه می‌شوند، مثل 0.0.0.0/0 و ::/0. در این حالت اوت‌باندها خودکار به رابط فیزیکی متصل می‌شوند"
+"autoSystemDnsToGateway" = "DNS سیستم به Gateway"
+"autoSystemDnsToGatewayDesc" = "فقط لینوکس: DNS سیستم را روی آدرس Gateway رابط TUN تنظیم می‌کند. Gateway لازم است"
+"autoSystemWfpBlockLeak" = "جلوگیری از نشت (WFP)"
+"autoSystemWfpBlockLeakDesc" = "فقط ویندوز و نیازمند مسیرهای سیستم: \"dns\" فقط اجازه DNS از طریق TUN را می‌دهد (DNS لازم است)، \"misconfigtun\" نسخه IP بدون مسیر به TUN را مسدود می‌کند"
 
 [pages.xray.metrics]
 "title" = "متریک‌ها"

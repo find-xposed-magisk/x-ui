@@ -63,8 +63,10 @@ func (s *SubService) GetSubs(subId string, host string) ([]string, string, error
 		}
 		for _, client := range clients {
 			if client.Enable && client.SubID == subId {
-				link := s.getLink(inbound, client.Email)
-				result = append(result, link)
+				// MASQUE has no share link format; it only reaches JSON subscriptions.
+				if link := s.getLink(inbound, client.Email); link != "" {
+					result = append(result, link)
+				}
 				clientTraffics = append(clientTraffics, s.getClientTraffics(inbound.ClientStats, client.Email))
 			}
 		}
@@ -104,7 +106,7 @@ func (s *SubService) getInboundsBySubId(subId string) ([]*model.Inbound, error) 
 		FROM inbounds,
 			JSON_EACH(JSON_EXTRACT(inbounds.settings, '$.clients')) AS client 
 		WHERE
-			protocol in ('vmess','vless','trojan','shadowsocks','hysteria')
+			protocol in ('vmess','vless','trojan','shadowsocks','hysteria','masque')
 			AND JSON_EXTRACT(client.value, '$.subId') = ? AND enable = ?
 	)`, subId, true).Find(&inbounds).Error
 	if err != nil {

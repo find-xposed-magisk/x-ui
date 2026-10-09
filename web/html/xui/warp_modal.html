@@ -140,7 +140,6 @@ new Vue({
                         secretKey: warpModal.warpData.private_key,
                         address: this.getAddresses(config.interface.addresses),
                         reserved: this.getResolved(config.client_id),
-                        domainStrategy: 'ForceIP',
                         peers: [{
                             publicKey: peer.public_key,
                             endpoint: peer.endpoint.host,

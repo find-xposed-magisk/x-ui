@@ -192,7 +192,8 @@
             SSMethodChange() {
                 if (this.inModal.inbound.isSSMultiUser) {
                     if (this.inModal.inbound.settings.shadowsockses.length ==0){
-                        this.inModal.inbound.settings.shadowsockses = [new Inbound.ShadowsocksSettings.Shadowsocks()];
+                        this.inModal.inbound.settings.shadowsockses = [new Inbound.ShadowsocksSettings.Shadowsocks(
+                            '', RandomUtil.randomShadowsocksPassword(this.inModal.inbound.settings.method))];
                     }
                     if (!this.inModal.inbound.isSS2022) {
                         this.inModal.inbound.settings.shadowsockses.forEach(client => {
@@ -208,6 +209,7 @@
                         this.inModal.inbound.settings.shadowsockses = [];
                     }
                 }
+                this.inModal.inbound.settings.fitKeys();
             },
             setDefaultCertData(index){
                 inModal.inbound.stream.tls.certs[index].certFile = app.defaultCert;
