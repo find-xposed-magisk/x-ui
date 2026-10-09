@@ -260,6 +260,8 @@
 "xudpConcurrency" = "xudp 并发数"
 "xudpUDP443" = "xudp UDP 443"
 "pinnedSha256" = "输入 SHA256 指纹（base64）"
+"customResponseData" = "自定义响应"
+"customResponseDataDesc" = "关闭连接前写回的字节（Base64），例如原始 HTTP 响应"
 
 [pages.client]
 "add" = "添加客户端"
@@ -496,6 +498,8 @@
 "attributes" = "属性"
 "inboundTags" = "入站标签"
 "outboundTag" = "出站标签"
+"localOS" = "本地系统"
+"localOSDesc" = "仅当 Xray 自身运行在这些操作系统之一时规则才生效（runtime.GOOS），适用于在多个客户端平台间共享的配置"
 
 [pages.settings]
 "title" = "设置"

@@ -130,8 +130,20 @@
 <template v-if="outbound.protocol === Protocols.Blackhole">
     <a-form-item label='{{ i18n "pages.outbounds.responseType" }}'>
         <a-select v-model="outbound.settings.type" :dropdown-class-name="themeSwitcher.currentTheme">
-            <a-select-option v-for="s in ['', 'none','http']" :value="s">[[ s ]]</a-select-option>
+            <a-select-option v-for="s in ['', 'none', 'http', 'custom']" :value="s">[[ s ]]</a-select-option>
         </a-select>
+    </a-form-item>
+    <a-form-item v-if="outbound.settings.type === 'custom'">
+        <template slot="label">
+            <a-tooltip>
+                <template slot="title">
+                    <span>{{ i18n "pages.outbounds.customResponseDataDesc" }}</span>
+                </template>
+                {{ i18n "pages.outbounds.customResponseData" }} <a-icon type="question-circle"></a-icon>
+            </a-tooltip>
+        </template>
+        <a-textarea v-model.trim="outbound.settings.customResponseData" :auto-size="{ minRows: 2, maxRows: 6 }"
+            placeholder="SFRUUC8xLjEgNDAzIEZvcmJpZGRlbg0KDQo="></a-textarea>
     </a-form-item>
 </template>
 

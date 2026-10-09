@@ -260,6 +260,8 @@
 "xudpUDP443" = "xudp UDP 443"
 "pinnedSha256" = "Enter SHA256 fingerprints (base64)"
 "obtain" = "Failed to load outbounds"
+"customResponseData" = "Custom Response"
+"customResponseDataDesc" = "Base64 of the bytes written back before the connection is closed, e.g. a raw HTTP response"
 
 [pages.client]
 "add" = "Add Client"
@@ -496,6 +498,8 @@
 "attributes" = "Attributes"
 "inboundTags" = "Inbound Tags"
 "outboundTag" = "Outbound Tag"
+"localOS" = "Local OS"
+"localOSDesc" = "The rule only applies when Xray itself runs on one of these operating systems (runtime.GOOS). Useful for configs shared between client platforms"
 
 [pages.settings]
 "title" = "Panel Settings"

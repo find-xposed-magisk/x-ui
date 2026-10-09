@@ -100,6 +100,19 @@
             </template>
             <a-input v-model.trim="ruleModal.rule.port"></a-input>
         </a-form-item>
+        <a-form-item>
+            <template slot="label">
+                <a-tooltip>
+                    <template slot="title">
+                        <span>{{ i18n "pages.xray.rule.localOSDesc" }}</span>
+                    </template>
+                    {{ i18n "pages.xray.rule.localOS" }} <a-icon type="question-circle"></a-icon>
+                </a-tooltip>
+            </template>
+            <a-select v-model="ruleModal.rule.localOS" mode="tags" :dropdown-class-name="themeSwitcher.currentTheme">
+                <a-select-option v-for="os in ['linux','windows','darwin','android','ios','freebsd','openbsd']" :value="os">[[ os ]]</a-select-option>
+            </a-select>
+        </a-form-item>
         <a-form-item label='{{ i18n "pages.xray.rule.inboundTags" }}'>
             <a-select v-model="ruleModal.rule.inboundTag" mode="multiple" :dropdown-class-name="themeSwitcher.currentTheme">
                 <a-select-option v-for="tag in ruleModal.inboundTags" :value="tag">[[ tag ]]</a-select-option>
@@ -148,6 +161,7 @@
             user: "",
             inboundTag: [],
             protocol: [],
+            localOS: [],
             attrs: [],
             outboundTag: "",
             balancerTag: "",
@@ -177,6 +191,7 @@
                 this.rule.user = rule.user ? rule.user.join(',') : [];
                 this.rule.inboundTag = rule.inboundTag;
                 this.rule.protocol = rule.protocol;
+                this.rule.localOS = rule.localOS || [];
                 this.rule.attrs = rule.attrs ? Object.entries(rule.attrs) : [];
                 this.rule.outboundTag = rule.outboundTag;
                 this.rule.balancerTag = rule.balancerTag ? rule.balancerTag : "";
@@ -193,6 +208,7 @@
                     user: "",
                     inboundTag: [],
                     protocol: [],
+                    localOS: [],
                     attrs: [],
                     outboundTag: "",
                     balancerTag: "",
@@ -239,6 +255,7 @@
             rule.user = value.user.length>0 ? value.user.split(',').map(s => s.trim()) : [];
             rule.inboundTag = value.inboundTag;
             rule.protocol = value.protocol;
+            rule.localOS = value.localOS;
             rule.attrs = Object.fromEntries(value.attrs);
             rule.outboundTag = value.outboundTag == "" ? undefined : value.outboundTag;
             rule.balancerTag = value.balancerTag == "" ? undefined : value.balancerTag;

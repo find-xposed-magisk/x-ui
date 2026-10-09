@@ -260,6 +260,8 @@
 "xudpConcurrency" = "xudp Đồng thời"
 "xudpUDP443" = "xudp UDP 443"
 "pinnedSha256" = "Nhập SHA256 fingerprint (base64)"
+"customResponseData" = "Phản hồi tùy chỉnh"
+"customResponseDataDesc" = "Base64 của các byte được gửi lại trước khi đóng kết nối, ví dụ một phản hồi HTTP thô"
 
 [pages.client]
 "add" = "Thêm máy khách"
@@ -496,6 +498,8 @@
 "attributes" = "Thuộc tính"
 "inboundTags" = "Tag Inbound"
 "outboundTag" = "Tag Outbound"
+"localOS" = "Hệ điều hành cục bộ"
+"localOSDesc" = "Quy tắc chỉ áp dụng khi chính Xray chạy trên một trong các hệ điều hành này (runtime.GOOS). Hữu ích cho cấu hình dùng chung giữa các nền tảng client"
 
 [pages.settings]
 "title" = "Cài đặt"

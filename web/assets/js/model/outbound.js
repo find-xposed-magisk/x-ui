@@ -1871,21 +1871,24 @@ Outbound.FreedomSettings.FinalRule = class extends CommonClass {
 };
 
 Outbound.BlackholeSettings = class extends CommonClass {
-    constructor(type) {
+    constructor(type, customResponseData = '') {
         super();
         this.type = type;
+        this.customResponseData = customResponseData;
     }
 
     static fromJson(json = {}) {
         return new Outbound.BlackholeSettings(
             json.response ? json.response.type : undefined,
+            json.response?.customResponseData ?? '',
         );
     }
 
     toJson() {
-        return {
-            response: ObjectUtil.isEmpty(this.type) ? undefined : { type: this.type },
-        };
+        if (ObjectUtil.isEmpty(this.type)) return { response: undefined };
+        const response = { type: this.type };
+        if (this.type === 'custom') response.customResponseData = this.customResponseData.replace(/\s+/g, '');
+        return { response };
     }
 };
 Outbound.LoopbackSettings = class extends CommonClass {

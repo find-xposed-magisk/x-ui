@@ -260,6 +260,8 @@
 "xudpConcurrency" = "xudp параллелизм"
 "xudpUDP443" = "xudp UDP 443"
 "pinnedSha256" = "Введите SHA256 отпечатки (base64)"
+"customResponseData" = "Свой ответ"
+"customResponseDataDesc" = "Base64 байтов, отправляемых перед закрытием соединения, например «сырой» HTTP-ответ"
 
 [pages.client]
 "add" = "Добавить клиента"
@@ -496,6 +498,8 @@
 "attributes" = "Атрибуты"
 "inboundTags" = "Теги входящих"
 "outboundTag" = "Тег исходящего"
+"localOS" = "Локальная ОС"
+"localOSDesc" = "Правило применяется, только если сам Xray работает на одной из этих ОС (runtime.GOOS). Полезно для конфигов, общих для разных клиентских платформ"
 
 [pages.settings]
 "title" = "Настройки"

@@ -260,6 +260,8 @@
 "xudpConcurrency" = "تعداد همزمان xudp"
 "xudpUDP443" = "xudp UDP 443"
 "pinnedSha256" = "اثرانگشت SHA256 را وارد کنید (base64)"
+"customResponseData" = "پاسخ دلخواه"
+"customResponseDataDesc" = "Base64 بایت‌هایی که پیش از بستن اتصال برگردانده می‌شوند، مثلاً یک پاسخ خام HTTP"
 
 [pages.client]
 "add" = "کاربر جدید"
@@ -496,6 +498,8 @@
 "attributes" = "صفات"
 "inboundTags" = "تگ‌های ورودی"
 "outboundTag" = "تگ خروجی"
+"localOS" = "سیستم‌عامل محلی"
+"localOSDesc" = "این قانون فقط وقتی اعمال می‌شود که خود Xray روی یکی از این سیستم‌عامل‌ها اجرا شود (runtime.GOOS). برای کانفیگ‌های مشترک بین پلتفرم‌های کلاینت مفید است"
 
 [pages.settings]
 "title" = "تنظیمات پنل"
