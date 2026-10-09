@@ -1411,6 +1411,35 @@ class UdpMask extends XrayCommonClass {
             .filter(d => d && d.name !== undefined);
     }
 
+    // A Header Custom item is exactly one of: a fixed "packet", "rand" random
+    // bytes, a "reuse"d capture or a "transform". The form keeps an empty packet
+    // and a rand on every item, which the core refuses together, and an "array"
+    // packet typed as "1,2,3" must become a real JSON array.
+    static customItemToJson(item = {}) {
+        const out = {};
+        for (const key of ['capture', 'reuse', 'transform']) {
+            if (item[key]) out[key] = item[key];
+        }
+        const packet = item.packet ?? '';
+        const hasPacket = Array.isArray(packet) ? packet.length > 0 : String(packet) !== '';
+        if (out.reuse || out.transform) {
+            // the item's kind is already set
+        } else if (hasPacket) {
+            if (!item.type || item.type === 'array') {
+                out.packet = Array.isArray(packet) ? packet
+                    : String(packet).split(/[\s,]+/).filter(Boolean).map(Number);
+            } else {
+                out.type = item.type;
+                out.packet = packet;
+            }
+        } else if (Number(item.rand) > 0) {
+            out.rand = Number(item.rand);
+            if (item.randRange) out.randRange = item.randRange;
+        }
+        if (item.delay) out.delay = item.delay;
+        return out;
+    }
+
     // Xray-core takes either random bytes ("rand") or a fixed "packet" per noise
     // item, never both, and an "array" packet must be a real JSON array. "exp"
     // builds the packet from tags such as <b 0d0a><t><rc 20-40>.
@@ -1450,6 +1479,13 @@ class UdpMask extends XrayCommonClass {
 
     toJson() {
         let settings = this.settings;
+        if (this.type === 'header-custom') {
+            settings = {
+                ...settings,
+                client: (settings.client || []).map(i => UdpMask.customItemToJson(i)),
+                server: (settings.server || []).map(i => UdpMask.customItemToJson(i)),
+            };
+        }
         if (this.type === 'noise') {
             settings = { reset: settings.reset || undefined, noise: (settings.noise || []).map(n => UdpMask.noiseItemToJson(n)) };
         }
@@ -1509,9 +1545,19 @@ class TcpMask extends XrayCommonClass {
     }
 
     toJson() {
+        let settings = this.settings;
+        if (this.type === 'header-custom') {
+            const rounds = list => (list || []).map(round => (round || []).map(i => UdpMask.customItemToJson(i)));
+            settings = {
+                ...settings,
+                clients: rounds(settings.clients),
+                servers: rounds(settings.servers),
+                errors: rounds(settings.errors),
+            };
+        }
         return {
             type: this.type,
-            settings: (this.settings && Object.keys(this.settings).length > 0) ? this.settings : undefined
+            settings: (settings && Object.keys(settings).length > 0) ? settings : undefined
         };
     }
 }
