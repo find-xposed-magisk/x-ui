@@ -4,6 +4,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"testing"
+
+	"github.com/xtls/xray-core/common/protocol"
 )
 
 // A payload built from a model.Client keeps its Go types; one read back out of
@@ -151,5 +153,28 @@ func TestToUint32(t *testing.T) {
 				t.Fatalf("toUint32(%v) = %d, want %d", test.value, got, test.want)
 			}
 		})
+	}
+}
+
+// Every account handed to AlterInbound has to turn into a memory user, or the
+// core refuses it and the panel falls back to restarting Xray.
+func TestUserAccountsBecomeMemoryUsers(t *testing.T) {
+	cases := map[string]map[string]interface{}{
+		"vmess":       {"id": "5783a3e7-e373-51cd-8642-c83782b807c5"},
+		"vless":       {"id": "5783a3e7-e373-51cd-8642-c83782b807c5", "flow": ""},
+		"trojan":      {"password": "pw"},
+		"shadowsocks": {"cipher": "", "password": "MDEyMzQ1Njc4OWFiY2RlZg=="},
+		"hysteria":    {"auth": "pw"},
+	}
+	for proto, user := range cases {
+		user["email"] = proto + "@test"
+		account, err := userAccount(proto, user)
+		if err != nil || account == nil {
+			t.Fatalf("%s: account %v, err %v", proto, account, err)
+		}
+		u := &protocol.User{Email: proto + "@test", Account: account}
+		if _, err := u.ToMemoryUser(); err != nil {
+			t.Errorf("%s: %v", proto, err)
+		}
 	}
 }

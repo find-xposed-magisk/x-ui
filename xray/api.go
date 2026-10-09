@@ -188,6 +188,28 @@ func (x *XrayAPI) HasOutbound(tag string) (bool, error) {
 }
 
 func (x *XrayAPI) AddUser(Protocol string, inboundTag string, user map[string]interface{}) error {
+	account, err := userAccount(Protocol, user)
+	if err != nil || account == nil {
+		return err
+	}
+
+	client := *x.HandlerServiceClient
+
+	_, err = client.AlterInbound(context.Background(), &command.AlterInboundRequest{
+		Tag: inboundTag,
+		Operation: serial.ToTypedMessage(&command.AddUserOperation{
+			User: &protocol.User{
+				Email:   user["email"].(string),
+				Account: account,
+			},
+		}),
+	})
+	return err
+}
+
+// userAccount builds the account Xray-core attaches to a user added at runtime;
+// nil means the protocol cannot take users through the API.
+func userAccount(Protocol string, user map[string]interface{}) (*serial.TypedMessage, error) {
 	var account *serial.TypedMessage
 	switch Protocol {
 	case "vmess":
@@ -252,9 +274,8 @@ func (x *XrayAPI) AddUser(Protocol string, inboundTag string, user map[string]in
 				CipherType: ssCipherType,
 			})
 		} else {
-			account = serial.ToTypedMessage(&shadowsocks_2022.ServerConfig{
-				Key:   user["password"].(string),
-				Email: user["email"].(string),
+			account = serial.ToTypedMessage(&shadowsocks_2022.Account{
+				Key: user["password"].(string),
 			})
 		}
 	case "hysteria":
@@ -264,25 +285,13 @@ func (x *XrayAPI) AddUser(Protocol string, inboundTag string, user map[string]in
 	case "wireguard":
 		peer, err := wireguardPeerConfig(user)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		account = serial.ToTypedMessage(peer)
 	default:
-		return nil
+		return nil, nil
 	}
-
-	client := *x.HandlerServiceClient
-
-	_, err := client.AlterInbound(context.Background(), &command.AlterInboundRequest{
-		Tag: inboundTag,
-		Operation: serial.ToTypedMessage(&command.AddUserOperation{
-			User: &protocol.User{
-				Email:   user["email"].(string),
-				Account: account,
-			},
-		}),
-	})
-	return err
+	return account, nil
 }
 
 // wireguardPeerConfig turns a panel client entry into the peer config Xray
