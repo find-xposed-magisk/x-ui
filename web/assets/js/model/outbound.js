@@ -1312,6 +1312,18 @@ class FinalMaskStreamSettings extends CommonClass {
         return new FinalMaskStreamSettings(udpMasks, [], qp.toJson() ? qp : undefined);
     }
 
+    // The "fm" parameter of Xray's share link standard holds the whole finalmask
+    // as JSON; a malformed one is ignored, as the link is still usable without.
+    static fromShareParam(fm) {
+        if (!fm) return undefined;
+        try {
+            const json = JSON.parse(fm);
+            return json && typeof json === 'object' ? FinalMaskStreamSettings.fromJson(json) : undefined;
+        } catch (e) {
+            return undefined;
+        }
+    }
+
     // Hysteria-style port hopping: a fresh local socket to another server port
     // every interval.
     static udpHopMask(ports, interval) {
@@ -1875,6 +1887,9 @@ class Outbound extends CommonClass {
             stream.reality = RealityStreamSettings.fromLinkParams(url.searchParams);
         }
 
+        const finalmask = FinalMaskStreamSettings.fromShareParam(url.searchParams.get('fm'));
+        if (finalmask) stream.finalmask = finalmask;
+
         const regex = /([^@]+):\/\/([^@]+)@(.+):(\d+)(.*)$/;
         const match = link.match(regex);
 
@@ -1919,7 +1934,8 @@ class Outbound extends CommonClass {
         
         stream.hysteria.auth = password;
 
-        stream.finalmask = FinalMaskStreamSettings.fromLinkParams(urlParams);
+        stream.finalmask = FinalMaskStreamSettings.fromShareParam(urlParams.get('fm'))
+            ?? FinalMaskStreamSettings.fromLinkParams(urlParams);
 
         stream.tls = TlsStreamSettings.fromLinkParams(urlParams, ['h3']);
         

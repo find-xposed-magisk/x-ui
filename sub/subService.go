@@ -440,6 +440,7 @@ func (s *SubService) genVlessLink(inbound *model.Inbound, email string) string {
 			}
 		}
 	}
+	addFinalMaskParam(params, stream)
 	security, _ := stream["security"].(string)
 	if security == "tls" {
 		params["security"] = "tls"
@@ -682,6 +683,7 @@ func (s *SubService) genTrojanLink(inbound *model.Inbound, email string) string 
 			}
 		}
 	}
+	addFinalMaskParam(params, stream)
 	security, _ := stream["security"].(string)
 	if security == "tls" {
 		params["security"] = "tls"
@@ -921,6 +923,7 @@ func (s *SubService) genShadowsocksLink(inbound *model.Inbound, email string) st
 		}
 	}
 
+	addFinalMaskParam(params, stream)
 	security, _ := stream["security"].(string)
 	if security == "tls" {
 		params["security"] = "tls"
@@ -1294,6 +1297,33 @@ func (s *SubService) genRemark(inbound *model.Inbound, email string, extra strin
 		}
 	}
 	return strings.Join(remark, separationChar)
+}
+
+// addFinalMaskParam shares the inbound's finalmask as "fm", which Xray's share
+// link standard defines as the whole object in JSON. Port hopping, kept in the
+// inbound as quicParams.udpHop for share links, reaches the client as the
+// udphop mask the core now expects.
+func addFinalMaskParam(params map[string]string, stream map[string]interface{}) {
+	finalmask, ok := stream["finalmask"].(map[string]interface{})
+	if !ok || len(finalmask) == 0 {
+		return
+	}
+	raw, err := json.Marshal(finalmask)
+	if err != nil {
+		return
+	}
+	clientStream := map[string]interface{}{}
+	if json.Unmarshal([]byte(`{"finalmask":`+string(raw)+`}`), &clientStream) != nil {
+		return
+	}
+	xray.MoveUDPHopToMask(clientStream)
+	fm, _ := clientStream["finalmask"].(map[string]interface{})
+	if len(fm) == 0 {
+		return
+	}
+	if fmJSON, err := json.Marshal(fm); err == nil {
+		params["fm"] = string(fmJSON)
+	}
 }
 
 func buildXhttpExtraForShare(xhttp map[string]interface{}) map[string]interface{} {

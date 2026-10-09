@@ -1,6 +1,9 @@
 package sub
 
 import (
+	"encoding/json"
+	"net/url"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
@@ -165,5 +168,40 @@ func TestShadowsocksEncodesTheRightPassword(t *testing.T) {
 	}
 	if !strings.HasPrefix(legacy, "ss://") || !strings.HasPrefix(blake3, "ss://") {
 		t.Fatalf("unexpected scheme:\n%s\n%s", legacy, blake3)
+	}
+}
+
+// Xray's share link standard carries the whole finalmask as JSON in "fm", and
+// port hopping, which the inbound keeps as quicParams.udpHop for share links,
+// has to reach the client as the udphop mask.
+func TestLinksCarryFinalmask(t *testing.T) {
+	stream := `{"network":"xhttp","xhttpSettings":{"path":"/x","mode":"auto"},"finalmask":{
+		"tcp":[{"type":"header-custom","settings":{"clients":[[{"type":"hex","packet":"0d0a"}]]}}],
+		"quicParams":{"congestion":"bbr","udpHop":{"ports":"20000-30000"}}}}`
+	service := testService()
+	for _, protocol := range []model.Protocol{"vless", "trojan", "shadowsocks"} {
+		settings := `{"clients":[{"id":"11111111-2222-3333-4444-555555555555","password":"p","email":"e"}],"method":"aes-256-gcm"}`
+		link := service.getLink(inboundFor(protocol, settings, stream), "e")
+		parsed, err := url.Parse(link)
+		if err != nil {
+			t.Fatalf("%s: unparsable link %q", protocol, link)
+		}
+		var fm map[string]any
+		if err := json.Unmarshal([]byte(parsed.Query().Get("fm")), &fm); err != nil {
+			t.Fatalf("%s: fm is not JSON in %s", protocol, link)
+		}
+		var want map[string]any
+		json.Unmarshal([]byte(`{
+			"tcp":[{"type":"header-custom","settings":{"clients":[[{"type":"hex","packet":"0d0a"}]]}}],
+			"udp":[{"type":"udphop","settings":{"mode":"intervalLocal,intervalRemote","remotePorts":"20000-30000"}}],
+			"quicParams":{"congestion":"bbr"}}`), &want)
+		if !reflect.DeepEqual(fm, want) {
+			t.Errorf("%s: fm = %v, want %v", protocol, fm, want)
+		}
+	}
+
+	plain := service.getLink(inboundFor("vless", `{"clients":[{"id":"11111111-2222-3333-4444-555555555555","email":"e"}]}`, `{"network":"tcp"}`), "e")
+	if strings.Contains(plain, "fm=") {
+		t.Errorf("fm on an inbound without finalmask: %s", plain)
 	}
 }

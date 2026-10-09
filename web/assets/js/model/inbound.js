@@ -2157,6 +2157,25 @@ class Inbound extends XrayCommonClass {
         return "";
     }
 
+    // The "fm" parameter of Xray's share link standard: the whole finalmask as
+    // the client needs it. Port hopping, kept here as quicParams.udpHop for
+    // share links, reaches the client as the udphop mask the core expects.
+    getFinalMaskForShare() {
+        const fm = this.stream.finalmask?.toJson();
+        if (!fm) return undefined;
+        const udpHop = fm.quicParams?.udpHop;
+        if (udpHop) {
+            delete fm.quicParams.udpHop;
+            if (Object.keys(fm.quicParams).length === 0) delete fm.quicParams;
+            if (udpHop.ports) {
+                const settings = { mode: 'intervalLocal,intervalRemote', remotePorts: String(udpHop.ports) };
+                if (udpHop.interval) settings.interval = String(udpHop.interval);
+                fm.udp = [{ type: 'udphop', settings }, ...(fm.udp || [])];
+            }
+        }
+        return Object.keys(fm).length > 0 ? fm : undefined;
+    }
+
     getXhttpExtraForShare() {
         if (!this.isXHTTP) return null;
         const xhttpJson = this.stream.xhttp.toJson();
@@ -2405,6 +2424,9 @@ class Inbound extends XrayCommonClass {
                 break;
         }
 
+        const fm = this.getFinalMaskForShare();
+        if (fm) params.set("fm", JSON.stringify(fm));
+
         if (security === 'tls') {
             params.set("security", "tls");
             if (this.stream.isTls) {
@@ -2536,6 +2558,9 @@ class Inbound extends XrayCommonClass {
                 break;
         }
 
+        const fm = this.getFinalMaskForShare();
+        if (fm) params.set("fm", JSON.stringify(fm));
+
         if (security === 'tls') {
             params.set("security", "tls");
             if (this.stream.isTls) {
@@ -2642,6 +2667,9 @@ class Inbound extends XrayCommonClass {
                 if (xhttpExtra) params.set("extra", JSON.stringify(xhttpExtra));
                 break;
         }
+
+        const fm = this.getFinalMaskForShare();
+        if (fm) params.set("fm", JSON.stringify(fm));
 
         if (security === 'tls') {
             params.set("security", "tls");
