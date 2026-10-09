@@ -40,6 +40,25 @@
 bash <(curl -Ls https://raw.githubusercontent.com/alireza0/x-ui/master/install.sh)
 ```
 
+### Non-interactive Install
+
+On a fresh install, you can skip the questions and set the login info with environment variables. Any variable you leave out gets a random value.
+
+| Variable | Description |
+| --- | --- |
+| `XUI_NONINTERACTIVE` | Set to `1` to never ask questions during the install |
+| `XUI_USERNAME` | Panel username |
+| `XUI_PASSWORD` | Panel password |
+| `XUI_PANEL_PORT` | Panel port |
+| `XUI_WEB_BASE_PATH` | Panel web base path |
+
+```sh
+XUI_NONINTERACTIVE=1 XUI_USERNAME=me XUI_PASSWORD=secret XUI_PANEL_PORT=2053 XUI_WEB_BASE_PATH=abc123 \
+bash <(curl -Ls https://raw.githubusercontent.com/alireza0/x-ui/master/install.sh)
+```
+
+These values are used only when the panel still has the default `admin` login. An existing setup is not changed.
+
 ## Install Legacy Version
 
 **Step 1:** To install an old version, use following installation command. e.g., version `1.8.0`:

@@ -74,12 +74,15 @@ config_after_install() {
 
     if [[ ${#existing_webBasePath} -lt 4 ]]; then
         if [[ "$existing_username" == "admin" && "$existing_password" == "admin" ]]; then
-            local config_webBasePath=$(gen_random_string 15)
-            local config_username=$(gen_random_string 10)
-            local config_password=$(gen_random_string 10)
+            local config_webBasePath="${XUI_WEB_BASE_PATH:-$(gen_random_string 15)}"
+            local config_username="${XUI_USERNAME:-$(gen_random_string 10)}"
+            local config_password="${XUI_PASSWORD:-$(gen_random_string 10)}"
+            local config_port="${XUI_PANEL_PORT}"
 
-            read -p "Would you like to customize the Panel Port settings? (If not, random port will be applied) [y/n]: " config_confirm
-            if [[ "${config_confirm}" == "y" || "${config_confirm}" == "Y" ]]; then
+            if [[ -n "${config_port}" ]]; then
+                echo -e "${yellow}Your Panel Port is: ${config_port}${plain}"
+            elif [[ "${XUI_NONINTERACTIVE}" != "1" ]] && read -p "Would you like to customize the Panel Port settings? (If not, random port will be applied) [y/n]: " config_confirm \
+                && [[ "${config_confirm}" == "y" || "${config_confirm}" == "Y" ]]; then
                 read -p "Please set up the panel port: " config_port
                 echo -e "${yellow}Your Panel Port is: ${config_port}${plain}"
             else
@@ -126,7 +129,11 @@ config_after_install() {
 install_x-ui() {
     # checks if the installation backup dir exist. if existed then ask user if they want to restore it else continue installation.
     if [[ -e /usr/local/x-ui-backup/ ]]; then
-        read -p "Failed installation detected. Do you want to restore previously installed version? [y/n]? ": restore_confirm
+        if [[ "${XUI_NONINTERACTIVE}" == "1" ]]; then
+            restore_confirm="n"
+        else
+            read -p "Failed installation detected. Do you want to restore previously installed version? [y/n]? ": restore_confirm
+        fi
         if [[ "${restore_confirm}" == "y" || "${restore_confirm}" == "Y" ]]; then
             systemctl stop x-ui
             mv /usr/local/x-ui-backup/x-ui.db /etc/x-ui/ -f
