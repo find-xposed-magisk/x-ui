@@ -1153,6 +1153,7 @@ class TcpMask extends CommonClass {
 class QuicParams extends CommonClass {
     constructor({
         congestion = '',
+        bbrProfile = '',
         debug = false,
         brutalUp = 0,
         brutalDown = 0,
@@ -1171,6 +1172,7 @@ class QuicParams extends CommonClass {
     } = {}) {
         super();
         this.congestion = congestion;
+        this.bbrProfile = bbrProfile;
         this.debug = debug;
         this.brutalUp = brutalUp;
         this.brutalDown = brutalDown;
@@ -1190,7 +1192,7 @@ class QuicParams extends CommonClass {
 
     static hasAnyMeaningfulValue(json) {
         if (!json || typeof json !== 'object') return false;
-        const keys = ['congestion', 'debug', 'brutalUp', 'brutalDown',
+        const keys = ['congestion', 'bbrProfile', 'debug', 'brutalUp', 'brutalDown',
             'initStreamReceiveWindow', 'maxStreamReceiveWindow',
             'initConnectionReceiveWindow', 'maxConnectionReceiveWindow',
             'maxIdleTimeout', 'keepAlivePeriod', 'disablePathMTUDiscovery',
@@ -1213,6 +1215,7 @@ class QuicParams extends CommonClass {
     static fromJson(json = {}) {
         return new QuicParams({
             congestion: json.congestion || '',
+            bbrProfile: json.bbrProfile || '',
             debug: !!json.debug,
             brutalUp: QuicParams.getMbpsInt(json.brutalUp),
             brutalDown: QuicParams.getMbpsInt(json.brutalDown),
@@ -1249,6 +1252,7 @@ class QuicParams extends CommonClass {
     toJson() {
         const result = {};
         if (this.congestion) result.congestion = this.congestion;
+        if (this.bbrProfile) result.bbrProfile = this.bbrProfile;
         if (this.debug) result.debug = this.debug;
         if (this.brutalUp) result.brutalUp = QuicParams.getMbpsStr(this.brutalUp);
         if (this.brutalDown) result.brutalDown = QuicParams.getMbpsStr(this.brutalDown);

@@ -476,6 +476,8 @@
 "xmcProfilesDesc" = "Signed Minecraft profiles; both ends need the same list, and the client logs in with a random one. Enter a username and fetch the rest from Mojang"
 "xmcFetch" = "Fetch"
 "xmcHostnameDesc" = "The server address the client puts in its Minecraft handshake; empty uses the real one"
+"bbrProfile" = "BBR Profile"
+"bbrProfileDesc" = "Preset for BBR, used whenever BBR controls congestion: with bbr, with brutal when it falls back to BBR, and by default on XHTTP/3"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "Auth Password"

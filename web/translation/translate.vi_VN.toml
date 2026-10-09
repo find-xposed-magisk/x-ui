@@ -476,6 +476,8 @@
 "xmcProfilesDesc" = "Hồ sơ Minecraft đã ký; hai đầu cần cùng danh sách, client đăng nhập bằng một hồ sơ ngẫu nhiên. Nhập tên người dùng và lấy phần còn lại từ Mojang"
 "xmcFetch" = "Lấy"
 "xmcHostnameDesc" = "Địa chỉ máy chủ client gửi trong handshake Minecraft; để trống dùng địa chỉ thật"
+"bbrProfile" = "Hồ sơ BBR"
+"bbrProfileDesc" = "Cấu hình sẵn cho BBR, dùng khi BBR điều khiển tắc nghẽn: với bbr, với brutal khi quay về BBR, và mặc định trên XHTTP/3"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "Mật khẩu xác thực"

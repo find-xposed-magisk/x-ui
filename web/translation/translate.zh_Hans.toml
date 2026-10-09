@@ -476,6 +476,8 @@
 "xmcProfilesDesc" = "已签名的 Minecraft 档案；两端需要相同的列表，客户端随机选用其一登录。输入用户名即可从 Mojang 获取其余信息"
 "xmcFetch" = "获取"
 "xmcHostnameDesc" = "客户端在 Minecraft 握手中填写的服务器地址；留空则使用真实地址"
+"bbrProfile" = "BBR 配置"
+"bbrProfileDesc" = "BBR 预设，在由 BBR 控制拥塞时生效：选择 bbr 时、brutal 回退到 BBR 时，以及 XHTTP/3 默认情况下"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "认证密码"

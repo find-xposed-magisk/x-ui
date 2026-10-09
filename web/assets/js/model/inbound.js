@@ -1637,6 +1637,7 @@ class TcpMask extends XrayCommonClass {
 class QuicParams extends XrayCommonClass {
     constructor({
         congestion = '',
+        bbrProfile = '',
         debug = false,
         brutalUp = 0,
         brutalDown = 0,
@@ -1657,6 +1658,7 @@ class QuicParams extends XrayCommonClass {
     } = {}) {
         super();
         this.congestion = congestion;
+        this.bbrProfile = bbrProfile;
         this.debug = debug;
         this.brutalUp = brutalUp;
         this.brutalDown = brutalDown;
@@ -1678,7 +1680,7 @@ class QuicParams extends XrayCommonClass {
 
     static hasAnyMeaningfulValue(json) {
         if (!json || typeof json !== 'object') return false;
-        const keys = ['congestion', 'debug', 'brutalUp', 'brutalDown', 'udpHop',
+        const keys = ['congestion', 'bbrProfile', 'debug', 'brutalUp', 'brutalDown', 'udpHop',
             'initStreamReceiveWindow', 'maxStreamReceiveWindow',
             'initConnectionReceiveWindow', 'maxConnectionReceiveWindow',
             'maxIdleTimeout', 'keepAlivePeriod', 'disablePathMTUDiscovery',
@@ -1702,6 +1704,7 @@ class QuicParams extends XrayCommonClass {
         const udpHop = json.udpHop || {};
         return new QuicParams({
             congestion: json.congestion || '',
+            bbrProfile: json.bbrProfile || '',
             debug: !!json.debug,
             brutalUp: this.getMbpsInt(json.brutalUp),
             brutalDown: this.getMbpsInt(json.brutalDown),
@@ -1725,6 +1728,7 @@ class QuicParams extends XrayCommonClass {
     toJson() {
         const result = {};
         if (this.congestion) result.congestion = this.congestion;
+        if (this.bbrProfile) result.bbrProfile = this.bbrProfile;
         if (this.debug) result.debug = this.debug;
         if (this.brutalUp) result.brutalUp = QuicParams.getMbpsStr(this.brutalUp);
         if (this.brutalDown) result.brutalDown = QuicParams.getMbpsStr(this.brutalDown);

@@ -476,6 +476,8 @@
 "xmcProfilesDesc" = "پروفایل‌های امضاشده Minecraft؛ هر دو طرف باید لیست یکسان داشته باشند و کلاینت با یکی از آن‌ها به‌صورت تصادفی وارد می‌شود. نام کاربری را وارد کنید و بقیه را از Mojang بگیرید"
 "xmcFetch" = "دریافت"
 "xmcHostnameDesc" = "آدرس سروری که کلاینت در handshake ماینکرافت می‌فرستد؛ خالی یعنی آدرس واقعی"
+"bbrProfile" = "پروفایل BBR"
+"bbrProfileDesc" = "پیش‌تنظیم BBR که هر جا BBR کنترل ازدحام را بر عهده دارد استفاده می‌شود: با bbr، با brutal وقتی به BBR برمی‌گردد، و به‌صورت پیش‌فرض در XHTTP/3"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "رمز احراز هویت"

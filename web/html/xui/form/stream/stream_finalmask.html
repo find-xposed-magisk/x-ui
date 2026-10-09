@@ -288,6 +288,21 @@
                     <a-select-option value="force-brutal">force-brutal</a-select-option>
                 </a-select>
             </a-form-item>
+            <a-form-item v-if="!['reno', 'force-brutal'].includes(inbound.stream.finalmask.quicParams.congestion)">
+                <template slot="label">
+                    <a-tooltip>
+                        <template slot="title">
+                            <span>{{ i18n "pages.inbounds.stream.finalmask.bbrProfileDesc" }}</span>
+                        </template>
+                        {{ i18n "pages.inbounds.stream.finalmask.bbrProfile" }} <a-icon type="question-circle"></a-icon>
+                    </a-tooltip>
+                </template>
+                <a-select v-model="inbound.stream.finalmask.quicParams.bbrProfile" :dropdown-class-name="themeSwitcher.currentTheme">
+                    <a-select-option value="">standard</a-select-option>
+                    <a-select-option value="conservative">conservative</a-select-option>
+                    <a-select-option value="aggressive">aggressive</a-select-option>
+                </a-select>
+            </a-form-item>
             <a-form-item label='{{ i18n "pages.inbounds.stream.finalmask.debug" }}'>
                 <a-switch v-model="inbound.stream.finalmask.quicParams.debug"></a-switch>
             </a-form-item>
