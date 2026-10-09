@@ -135,6 +135,10 @@ func (s *AllSetting) CheckValid() error {
 		return err
 	}
 
+	if _, err := cronspec.Parse(s.TgRunTime); err != nil {
+		return err
+	}
+
 	_, err := time.LoadLocation(s.TimeLocation)
 	if err != nil {
 		return common.NewError("time location not exist:", s.TimeLocation)

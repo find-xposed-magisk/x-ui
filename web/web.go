@@ -280,14 +280,19 @@ func (s *Server) startTask() {
 	if (err == nil) && (isTgbotenabled) {
 		runtime, err := s.settingService.GetTgbotRuntime()
 		if err != nil || runtime == "" {
-			logger.Errorf("Add NewStatsNotifyJob error[%s], Runtime[%s] invalid, will run default", err, runtime)
+			logger.Errorf("Add NewStatsNotifyJob error[%v], Runtime[%s] invalid, will run default", err, runtime)
 			runtime = "@daily"
 		}
-		logger.Infof("Tg notify enabled,run at %s", runtime)
-		_, err = s.cron.AddJob(runtime, job.NewStatsNotifyJob())
+		// The scheduler's own parser demands a seconds field, so hand it the
+		// schedule already parsed to accept standard five-field crontab too.
+		schedule, err := cronspec.Parse(runtime)
 		if err != nil {
-			logger.Warning("Add NewStatsNotifyJob error", err)
-			return
+			logger.Warning("Add NewStatsNotifyJob error, will run default:", err)
+			schedule, _ = cronspec.Parse("@daily")
+		}
+		if schedule != nil {
+			logger.Infof("Tg notify enabled,run at %s", runtime)
+			s.cron.Schedule(schedule, job.NewStatsNotifyJob())
 		}
 
 		// Check CPU load and alarm to TgBot if threshold passes
