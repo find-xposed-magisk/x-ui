@@ -65,7 +65,8 @@
                 case Protocols.VMESS: return clients.push(new Inbound.VmessSettings.Vmess());
                 case Protocols.VLESS: return clients.push(new Inbound.VLESSSettings.VLESS());
                 case Protocols.TROJAN: return clients.push(new Inbound.TrojanSettings.Trojan());
-                case Protocols.SHADOWSOCKS: return clients.push(new Inbound.ShadowsocksSettings.Shadowsocks(clients[0].method));
+                case Protocols.SHADOWSOCKS: return clients.push(new Inbound.ShadowsocksSettings.Shadowsocks(
+                    clients[0].method, RandomUtil.randomShadowsocksPassword(this.inbound.settings.method)));
                 case Protocols.HYSTERIA: return clients.push(new Inbound.HysteriaSettings.Hysteria());
                 case Protocols.MASQUE: return clients.push(new Inbound.MasqueSettings.Masque());
                 case Protocols.WIREGUARD: return clients.push(new Inbound.WireguardSettings.Peer(null, null, '', [this.inbound.settings.nextAllowedIP()]));

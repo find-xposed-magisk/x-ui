@@ -3245,6 +3245,41 @@ Inbound.ShadowsocksSettings = class extends Inbound.Settings {
             ivCheck: this.ivCheck,
         };
     }
+
+    // The key size a Shadowsocks 2022 method needs, 0 for the others.
+    static keyLength(method) {
+        switch (method) {
+            case SSMethods.BLAKE3_AES_128_GCM: return 16;
+            case SSMethods.BLAKE3_AES_256_GCM:
+            case SSMethods.BLAKE3_CHACHA20_POLY1305: return 32;
+            default: return 0;
+        }
+    }
+
+    // Reads a key the way Xray-core does: base64, or else the raw string.
+    static keyFits(key, length) {
+        let size;
+        try {
+            size = atob(key || '').length;
+        } catch (e) {
+            size = new TextEncoder().encode(key || '').length;
+        }
+        return size === length;
+    }
+
+    // After a method change, replace the keys the new method cannot use.
+    fitKeys() {
+        const length = Inbound.ShadowsocksSettings.keyLength(this.method);
+        if (!length) return;
+        if (!Inbound.ShadowsocksSettings.keyFits(this.password, length)) {
+            this.password = RandomUtil.randomShadowsocksPassword(this.method);
+        }
+        this.shadowsockses.forEach(client => {
+            if (!Inbound.ShadowsocksSettings.keyFits(client.password, length)) {
+                client.password = RandomUtil.randomShadowsocksPassword(this.method);
+            }
+        });
+    }
 };
 
 Inbound.ShadowsocksSettings.Shadowsocks = class extends Inbound.ClientBase {

@@ -171,8 +171,10 @@ class RandomUtil {
         });
     }
 
-    static randomShadowsocksPassword() {
-        let array = new Uint8Array(32);
+    // Shadowsocks 2022 needs a key of exactly the method's size; 32 bytes also
+    // serve as a password for every other method.
+    static randomShadowsocksPassword(method = '') {
+        let array = new Uint8Array(method === '2022-blake3-aes-128-gcm' ? 16 : 32);
         window.crypto.getRandomValues(array);
         return btoa(String.fromCharCode.apply(null, array));
     }
