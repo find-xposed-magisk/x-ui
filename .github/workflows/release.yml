@@ -23,6 +23,12 @@ on:
       - 'go.sum'
       - 'x-ui.service'
 
+# A push to main only builds artifacts, so a newer push makes the older build
+# pointless. Tag and release runs upload to the release and are never cancelled.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
 jobs:
   build:
     permissions:
