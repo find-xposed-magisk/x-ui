@@ -1081,6 +1081,15 @@ class TcpMask extends CommonClass {
                     servers: settings.servers || [],
                     errors: settings.errors || [],
                 };
+            case 'xmc':
+                // Both ends need the same profiles; the client logs in with a
+                // random one of them. "hostname" is only what the client puts
+                // in its handshake.
+                return {
+                    hostname: settings.hostname || '',
+                    password: settings.password || RandomUtil.randomSeq(16),
+                    profiles: settings.profiles || [],
+                };
             case 'fragment':
                 return {
                     packets: settings.packets || 'tlshello',
@@ -1102,6 +1111,13 @@ class TcpMask extends CommonClass {
         }
     }
 
+    // Fills an XMC profile from Mojang by its username; the panel server asks,
+    // since browsers may not call Mojang's API directly.
+    static async fetchXmcProfile(profile) {
+        const msg = await HttpUtil.post('/server/getMinecraftProfile', { username: profile.username });
+        if (msg.success && msg.obj) Object.assign(profile, msg.obj);
+    }
+
     static fromJson(json = {}) {
         return new TcpMask(
             json.type || 'header-custom',
@@ -1118,6 +1134,13 @@ class TcpMask extends CommonClass {
                 clients: rounds(settings.clients),
                 servers: rounds(settings.servers),
                 errors: rounds(settings.errors),
+            };
+        }
+        if (this.type === 'xmc') {
+            settings = {
+                hostname: settings.hostname || undefined,
+                password: settings.password,
+                profiles: settings.profiles,
             };
         }
         return {

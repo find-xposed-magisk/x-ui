@@ -472,6 +472,10 @@
 "realmTlsDesc" = "تنظیمات اختیاری TLS برای سرور واسط، به شکل JSON مثل tlsSettings"
 "mkcpHeader" = "هدر"
 "mkcpPasswordDesc" = "برای رمزنگاری AES-128-GCM مقدار بدهید؛ برای قالب اصلی mKCP خالی بگذارید"
+"xmcProfiles" = "پروفایل‌های Minecraft"
+"xmcProfilesDesc" = "پروفایل‌های امضاشده Minecraft؛ هر دو طرف باید لیست یکسان داشته باشند و کلاینت با یکی از آن‌ها به‌صورت تصادفی وارد می‌شود. نام کاربری را وارد کنید و بقیه را از Mojang بگیرید"
+"xmcFetch" = "دریافت"
+"xmcHostnameDesc" = "آدرس سروری که کلاینت در handshake ماینکرافت می‌فرستد؛ خالی یعنی آدرس واقعی"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "رمز احراز هویت"

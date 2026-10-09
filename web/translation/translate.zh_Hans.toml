@@ -472,6 +472,10 @@
 "realmTlsDesc" = "中转服务器的可选 TLS 设置，JSON 格式，同 tlsSettings"
 "mkcpHeader" = "伪装头"
 "mkcpPasswordDesc" = "设置后使用 AES-128-GCM 加密；留空则为 mKCP 原始格式"
+"xmcProfiles" = "Minecraft 档案"
+"xmcProfilesDesc" = "已签名的 Minecraft 档案；两端需要相同的列表，客户端随机选用其一登录。输入用户名即可从 Mojang 获取其余信息"
+"xmcFetch" = "获取"
+"xmcHostnameDesc" = "客户端在 Minecraft 握手中填写的服务器地址；留空则使用真实地址"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "认证密码"

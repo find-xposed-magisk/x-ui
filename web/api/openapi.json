@@ -2196,6 +2196,66 @@
         }
       }
     },
+    "/xui/API/server/getMinecraftProfile": {
+      "post": {
+        "tags": [
+          "Server"
+        ],
+        "summary": "Fetch a signed Minecraft profile",
+        "description": "Looks up a Minecraft account at Mojang and returns its UUID and signed textures, which the XMC finalmask needs on both ends.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "Minecraft username, 3 to 16 letters, digits or underscores"
+                  }
+                },
+                "required": [
+                  "username"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The profile: username, uuid, texturesValue and texturesSignature. Failures are also returned with HTTP 200 and success=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "false when the call failed; msg then carries the reason"
+                    },
+                    "msg": {
+                      "type": "string",
+                      "description": "human-readable result, localised to the panel language"
+                    },
+                    "obj": {
+                      "nullable": true,
+                      "description": "endpoint payload, null when there is none"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
     "/xui/API/server/getDb": {
       "get": {
         "tags": [

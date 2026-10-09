@@ -472,6 +472,10 @@
 "realmTlsDesc" = "Optional TLS settings for the rendezvous server, in JSON like tlsSettings"
 "mkcpHeader" = "Header"
 "mkcpPasswordDesc" = "Set it to encrypt with AES-128-GCM; leave it empty for the original mKCP format"
+"xmcProfiles" = "Minecraft Profiles"
+"xmcProfilesDesc" = "Signed Minecraft profiles; both ends need the same list, and the client logs in with a random one. Enter a username and fetch the rest from Mojang"
+"xmcFetch" = "Fetch"
+"xmcHostnameDesc" = "The server address the client puts in its Minecraft handshake; empty uses the real one"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "Auth Password"

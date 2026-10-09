@@ -26,6 +26,7 @@
                         <a-select-option value="header-custom">Header Custom</a-select-option>
                         <a-select-option value="fragment">Fragment</a-select-option>
                         <a-select-option value="sudoku">Sudoku</a-select-option>
+                        <a-select-option value="xmc">XMC (Minecraft)</a-select-option>
                     </a-select>
                 </a-form-item>
 
@@ -80,6 +81,9 @@
                 </template>
 
                 <!-- TCP fragment -->
+                <template v-if="mask.type === 'xmc'">
+                    {{template "form/xmcFields" "mask"}}
+                </template>
                 <template v-if="mask.type === 'fragment'">
                     <a-form-item label='{{ i18n "pages.outbounds.packets" }}'>
                         <a-input v-model.trim="mask.settings.packets" placeholder="tlshello" />

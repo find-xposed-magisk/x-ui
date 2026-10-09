@@ -166,3 +166,61 @@
     <a-input v-model.trim="{{.}}.settings.value" placeholder="www.baidu.com"></a-input>
 </a-form-item>
 {{end}}
+
+{{define "form/xmcFields"}}
+<a-form-item>
+    <template slot="label">
+        <a-tooltip>
+            <template slot="title">
+                <span>{{ i18n "reset" }}</span>
+            </template>
+            {{ i18n "password" }}
+            <a-icon @click="{{.}}.settings.password = RandomUtil.randomSeq(16)" type="sync"></a-icon>
+        </a-tooltip>
+    </template>
+    <a-input v-model.trim="{{.}}.settings.password"></a-input>
+</a-form-item>
+<a-form-item>
+    <template slot="label">
+        <a-tooltip>
+            <template slot="title">
+                <span>{{ i18n "pages.inbounds.stream.finalmask.xmcHostnameDesc" }}</span>
+            </template>
+            {{ i18n "host" }} <a-icon type="question-circle"></a-icon>
+        </a-tooltip>
+    </template>
+    <a-input v-model.trim="{{.}}.settings.hostname" placeholder="mc.hypixel.net"></a-input>
+</a-form-item>
+<a-form-item>
+    <template slot="label">
+        <a-tooltip>
+            <template slot="title">
+                <span>{{ i18n "pages.inbounds.stream.finalmask.xmcProfilesDesc" }}</span>
+            </template>
+            {{ i18n "pages.inbounds.stream.finalmask.xmcProfiles" }} <a-icon type="question-circle"></a-icon>
+        </a-tooltip>
+    </template>
+    <a-icon type="plus" type="primary" size="small"
+        @click="{{.}}.settings.profiles.push({username: '', uuid: '', texturesValue: '', texturesSignature: ''})" />
+</a-form-item>
+<template v-for="(p, pIdx) in {{.}}.settings.profiles" :key="'xmc-' + pIdx">
+    <a-divider :style="{ margin: '0' }"> {{ i18n "pages.inbounds.stream.finalmask.xmcProfiles" }} [[ pIdx + 1 ]]
+        <a-icon type="delete" @click="() => {{.}}.settings.profiles.splice(pIdx, 1)"
+            :style="{ color: 'rgb(255, 77, 79)', cursor: 'pointer' }"></a-icon>
+    </a-divider>
+    <a-form-item label='{{ i18n "username" }}'>
+        <a-input-search v-model.trim="p.username" placeholder="Notch"
+            enter-button='{{ i18n "pages.inbounds.stream.finalmask.xmcFetch" }}'
+            @search="TcpMask.fetchXmcProfile(p)"></a-input-search>
+    </a-form-item>
+    <a-form-item label="UUID">
+        <a-input v-model.trim="p.uuid"></a-input>
+    </a-form-item>
+    <a-form-item label="Textures">
+        <a-input v-model.trim="p.texturesValue"></a-input>
+    </a-form-item>
+    <a-form-item label="Signature">
+        <a-input v-model.trim="p.texturesSignature"></a-input>
+    </a-form-item>
+</template>
+{{end}}

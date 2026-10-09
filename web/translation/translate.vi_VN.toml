@@ -472,6 +472,10 @@
 "realmTlsDesc" = "Cấu hình TLS tùy chọn cho máy chủ trung gian, dạng JSON như tlsSettings"
 "mkcpHeader" = "Header"
 "mkcpPasswordDesc" = "Đặt để mã hóa bằng AES-128-GCM; để trống cho định dạng mKCP gốc"
+"xmcProfiles" = "Hồ sơ Minecraft"
+"xmcProfilesDesc" = "Hồ sơ Minecraft đã ký; hai đầu cần cùng danh sách, client đăng nhập bằng một hồ sơ ngẫu nhiên. Nhập tên người dùng và lấy phần còn lại từ Mojang"
+"xmcFetch" = "Lấy"
+"xmcHostnameDesc" = "Địa chỉ máy chủ client gửi trong handshake Minecraft; để trống dùng địa chỉ thật"
 
 [pages.inbounds.stream.hysteria]
 "authPassword" = "Mật khẩu xác thực"
