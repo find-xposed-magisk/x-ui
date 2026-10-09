@@ -248,8 +248,8 @@ func (s *ServerService) GetXrayVersions() ([]string, error) {
 	var versions []string
 	for _, release := range releases {
 		versions = append(versions, release.TagName)
-		// Limit: v26.7.28
-		if release.Id <= 360920780 {
+		// Limit: v26.9.30
+		if release.Id <= 399815911 {
 			break
 		}
 	}
