@@ -874,9 +874,12 @@ class UdpMask extends CommonClass {
                     remotePorts: settings.remotePorts ?? '',
                 };
             case 'header-custom':
-                return { client: settings.client || [], server: settings.server || [] };
+                return {
+                    client: (settings.client || []).map(i => UdpMask.customItemForForm(i)),
+                    server: (settings.server || []).map(i => UdpMask.customItemForForm(i)),
+                };
             case 'noise':
-                return { reset: settings.reset ?? 0, noise: settings.noise || [] };
+                return { reset: settings.reset ?? 0, noise: (settings.noise || []).map(n => UdpMask.noiseItemForForm(n)) };
             case 'realm':
                 return {
                     url: settings.url || '',
@@ -957,6 +960,30 @@ class UdpMask extends CommonClass {
             }
         }
         return out;
+    }
+
+    // Saved items keep only what the core reads (see customItemToJson), so the
+    // fields the form edits are filled back in with the form's defaults.
+    static customItemForForm(item = {}) {
+        return {
+            ...item,
+            delay: item.delay ?? 0,
+            rand: item.rand ?? 0,
+            randRange: item.randRange ?? '0-255',
+            type: item.type ?? 'array',
+            packet: item.packet ?? [],
+        };
+    }
+
+    static noiseItemForForm(item = {}) {
+        return {
+            ...item,
+            rand: item.rand ?? '',
+            randRange: item.randRange ?? '0-255',
+            type: item.type ?? 'array',
+            packet: item.packet ?? '',
+            delay: item.delay ?? '',
+        };
     }
 
     // A Header Custom item is exactly one of: a fixed "packet", "rand" random
@@ -1076,10 +1103,11 @@ class TcpMask extends CommonClass {
     _getDefaultSettings(type, settings = {}) {
         switch (type) {
             case 'header-custom':
+                const rounds = list => (list || []).map(round => (round || []).map(i => UdpMask.customItemForForm(i)));
                 return {
-                    clients: settings.clients || [],
-                    servers: settings.servers || [],
-                    errors: settings.errors || [],
+                    clients: rounds(settings.clients),
+                    servers: rounds(settings.servers),
+                    errors: rounds(settings.errors),
                 };
             case 'xmc':
                 // Both ends need the same profiles; the client logs in with a
